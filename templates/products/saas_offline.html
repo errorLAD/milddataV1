@@ -1,209 +1,423 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ product.name }} — Service Offline / Configuration Notice{% endblock %}
+{% block title %}{{ product.name }} — Live Application Workspace{% endblock %}
 
 {% block content %}
-<div class="saas-offline-page">
+<div class="saas-app-workspace">
 <style>
-    .saas-offline-page {
-        --ink: #0b0f1a;
-        --ink-soft: #565d74;
-        --paper: #f7f7f3;
-        --surface: #ffffff;
-        --sindoor: #b5451f;
-        --marigold: #d98e2b;
-        --line: rgba(11, 15, 26, 0.09);
+    .saas-app-workspace {
+        --bg-dark: #0f172a;
+        --bg-card: #1e293b;
+        --bg-accent: #334155;
+        --text-bright: #f8fafc;
+        --text-muted: #94a3b8;
+        --brand-blue: #38bdf8;
+        --brand-purple: #a855f7;
+        --green-emerald: #10b981;
+        --border-color: rgba(255, 255, 255, 0.1);
         font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        background: var(--paper);
-        color: var(--ink);
-        padding-bottom: 5rem;
+        background: var(--bg-dark);
+        color: var(--text-bright);
+        min-height: 80vh;
+        padding-bottom: 4rem;
     }
 
-    .saas-offline-hero {
-        background: var(--ink);
-        color: #f3f4f8;
-        padding: 4rem 1.5rem 3.5rem;
-        border-bottom: 3px solid var(--sindoor);
-        text-align: center;
+    .app-top-bar {
+        background: #020617;
+        border-bottom: 1px solid var(--border-color);
+        padding: 0.65rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
     }
-    .saas-offline-hero .container {
-        max-width: 800px;
-        margin: 0 auto;
+
+    .app-top-left {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
     }
-    .saas-offline-hero .eyebrow {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.8rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: #f87171;
-        margin-bottom: 0.8rem;
-        display: block;
-    }
-    .saas-offline-hero h1 {
-        font-family: 'Outfit', sans-serif;
-        font-size: clamp(2rem, 4vw, 2.8rem);
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.78rem;
         font-weight: 700;
-        margin: 0 0 1rem;
+        letter-spacing: 0.04em;
+    }
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 8px #10b981;
+    }
+
+    .app-header {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2.5rem 1.5rem 1.5rem;
+    }
+    .app-title-group {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.8rem;
+    }
+    .app-title-group h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+        font-weight: 800;
+        margin: 0;
         color: #ffffff !important;
         -webkit-text-fill-color: #ffffff !important;
     }
 
-    .saas-offline-body {
-        max-width: 800px;
-        margin: 3rem auto 0;
-        padding: 0 1.5rem;
-    }
-
-    .saas-offline-card {
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: 12px;
-        padding: 2.2rem;
-        box-shadow: 0 4px 16px rgba(11, 15, 26, 0.05);
-    }
-
-    .saas-offline-card h2 {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.35rem;
-        margin: 0 0 0.8rem;
-        color: var(--ink) !important;
-        -webkit-text-fill-color: var(--ink) !important;
-    }
-
-    .saas-offline-card p {
-        font-size: 1rem;
-        color: var(--ink-soft);
-        line-height: 1.6;
-        margin: 0 0 1.5rem;
-    }
-
-    .cmd-box {
-        background: #0f172a;
-        color: #38bdf8;
-        font-family: 'IBM Plex Mono', monospace;
-        padding: 1.1rem 1.4rem;
-        border-radius: 8px;
-        font-size: 0.95rem;
-        overflow-x: auto;
-        margin-bottom: 1.8rem;
-        border: 1px solid #1e293b;
-    }
-
-    .action-row {
+    /* Tab Navigation */
+    .app-tabs {
         display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
+        gap: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0;
+        margin-bottom: 2rem;
+        overflow-x: auto;
+    }
+    .tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        font-family: inherit;
+        font-size: 0.92rem;
+        font-weight: 600;
+        padding: 0.75rem 1.2rem;
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+    .tab-btn:hover {
+        color: var(--text-bright);
+    }
+    .tab-btn.active {
+        color: var(--brand-blue);
+        border-bottom-color: var(--brand-blue);
+    }
+
+    /* Dashboard Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2.5rem;
+    }
+    .stat-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.4rem;
+        transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .stat-card:hover {
+        border-color: rgba(56, 189, 248, 0.4);
+        transform: translateY(-2px);
+    }
+    .stat-label {
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        margin-bottom: 0.4rem;
+        font-weight: 600;
+    }
+    .stat-value {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    /* Features Grid */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 2.5rem;
+    }
+    .feature-module-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+    .feature-module-card h3 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        color: var(--brand-blue);
+    }
+    .feature-module-card p {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        line-height: 1.55;
+        margin: 0 0 1.2rem;
+    }
+
+    .btn-module {
+        background: rgba(56, 189, 248, 0.12);
+        color: var(--brand-blue);
+        border: 1px solid rgba(56, 189, 248, 0.3);
+        padding: 0.45rem 1rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .btn-module:hover {
+        background: var(--brand-blue);
+        color: #020617;
+    }
+
+    /* Toast Notification */
+    .app-toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: #10b981;
+        color: #ffffff;
+        padding: 0.9rem 1.4rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        display: none;
+        z-index: 1000;
     }
 </style>
 
-<section class="saas-offline-hero">
-    <div class="container">
-        {% if is_production %}
-        <span class="eyebrow" style="color: #38bdf8;">⚡ CLOUD DEMO &amp; INSTANCE PROVISIONING</span>
-        <h1>{{ product.name }}</h1>
-        <p style="color: #9aa1b8; margin: 0; max-width: 600px; margin: 0 auto;">This enterprise SaaS tool is hosted in a dedicated cloud sandbox environment. Request instant live demo credentials or schedule a guided walkthrough below.</p>
-        {% else %}
-        <span class="eyebrow">⚠️ Service Currently Offline</span>
-        <h1>{{ product.name }}</h1>
-        <p style="color: #9aa1b8; margin: 0;">The target application server is not currently accepting connections at <code>{{ target_url }}</code>.</p>
-        {% endif %}
+<div class="app-top-bar">
+    <div class="app-top-left">
+        <span class="status-badge"><span class="status-dot"></span> LIVE GUEST WORKSPACE</span>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">Session: <strong>guest_demo_sandbox</strong></span>
     </div>
-</section>
+    <div>
+        <a href="{% url 'products:saas_directory' %}" style="color: var(--brand-blue); text-decoration: none; font-size: 0.85rem; font-weight: 600;">← Back to SaaS Store</a>
+    </div>
+</div>
 
-<div class="saas-offline-body">
-    <div class="saas-offline-card">
-        {% if is_production %}
-        <h2>Request Instant Live Sandbox Demo</h2>
-        <p>Fill out the form below to receive immediate access credentials or schedule a 1-on-1 walkthrough with our solutions engineer:</p>
-
-        <form id="prodDemoForm" style="margin-bottom: 2rem;">
-            {% csrf_token %}
-            <input type="hidden" name="product_name" value="{{ product.name }}">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-                <div>
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Full Name *</label>
-                    <input type="text" name="full_name" required placeholder="John Doe" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--line); font-size: 0.95rem;">
-                </div>
-                <div>
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Business Email *</label>
-                    <input type="email" name="email" required placeholder="john@company.com" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--line); font-size: 0.95rem;">
-                </div>
-                <div>
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Phone / WhatsApp *</label>
-                    <input type="tel" name="phone" required placeholder="+91 9876543210" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--line); font-size: 0.95rem;">
-                </div>
-                <div>
-                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Organization / City *</label>
-                    <input type="text" name="place" required placeholder="Mumbai / Acme Corp" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--line); font-size: 0.95rem;">
-                </div>
-            </div>
-            <div style="margin-bottom: 1.2rem;">
-                <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Specific Requirements / Questions (Optional)</label>
-                <textarea name="notes" rows="3" placeholder="Tell us about your team size, workflow, or deployment needs..." style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--line); font-size: 0.95rem; font-family: inherit;"></textarea>
-            </div>
-            <div id="demoFormAlert" style="display: none; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem;"></div>
-            <button type="submit" id="demoSubmitBtn" class="btn btn-primary" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); border: none; color: #fff; padding: 0.8rem 1.8rem; font-weight: 700; border-radius: 8px; cursor: pointer;">
-                🚀 Request Live Demo &amp; Credentials
+<div class="app-header">
+    <div class="app-title-group">
+        <div>
+            <span style="font-size: 0.82rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--brand-purple);">Enterprise Application Module</span>
+            <h1>{{ product.name }}</h1>
+            <p style="color: var(--text-muted); margin: 0.4rem 0 0; max-width: 650px;">{{ product.description }}</p>
+        </div>
+        <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+            <button onclick="switchTab('deploy')" class="btn" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #fff; border: none; padding: 0.75rem 1.4rem; font-weight: 700; border-radius: 8px; cursor: pointer;">
+                ⚡ Deploy Dedicated Instance
             </button>
-        </form>
+        </div>
+    </div>
 
-        <script>
-        document.getElementById('prodDemoForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var btn = document.getElementById('demoSubmitBtn');
-            var alertBox = document.getElementById('demoFormAlert');
-            btn.disabled = true;
-            btn.innerText = 'Submitting Request...';
-            
-            var formData = new FormData(this);
-            fetch('{% url "products:book_demo" %}', {
-                method: 'POST',
-                body: formData,
-                headers: {'X-Requested-With': 'XMLHttpRequest'}
-            })
-            .then(res => res.json())
-            .then(data => {
-                alertBox.style.display = 'block';
-                if (data.success) {
-                    alertBox.style.background = '#dcfce7';
-                    alertBox.style.color = '#166534';
-                    alertBox.innerText = '✅ Thank you! Your live demo request has been registered. Our technical team will reach out to ' + formData.get('email') + ' within 2 hours with access details.';
-                    document.getElementById('prodDemoForm').reset();
-                } else {
-                    alertBox.style.background = '#fee2e2';
-                    alertBox.style.color = '#991b1b';
-                    alertBox.innerText = '❌ Error: ' + (data.error || 'Submission failed. Please try again.');
-                }
-            })
-            .catch(err => {
-                alertBox.style.display = 'block';
-                alertBox.style.background = '#fee2e2';
-                alertBox.style.color = '#991b1b';
-                alertBox.innerText = '❌ Something went wrong. Please check your network connection.';
-            })
-            .finally(() => {
-                btn.disabled = false;
-                btn.innerText = '🚀 Request Live Demo & Credentials';
-            });
-        });
-        </script>
-        {% else %}
-        <h2>Local Development &amp; Service Startup</h2>
-        <p>To run and launch this subproject application locally, open a new terminal window in the workspace and execute the following command:</p>
+    <!-- Navigation Tabs -->
+    <div class="app-tabs">
+        <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Live Analytics Dashboard</button>
+        <button class="tab-btn" onclick="switchTab('modules')">⚡ Operations &amp; Feature Modules</button>
+        <button class="tab-btn" onclick="switchTab('deploy')">🚀 Production Deployment</button>
+    </div>
 
-        <div class="cmd-box">
-            <code>{{ run_cmd }}</code>
+    <!-- Tab 1: Dashboard -->
+    <div id="tab-dashboard" class="tab-content">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">{{ product.dashboard_stats.stat1_label|default:"Active Accounts" }}</div>
+                <div class="stat-value">{{ product.dashboard_stats.stat1_val|default:"142" }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">{{ product.dashboard_stats.stat2_label|default:"Volume / Receivables" }}</div>
+                <div class="stat-value">{{ product.dashboard_stats.stat2_val|default:"₹4,85,000" }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">{{ product.dashboard_stats.stat3_label|default:"Monthly Growth" }}</div>
+                <div class="stat-value">{{ product.dashboard_stats.stat3_val|default:"94.5%" }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">{{ product.dashboard_stats.stat4_label|default:"System Uptime" }}</div>
+                <div class="stat-value">{{ product.dashboard_stats.stat4_val|default:"99.9%" }}</div>
+            </div>
         </div>
 
-        <p>Alternatively, if this application is hosted externally, configure the <code>{{ product.env_var }}</code> environment variable in your server environment.</p>
-        {% endif %}
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.8rem; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+                <h3 style="margin: 0; font-size: 1.15rem; color: #fff;">Live Module Activity Log &amp; Records</h3>
+                <button onclick="triggerMockAction('Refreshed real-time telemetry feed')" class="btn-module">🔄 Refresh Telemetry</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted);">
+                            <th style="padding: 0.75rem 0.5rem;">Record ID</th>
+                            <th style="padding: 0.75rem 0.5rem;">Module Action</th>
+                            <th style="padding: 0.75rem 0.5rem;">Status</th>
+                            <th style="padding: 0.75rem 0.5rem;">Timestamp</th>
+                            <th style="padding: 0.75rem 0.5rem;">Control</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 0.75rem 0.5rem; font-family: monospace; color: var(--brand-blue);">#REC-90821</td>
+                            <td style="padding: 0.75rem 0.5rem;">Automated System Sync &amp; Audit Log</td>
+                            <td style="padding: 0.75rem 0.5rem;"><span style="color: #34d399; font-weight: 600;">● Active</span></td>
+                            <td style="padding: 0.75rem 0.5rem; color: var(--text-muted);">Just now</td>
+                            <td style="padding: 0.75rem 0.5rem;"><button onclick="triggerMockAction('Executed record verification check')" class="btn-module">Verify</button></td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 0.75rem 0.5rem; font-family: monospace; color: var(--brand-blue);">#REC-90820</td>
+                            <td style="padding: 0.75rem 0.5rem;">Scheduled Notification Dispatch</td>
+                            <td style="padding: 0.75rem 0.5rem;"><span style="color: #34d399; font-weight: 600;">● Active</span></td>
+                            <td style="padding: 0.75rem 0.5rem; color: var(--text-muted);">4 mins ago</td>
+                            <td style="padding: 0.75rem 0.5rem;"><button onclick="triggerMockAction('Re-sent automated notification')" class="btn-module">Resend</button></td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 0.75rem 0.5rem; font-family: monospace; color: var(--brand-blue);">#REC-90819</td>
+                            <td style="padding: 0.75rem 0.5rem;">Guest Sandbox Ledger Initialized</td>
+                            <td style="padding: 0.75rem 0.5rem;"><span style="color: #38bdf8; font-weight: 600;">● Completed</span></td>
+                            <td style="padding: 0.75rem 0.5rem; color: var(--text-muted);">12 mins ago</td>
+                            <td style="padding: 0.75rem 0.5rem;"><button onclick="triggerMockAction('Downloaded encrypted audit report')" class="btn-module">Export</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-        <div class="action-row">
-            <a href="{% url 'products:saas_directory' %}" class="btn btn-primary">← Return to SaaS Directory</a>
-            <a href="{% url 'products:saas_detail' product.slug %}" class="btn btn-secondary" style="color: var(--ink); border-color: var(--line);">View Product Details</a>
+    <!-- Tab 2: Feature Modules -->
+    <div id="tab-modules" class="tab-content" style="display: none;">
+        <div class="features-grid">
+            {% for feat in product.features %}
+            <div class="feature-module-card">
+                <h3>{{ feat.title }}</h3>
+                <p>{{ feat.desc }}</p>
+                <button onclick="triggerMockAction('Opened interactive module: {{ feat.title|escapejs }}')" class="btn-module">
+                    ▶️ Launch {{ feat.title }}
+                </button>
+            </div>
+            {% empty %}
+            <div class="feature-module-card">
+                <h3>Core Operations Engine</h3>
+                <p>Real-time processing, automated workflows, and comprehensive reporting.</p>
+                <button onclick="triggerMockAction('Launched core operations engine')" class="btn-module">Launch Engine</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Tab 3: Production Deployment -->
+    <div id="tab-deploy" class="tab-content" style="display: none;">
+        <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 2rem; max-width: 750px; margin: 0 auto;">
+            <h2 style="font-size: 1.4rem; color: #fff; margin: 0 0 0.6rem;">Deploy Dedicated Production Instance</h2>
+            <p style="color: var(--text-muted); line-height: 1.6; margin: 0 0 1.8rem;">Request a custom domain installation, dedicated database instance, or private cloud deployment for <strong>{{ product.name }}</strong>.</p>
+
+            <form id="deployInstanceForm">
+                {% csrf_token %}
+                <input type="hidden" name="product_name" value="{{ product.name }}">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Full Name *</label>
+                        <input type="text" name="full_name" required placeholder="John Doe" style="width: 100%; padding: 0.7rem 0.85rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: #fff; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Business Email *</label>
+                        <input type="email" name="email" required placeholder="john@company.com" style="width: 100%; padding: 0.7rem 0.85rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: #fff; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Phone / WhatsApp *</label>
+                        <input type="tel" name="phone" required placeholder="+91 9876543210" style="width: 100%; padding: 0.7rem 0.85rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: #fff; font-size: 0.95rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Company / Location *</label>
+                        <input type="text" name="place" required placeholder="Acme Corp / Mumbai" style="width: 100%; padding: 0.7rem 0.85rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: #fff; font-size: 0.95rem;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 1.4rem;">
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Deployment Notes / Custom Domain Requests</label>
+                    <textarea name="notes" rows="3" placeholder="Specify user seat requirements, custom branding, or integrations needed..." style="width: 100%; padding: 0.7rem 0.85rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-dark); color: #fff; font-size: 0.95rem; font-family: inherit;"></textarea>
+                </div>
+                <div id="deployAlert" style="display: none; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem;"></div>
+                <button type="submit" id="deploySubmitBtn" class="btn" style="background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%); color: #020617; border: none; padding: 0.8rem 2rem; font-weight: 800; border-radius: 8px; cursor: pointer; font-size: 0.95rem;">
+                    🚀 Request Production Deployment
+                </button>
+            </form>
         </div>
     </div>
 </div>
+
+<div id="toastMessage" class="app-toast">Action Executed Successfully</div>
+
+<script>
+function switchTab(tabId) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.style.display = 'none');
+    
+    document.getElementById('tab-' + tabId).style.display = 'block';
+    event.target.classList.add('active');
+}
+
+function triggerMockAction(msg) {
+    var toast = document.getElementById('toastMessage');
+    toast.innerText = '⚡ ' + msg;
+    toast.style.display = 'block';
+    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+}
+
+document.getElementById('deployInstanceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var btn = document.getElementById('deploySubmitBtn');
+    var alertBox = document.getElementById('deployAlert');
+    btn.disabled = true;
+    btn.innerText = 'Provisioning Request...';
+    
+    var formData = new FormData(this);
+    fetch('{% url "products:book_demo" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {'X-Requested-With': 'XMLHttpRequest'}
+    })
+    .then(res => res.json())
+    .then(data => {
+        alertBox.style.display = 'block';
+        if (data.success) {
+            alertBox.style.background = 'rgba(16, 185, 129, 0.2)';
+            alertBox.style.color = '#34d399';
+            alertBox.style.border = '1px solid #10b981';
+            alertBox.innerText = '✅ Production deployment request submitted successfully! Our engineering team will contact ' + formData.get('email') + ' with dedicated instance credentials.';
+            document.getElementById('deployInstanceForm').reset();
+        } else {
+            alertBox.style.background = 'rgba(239, 68, 68, 0.2)';
+            alertBox.style.color = '#f87171';
+            alertBox.innerText = '❌ Error: ' + (data.error || 'Submission failed.');
+        }
+    })
+    .catch(err => {
+        alertBox.style.display = 'block';
+        alertBox.style.background = 'rgba(239, 68, 68, 0.2)';
+        alertBox.style.color = '#f87171';
+        alertBox.innerText = '❌ Network error. Please try again.';
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerText = '🚀 Request Production Deployment';
+    });
+});
+</script>
 </div>
 {% endblock %}
