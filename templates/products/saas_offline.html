@@ -2159,6 +2159,54 @@ function closeBpModal() {
         </div>
     </div>
 </div>
+<style>
+    /* Global Mobile Responsiveness for Application Showcase Modules */
+    @media (max-width: 768px) {
+        .bl-top-bar, .pf-top-bar, .mo-top-bar, .sf-top-bar, .fl-top-bar, .su-top-bar, .bp-top-bar {
+            padding: 0.8rem 1rem !important;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 0.6rem !important;
+        }
+        .bl-top-title, .pf-top-title, .mo-top-title, .sf-top-title, .fl-top-title, .su-top-title, .bp-top-title {
+            font-size: 1.25rem !important;
+        }
+        .bl-app-frame, .pf-app-frame, .mo-app-frame, .sf-app-frame, .fl-app-frame, .su-app-frame, .bp-app-frame {
+            margin: 0.75rem 0.5rem 0 !important;
+            border-radius: 10px !important;
+        }
+        .bl-tabs-bar, .pf-tabs-bar, .mo-tabs-bar, .sf-tabs-bar, .fl-tabs-bar, .su-tabs-bar, .bp-tabs-bar {
+            padding: 0.5rem 0.75rem !important;
+            gap: 0.4rem !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        .bl-tab-btn, .pf-tab-btn, .mo-tab-btn, .sf-tab-btn, .fl-tab-btn, .su-tab-btn, .bp-tab-btn {
+            font-size: 0.78rem !important;
+            padding: 0.45rem 0.85rem !important;
+            border-radius: 6px !important;
+        }
+        .bl-preview-container, .pf-preview-container, .mo-preview-container, .sf-preview-container, .fl-preview-container, .su-preview-container, .bp-preview-container {
+            padding: 0.8rem !important;
+        }
+        .bl-zoom-overlay, .pf-zoom-overlay, .mo-zoom-overlay, .sf-zoom-overlay, .fl-zoom-overlay, .su-zoom-overlay, .bp-zoom-overlay {
+            font-size: 0.7rem !important;
+            padding: 0.35rem 0.75rem !important;
+            top: 0.5rem !important;
+            right: 0.5rem !important;
+        }
+        .bl-modal-close, .pf-modal-close, .mo-modal-close, .sf-modal-close, .fl-modal-close, .su-modal-close, .bp-modal-close {
+            top: 1rem !important;
+            right: 1rem !important;
+            width: 36px !important;
+            height: 36px !important;
+            font-size: 1.2rem !important;
+        }
+        .bl-modal-img, .pf-modal-img, .mo-modal-img, .sf-modal-img, .fl-modal-img, .su-modal-img, .bp-modal-img {
+            max-width: 98vw !important;
+            max-height: 85vh !important;
+        }
+    }
+</style>
 </div>
 {% endif %}
 {% endblock %}
