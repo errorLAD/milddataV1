@@ -99,14 +99,96 @@
 
 <section class="saas-offline-hero">
     <div class="container">
+        {% if is_production %}
+        <span class="eyebrow" style="color: #38bdf8;">⚡ CLOUD DEMO &amp; INSTANCE PROVISIONING</span>
+        <h1>{{ product.name }}</h1>
+        <p style="color: #9aa1b8; margin: 0; max-width: 600px; margin: 0 auto;">This enterprise SaaS tool is hosted in a dedicated cloud sandbox environment. Request instant live demo credentials or schedule a guided walkthrough below.</p>
+        {% else %}
         <span class="eyebrow">⚠️ Service Currently Offline</span>
         <h1>{{ product.name }}</h1>
         <p style="color: #9aa1b8; margin: 0;">The target application server is not currently accepting connections at <code>{{ target_url }}</code>.</p>
+        {% endif %}
     </div>
 </section>
 
 <div class="saas-offline-body">
     <div class="saas-offline-card">
+        {% if is_production %}
+        <h2>Request Instant Live Sandbox Demo</h2>
+        <p>Fill out the form below to receive immediate access credentials or schedule a 1-on-1 walkthrough with our solutions engineer:</p>
+
+        <form id="prodDemoForm" style="margin-bottom: 2rem;">
+            {% csrf_token %}
+            <input type="hidden" name="product_name" value="{{ product.name }}">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Full Name *</label>
+                    <input type="text" name="full_name" required placeholder="John Doe" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--line); font-size: 0.95rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Business Email *</label>
+                    <input type="email" name="email" required placeholder="john@company.com" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--line); font-size: 0.95rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Phone / WhatsApp *</label>
+                    <input type="tel" name="phone" required placeholder="+91 9876543210" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--line); font-size: 0.95rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Organization / City *</label>
+                    <input type="text" name="place" required placeholder="Mumbai / Acme Corp" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--line); font-size: 0.95rem;">
+                </div>
+            </div>
+            <div style="margin-bottom: 1.2rem;">
+                <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.3rem;">Specific Requirements / Questions (Optional)</label>
+                <textarea name="notes" rows="3" placeholder="Tell us about your team size, workflow, or deployment needs..." style="width: 100%; padding: 0.65rem 0.85rem; border-radius: 6px; border: 1px solid var(--line); font-size: 0.95rem; font-family: inherit;"></textarea>
+            </div>
+            <div id="demoFormAlert" style="display: none; padding: 0.8rem 1rem; border-radius: 6px; margin-bottom: 1rem; font-size: 0.9rem;"></div>
+            <button type="submit" id="demoSubmitBtn" class="btn btn-primary" style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); border: none; color: #fff; padding: 0.8rem 1.8rem; font-weight: 700; border-radius: 8px; cursor: pointer;">
+                🚀 Request Live Demo &amp; Credentials
+            </button>
+        </form>
+
+        <script>
+        document.getElementById('prodDemoForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var btn = document.getElementById('demoSubmitBtn');
+            var alertBox = document.getElementById('demoFormAlert');
+            btn.disabled = true;
+            btn.innerText = 'Submitting Request...';
+            
+            var formData = new FormData(this);
+            fetch('{% url "products:book_demo" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {'X-Requested-With': 'XMLHttpRequest'}
+            })
+            .then(res => res.json())
+            .then(data => {
+                alertBox.style.display = 'block';
+                if (data.success) {
+                    alertBox.style.background = '#dcfce7';
+                    alertBox.style.color = '#166534';
+                    alertBox.innerText = '✅ Thank you! Your live demo request has been registered. Our technical team will reach out to ' + formData.get('email') + ' within 2 hours with access details.';
+                    document.getElementById('prodDemoForm').reset();
+                } else {
+                    alertBox.style.background = '#fee2e2';
+                    alertBox.style.color = '#991b1b';
+                    alertBox.innerText = '❌ Error: ' + (data.error || 'Submission failed. Please try again.');
+                }
+            })
+            .catch(err => {
+                alertBox.style.display = 'block';
+                alertBox.style.background = '#fee2e2';
+                alertBox.style.color = '#991b1b';
+                alertBox.innerText = '❌ Something went wrong. Please check your network connection.';
+            })
+            .finally(() => {
+                btn.disabled = false;
+                btn.innerText = '🚀 Request Live Demo & Credentials';
+            });
+        });
+        </script>
+        {% else %}
         <h2>Local Development &amp; Service Startup</h2>
         <p>To run and launch this subproject application locally, open a new terminal window in the workspace and execute the following command:</p>
 
@@ -115,6 +197,7 @@
         </div>
 
         <p>Alternatively, if this application is hosted externally, configure the <code>{{ product.env_var }}</code> environment variable in your server environment.</p>
+        {% endif %}
 
         <div class="action-row">
             <a href="{% url 'products:saas_directory' %}" class="btn btn-primary">← Return to SaaS Directory</a>

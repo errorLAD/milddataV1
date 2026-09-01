@@ -293,6 +293,8 @@ def saas_launch(request, slug):
             elif folder == "propertylite":
                 run_cmd = "python propertylite/part1propertylite/manage.py runserver 8007"
 
+        is_local_req = request.get_host().split(":")[0] in ("localhost", "127.0.0.1")
+
         return render(
             request,
             "products/saas_offline.html",
@@ -300,8 +302,9 @@ def saas_launch(request, slug):
                 "product": product,
                 "target_url": target_url,
                 "run_cmd": run_cmd,
+                "is_production": not is_local_req,
             },
-            status=503,
+            status=200 if not is_local_req else 503,
         )
 
     return redirect(target_url)
