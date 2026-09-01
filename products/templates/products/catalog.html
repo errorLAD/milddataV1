@@ -268,21 +268,21 @@
                 <a href="{% url 'products:detail' product.pk %}" class="mp-btn mp-btn-secondary">Details</a>
                 {% if product.category == 'saas_tool' %}
                     {% if product.name == "Payment Reminder / B2B Payment" %}
-                        <a href="{% url 'products:saas_launch' 'b2b-payment' %}" class="mp-btn">Launch</a>
+                        <a href="{% url 'products:saas_detail' 'b2b-payment' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% elif product.name == "Supplier Onboarding OS" %}
-                        <a href="{% url 'products:saas_launch' 'supplier-onboarding' %}" class="mp-btn">Launch</a>
+                        <a href="{% url 'products:saas_detail' 'supplier-onboarding' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% elif product.name == "Business SaaS Lite" %}
-                        <a href="{% url 'products:saas_launch' 'business-saas' %}" class="mp-btn">Launch</a>
+                        <a href="{% url 'products:saas_detail' 'business-saas' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% elif product.name == "Fleet Management OS" %}
-                        <a href="{% url 'products:saas_launch' 'fleet-management' %}" class="mp-btn">Launch</a>
+                        <a href="{% url 'products:saas_detail' 'fleet-management' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% elif "StockFlow" in product.name %}
-                        <a href="{% url 'products:saas_launch' 'stockflow' %}" class="mp-btn">Launch</a>
+                        <a href="{% url 'products:saas_detail' 'stockflow' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% elif product.name == "MachineOS" %}
-                        <a href="{% url 'products:saas_launch' 'machine-os' %}" class="mp-btn">Launch</a>
+                        <a href="{% url 'products:saas_detail' 'machine-os' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% elif "PropFlow" in product.name %}
-                        <a href="{% url 'products:saas_launch' 'property-management' %}" class="mp-btn">Launch</a>
+                        <a href="{% url 'products:saas_detail' 'property-management' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% else %}
-                        <a href="{% url 'products:saas_directory' %}" class="mp-btn">Open</a>
+                        <a href="{% url 'products:saas_directory' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% endif %}
                 {% else %}
                     <a href="{% url 'products:detail' product.pk %}" class="mp-btn">Buy</a>
@@ -311,7 +311,7 @@
             <div class="price">{{ product.display_price }}</div>
             <div class="mp-card-footer">
                 <a href="{% url 'products:saas_detail' product.slug %}" class="mp-btn mp-btn-secondary">Details</a>
-                <a href="{% url 'products:saas_launch' product.slug %}" class="mp-btn">Launch</a>
+                <a href="{% url 'products:saas_detail' product.slug %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
             </div>
         </article>
         {% endfor %}
