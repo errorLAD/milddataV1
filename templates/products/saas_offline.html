@@ -1,519 +1,542 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ product.name }} — Web Application{% endblock %}
+{% block title %}{{ product.name }} — Executive Dashboard{% endblock %}
 
 {% block content %}
-<div class="saas-live-app">
+<div class="propflow-app-wrapper">
 <style>
-    .saas-live-app {
-        --app-bg: #090d16;
-        --panel-bg: #131b2e;
-        --panel-card: #1c273e;
-        --accent-blue: #38bdf8;
-        --accent-green: #10b981;
-        --accent-purple: #a855f7;
-        --text-main: #f8fafc;
-        --text-dim: #94a3b8;
-        --border: rgba(255, 255, 255, 0.08);
+    .propflow-app-wrapper {
+        background: #f8fafc;
+        color: #0f172a;
         font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-        background: var(--app-bg);
-        color: var(--text-main);
-        min-height: 85vh;
+        min-height: 90vh;
         padding-bottom: 3rem;
     }
 
-    /* Web App Header Bar */
-    .app-nav-bar {
-        background: #040810;
-        border-bottom: 1px solid var(--border);
-        padding: 0.8rem 1.5rem;
+    /* Top Page Header */
+    .pf-top-bar {
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.2rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .pf-top-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+    }
+    .pf-live-badge {
+        background: #eff6ff;
+        color: #2563eb;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 0.4rem 1.1rem;
+        border-radius: 9999px;
+        border: 1px solid #bfdbfe;
+    }
+
+    /* App Frame Container */
+    .pf-app-frame {
+        max-width: 1380px;
+        margin: 1.5rem auto 0;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+
+    /* Inner App Header */
+    .pf-inner-header {
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.85rem 1.4rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
         flex-wrap: wrap;
     }
-    .app-brand {
+    .pf-brand-group {
         display: flex;
         align-items: center;
         gap: 0.75rem;
     }
-    .app-logo-icon {
-        width: 38px;
-        height: 38px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .pf-logo-box {
+        background: #2563eb;
+        color: #ffffff;
+        font-family: 'Outfit', sans-serif;
         font-weight: 800;
         font-size: 1.1rem;
-        color: #ffffff;
+        padding: 0.4rem 0.65rem;
+        border-radius: 8px;
     }
-    .app-brand-name {
+    .pf-brand-name {
         font-family: 'Outfit', sans-serif;
         font-size: 1.25rem;
-        font-weight: 700;
-        color: #ffffff;
+        font-weight: 800;
+        color: #0f172a;
+    }
+    .pf-tag-pill {
+        background: #f1f5f9;
+        color: #64748b;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.2rem 0.6rem;
+        border-radius: 9999px;
+        border: 1px solid #e2e8f0;
     }
 
-    .app-menu-links {
+    .pf-search-box {
         display: flex;
-        gap: 0.4rem;
-        flex-wrap: wrap;
+        align-items: center;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 9999px;
+        padding: 0.4rem 1rem;
+        width: 320px;
+        font-size: 0.85rem;
+        color: #64748b;
     }
-    .app-menu-btn {
-        background: transparent;
+    .pf-search-box input {
         border: none;
-        color: var(--text-dim);
-        font-family: inherit;
+        background: transparent;
+        outline: none;
+        width: 100%;
+        margin-left: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .pf-user-tools {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .pf-ai-btn {
+        background: #f0f9ff;
+        color: #0284c7;
+        border: 1px solid #bae6fd;
+        font-weight: 700;
+        font-size: 0.82rem;
+        padding: 0.35rem 0.85rem;
+        border-radius: 9999px;
+        cursor: pointer;
+    }
+
+    /* Guest Alert Banner */
+    .pf-alert-banner {
+        background: #e0f2fe;
+        border-bottom: 1px solid #bae6fd;
+        color: #0369a1;
+        padding: 0.65rem 1.4rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Layout Body */
+    .pf-layout-grid {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        min-height: 680px;
+    }
+
+    /* Sidebar */
+    .pf-sidebar {
+        background: #ffffff;
+        border-right: 1px solid #e2e8f0;
+        padding: 1.2rem 0.8rem;
+    }
+    .pf-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 0.9rem;
+        border-radius: 8px;
         font-size: 0.88rem;
         font-weight: 600;
-        padding: 0.55rem 1rem;
-        border-radius: 6px;
+        color: #475569;
+        text-decoration: none;
+        margin-bottom: 0.25rem;
         cursor: pointer;
         transition: all 0.15s ease;
     }
-    .app-menu-btn:hover {
-        background: rgba(255, 255, 255, 0.05);
-        color: var(--text-main);
+    .pf-nav-item:hover {
+        background: #f1f5f9;
+        color: #0f172a;
     }
-    .app-menu-btn.active {
-        background: rgba(56, 189, 248, 0.15);
-        color: var(--accent-blue);
-    }
-
-    /* Main App Area */
-    .app-container {
-        max-width: 1240px;
-        margin: 0 auto;
-        padding: 2rem 1.5rem;
-    }
-
-    /* App Header Summary */
-    .app-header-box {
-        background: var(--panel-bg);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 1.5rem 1.8rem;
-        margin-bottom: 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-    }
-    .app-header-box h2 {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.5rem;
-        margin: 0 0 0.3rem;
-        color: #ffffff;
-    }
-    .app-header-box p {
-        margin: 0;
-        color: var(--text-dim);
-        font-size: 0.92rem;
-    }
-
-    /* Stat Counters */
-    .app-stats-row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 1.25rem;
-        margin-bottom: 2rem;
-    }
-    .app-stat-box {
-        background: var(--panel-bg);
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        padding: 1.25rem 1.4rem;
-    }
-    .app-stat-title {
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--text-dim);
-        font-weight: 600;
-        margin-bottom: 0.3rem;
-    }
-    .app-stat-number {
-        font-family: 'Outfit', sans-serif;
-        font-size: 1.7rem;
+    .pf-nav-item.active {
+        background: #eff6ff;
+        color: #2563eb;
         font-weight: 700;
-        color: #ffffff;
     }
 
-    /* Data Tables & Cards */
-    .app-card {
-        background: var(--panel-bg);
-        border: 1px solid var(--border);
-        border-radius: 12px;
+    /* Main Content Area */
+    .pf-main-content {
+        background: #f8fafc;
         padding: 1.6rem;
-        margin-bottom: 2rem;
     }
-    .app-card-title {
+
+    .pf-dashboard-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 1.2rem;
+        margin-bottom: 1.5rem;
         gap: 1rem;
         flex-wrap: wrap;
     }
-    .app-card-title h3 {
-        font-size: 1.15rem;
+    .pf-dashboard-header h2 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0 0 0.2rem;
+    }
+    .pf-dashboard-header p {
         margin: 0;
-        color: #ffffff;
+        color: #64748b;
+        font-size: 0.88rem;
     }
 
-    .btn-action {
-        background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+    .pf-action-group {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+    .pf-btn-blue {
+        background: #2563eb;
         color: #ffffff;
         border: none;
-        padding: 0.55rem 1.1rem;
-        border-radius: 6px;
-        font-size: 0.85rem;
         font-weight: 700;
+        font-size: 0.82rem;
+        padding: 0.45rem 0.95rem;
+        border-radius: 6px;
         cursor: pointer;
-        transition: all 0.15s ease;
     }
-    .btn-action:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-    }
-
-    .btn-outline {
-        background: transparent;
-        border: 1px solid var(--border);
-        color: var(--text-dim);
+    .pf-btn-light {
+        background: #ffffff;
+        color: #334155;
+        border: 1px solid #cbd5e1;
+        font-weight: 600;
+        font-size: 0.82rem;
         padding: 0.45rem 0.85rem;
         border-radius: 6px;
-        font-size: 0.82rem;
-        font-weight: 600;
         cursor: pointer;
     }
-    .btn-outline:hover {
-        border-color: var(--accent-blue);
-        color: var(--accent-blue);
-    }
 
-    .app-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.88rem;
-        text-align: left;
+    /* Stat Cards Row */
+    .pf-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
     }
-    .app-table th {
-        color: var(--text-dim);
-        border-bottom: 1px solid var(--border);
-        padding: 0.75rem 0.6rem;
-        font-weight: 600;
-    }
-    .app-table td {
-        padding: 0.8rem 0.6rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    }
-
-    .badge-status {
-        display: inline-block;
-        padding: 0.2rem 0.55rem;
-        border-radius: 9999px;
-        font-size: 0.75rem;
-        font-weight: 700;
-    }
-    .badge-success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
-    .badge-info { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
-    .badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
-
-    /* Modal Overlay */
-    .modal-overlay {
-        position: fixed;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: rgba(0, 0, 0, 0.75);
-        display: none;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;
-        padding: 1rem;
-    }
-    .modal-content {
-        background: #131b2e;
-        border: 1px solid var(--border);
+    .pf-stat-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
-        padding: 1.8rem;
-        width: 100%;
-        max-width: 520px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        padding: 1.1rem 1.2rem;
     }
-    .modal-header {
+    .pf-stat-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748b;
+        margin-bottom: 0.4rem;
+    }
+    .pf-stat-val {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.55rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin-bottom: 0.2rem;
+    }
+    .pf-stat-foot {
+        font-size: 0.76rem;
+        color: #94a3b8;
+    }
+    .pill-green { background: #dcfce7; color: #166534; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 700; }
+    .pill-orange { background: #ffedd5; color: #c2410c; padding: 0.15rem 0.4rem; border-radius: 4px; font-weight: 700; }
+
+    /* Visual Charts Section */
+    .pf-charts-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    @media (max-width: 1024px) {
+        .pf-layout-grid { grid-template-columns: 1fr; }
+        .pf-sidebar { display: none; }
+        .pf-charts-grid { grid-template-columns: 1fr; }
+    }
+
+    .pf-chart-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.4rem;
+    }
+    .pf-chart-head {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 1.2rem;
     }
-    .modal-header h3 { margin: 0; font-size: 1.2rem; color: #fff; }
-    .modal-close { background: none; border: none; color: var(--text-dim); font-size: 1.2rem; cursor: pointer; }
+    .pf-chart-head h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin: 0 0 0.2rem;
+        color: #0f172a;
+    }
+    .pf-chart-head p {
+        margin: 0;
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    /* SVG Chart Mockups */
+    .chart-container {
+        width: 100%;
+        height: 220px;
+    }
 </style>
 
-<!-- Top Web App Navigation Bar -->
-<div class="app-nav-bar">
-    <div class="app-brand">
-        <div class="app-logo-icon">
-            {% if product.slug == 'property-management' %}🏢
-            {% elif product.slug == 'machine-os' %}🚜
-            {% elif product.slug == 'b2b-payment' %}💳
-            {% elif product.slug == 'supplier-onboarding' %}📋
-            {% elif product.slug == 'fleet-management' %}🚛
-            {% elif product.slug == 'stockflow' %}📦
-            {% else %}⚡{% endif %}
-        </div>
-        <div>
-            <div class="app-brand-name">{{ product.name }}</div>
-            <div style="font-size: 0.75rem; color: var(--accent-green); font-weight: 600;">● Active Application Workspace</div>
-        </div>
-    </div>
-    <div class="app-menu-links">
-        <button class="app-menu-btn active" onclick="switchAppTab('overview')">Overview Dashboard</button>
-        <button class="app-menu-btn" onclick="switchAppTab('records')">Primary Records</button>
-        <button class="app-menu-btn" onclick="switchAppTab('reports')">Analytics &amp; Exports</button>
-        <a href="{% url 'products:saas_directory' %}" class="app-menu-btn" style="color: var(--text-dim); text-decoration: none;">← Exit App</a>
-    </div>
+<!-- Top Outer Title Bar -->
+<div class="pf-top-bar">
+    <h1 class="pf-top-title">{% if product.slug == 'property-management' %}PropFlow Executive Dashboard{% else %}{{ product.name }} Dashboard{% endif %}</h1>
+    <span class="pf-live-badge">Live Application</span>
 </div>
 
-<div class="app-container">
-    <!-- Header Banner -->
-    <div class="app-header-box">
-        <div>
-            <h2>{{ product.name }} Workspace</h2>
-            <p>{{ product.description }}</p>
+<!-- Main Web Application Frame -->
+<div class="pf-app-frame">
+    <!-- Inner Application Bar -->
+    <div class="pf-inner-header">
+        <div class="pf-brand-group">
+            <div class="pf-logo-box">
+                {% if product.slug == 'property-management' %}PF
+                {% elif product.slug == 'machine-os' %}MO
+                {% elif product.slug == 'b2b-payment' %}B2B
+                {% else %}MD{% endif %}
+            </div>
+            <span class="pf-brand-name">{{ product.name }}</span>
+            <span class="pf-tag-pill">Enterprise Partners</span>
         </div>
-        <div>
-            <button onclick="openNewRecordModal()" class="btn-action">
-                + Add New Record
-            </button>
+
+        <div class="pf-search-box">
+            🔍 <input type="text" placeholder="Search properties, tenants, units, records... ⌘K">
+        </div>
+
+        <div class="pf-user-tools">
+            <button onclick="alert('✨ PropFlow AI Assistant: All property occupancy rates and rent collection schedules are synchronized.')" class="pf-ai-btn">✨ {{ product.name }} AI</button>
+            <span style="font-size: 1.1rem; cursor: pointer;">🔔</span>
+            <div style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 700; color: #334155;">
+                <span style="width: 26px; height: 26px; border-radius: 50%; background: #e2e8f0; display: inline-flex; align-items: center; justify-content: center; font-size: 0.75rem;">G</span>
+                Guest Explorer <span style="font-weight: 400; color: #94a3b8;">(Guest Mode User)</span>
+            </div>
         </div>
     </div>
 
-    <!-- Stats Counters -->
-    <div class="app-stats-row">
-        <div class="app-stat-box">
-            <div class="app-stat-title">{{ product.dashboard_stats.stat1_label|default:"Total Active Items" }}</div>
-            <div class="app-stat-number" id="stat1Val">{{ product.dashboard_stats.stat1_val|default:"24" }}</div>
+    <!-- Guest Mode Alert Banner -->
+    <div class="pf-alert-banner">
+        <div>
+            ⓘ ⚡ <strong>Welcome to {{ product.name }} Guest Mode!</strong> You have full interactive read-only access to explore demo properties, dashboard, and AI assistant.
         </div>
-        <div class="app-stat-box">
-            <div class="app-stat-title">{{ product.dashboard_stats.stat2_label|default:"Active Accounts / Users" }}</div>
-            <div class="app-stat-number" id="stat2Val">{{ product.dashboard_stats.stat2_val|default:"48" }}</div>
-        </div>
-        <div class="app-stat-box">
-            <div class="app-stat-title">{{ product.dashboard_stats.stat3_label|default:"Total Financial Volume" }}</div>
-            <div class="app-stat-number">{{ product.dashboard_stats.stat3_val|default:"₹2,45,000" }}</div>
-        </div>
-        <div class="app-stat-box">
-            <div class="app-stat-title">{{ product.dashboard_stats.stat4_label|default:"Operating Performance" }}</div>
-            <div class="app-stat-number">{{ product.dashboard_stats.stat4_val|default:"92%" }}</div>
-        </div>
+        <span onclick="this.parentElement.style.display='none'" style="cursor: pointer; font-size: 1.1rem;">✕</span>
     </div>
 
-    <!-- Primary Records View -->
-    <div id="tab-overview" class="app-tab-section">
-        <div class="app-card">
-            <div class="app-card-title">
-                <h3>Application Data &amp; Management Ledger</h3>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button onclick="filterRecords('all')" class="btn-outline">All Items</button>
-                    <button onclick="filterRecords('active')" class="btn-outline">Active</button>
-                    <button onclick="openNewRecordModal()" class="btn-action">+ Create Entry</button>
+    <!-- Main App Layout Grid -->
+    <div class="pf-layout-grid">
+        <!-- Sidebar Navigation -->
+        <div class="pf-sidebar">
+            <div class="pf-nav-item active">📊 Dashboard</div>
+            {% if product.slug == 'property-management' %}
+            <div class="pf-nav-item" onclick="alert('🏢 Properties & Units: 6 active properties, 24 total units loaded.')">🏢 Properties &amp; Units</div>
+            <div class="pf-nav-item" onclick="alert('👥 Tenants: 48 registered active tenant profiles.')">👥 Tenants</div>
+            <div class="pf-nav-item" onclick="alert('📜 Leases: 42 active lease contracts on file.')">📜 Leases</div>
+            <div class="pf-nav-item" onclick="alert('💳 Rent & Payments: $1,850.00 collected this month.')">💳 Rent &amp; Payments</div>
+            <div class="pf-nav-item" onclick="alert('💵 Expenses: $560.00 operational expenses logged YTD.')">💵 Expenses</div>
+            <div class="pf-nav-item" onclick="alert('🛠️ Maintenance: 2 active work orders in progress.')">🛠️ Maintenance</div>
+            <div class="pf-nav-item" onclick="alert('🤝 Vendors: 8 approved contractor contacts.')">🤝 Vendors</div>
+            <div class="pf-nav-item" onclick="alert('📊 Reports: Exporting executive P&L statement...')">📊 Reports</div>
+            <div class="pf-nav-item" onclick="alert('💼 Owner Portal: Multi-owner distribution logs.')">💼 Owner Portal</div>
+            <div class="pf-nav-item" onclick="alert('📱 Tenant PWA: Tenant self-service app preview.')">📱 Tenant PWA</div>
+            <div class="pf-nav-item" onclick="alert('⚙️ Settings: Application settings & encryption keys.')">⚙️ Settings &amp; Plan</div>
+            {% else %}
+            {% for feat in product.features|slice:":8" %}
+            <div class="pf-nav-item" onclick="alert('⚡ {{ feat.title|escapejs }}: Module loaded successfully.')">⚡ {{ feat.title }}</div>
+            {% endfor %}
+            <div class="pf-nav-item" onclick="alert('⚙️ Application settings loaded.')">⚙️ Settings &amp; Plan</div>
+            {% endif %}
+        </div>
+
+        <!-- Main Dashboard View -->
+        <div class="pf-main-content">
+            <div class="pf-dashboard-header">
+                <div>
+                    <h2>Portfolio Executive Dashboard</h2>
+                    <p>Real-time occupancy metrics, cash flow analytics, property yields, and recent payments.</p>
+                </div>
+                <div class="pf-action-group">
+                    <button onclick="alert('➕ Add Property: Opened Property Creation Wizard')" class="pf-btn-blue">+ Property</button>
+                    <button onclick="alert('👤 Add Tenant: Opened Tenant Onboarding Form')" class="pf-btn-light">👤+ Tenant</button>
+                    <button onclick="alert('📜 Add Lease: Initiated New Lease Agreement')" class="pf-btn-light">📄+ Lease</button>
+                    <button onclick="alert('💳 Record Payment: Payment Receipt Entry Form Opened')" class="pf-btn-light">💳 Record Payment</button>
                 </div>
             </div>
 
-            <div style="overflow-x: auto;">
-                <table class="app-table" id="appDataTable">
-                    <thead>
-                        <tr>
-                            <th>ID / Ref</th>
-                            <th>Title / Asset Name</th>
-                            <th>Category / Unit</th>
-                            <th>Primary Metric</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="appTableBody">
-                        {% if product.slug == 'property-management' %}
-                        <tr>
-                            <td style="font-family: monospace; color: var(--accent-blue);">PROP-101</td>
-                            <td><strong>Sunrise Heights — Unit 4B</strong></td>
-                            <td>Residential 2BHK</td>
-                            <td>₹28,000 / mo</td>
-                            <td><span class="badge-status badge-success">Occupied</span></td>
-                            <td><button onclick="triggerAppAction('Viewed lease details for Unit 4B')" class="btn-outline">Manage</button></td>
-                        </tr>
-                        <tr>
-                            <td style="font-family: monospace; color: var(--accent-blue);">PROP-102</td>
-                            <td><strong>Greenwood Villa — Plot 12</strong></td>
-                            <td>Commercial Space</td>
-                            <td>₹45,000 / mo</td>
-                            <td><span class="badge-status badge-success">Occupied</span></td>
-                            <td><button onclick="triggerAppAction('Viewed lease details for Plot 12')" class="btn-outline">Manage</button></td>
-                        </tr>
-                        <tr>
-                            <td style="font-family: monospace; color: var(--accent-blue);">PROP-103</td>
-                            <td><strong>Royal Palms — Suite 108</strong></td>
-                            <td>Studio Apartment</td>
-                            <td>₹18,500 / mo</td>
-                            <td><span class="badge-status badge-info">Vacant</span></td>
-                            <td><button onclick="triggerAppAction('Initiated tenant application')" class="btn-outline">Lease</button></td>
-                        </tr>
-                        {% elif product.slug == 'machine-os' %}
-                        <tr>
-                            <td style="font-family: monospace; color: var(--accent-blue);">EQP-501</td>
-                            <td><strong>JCB 3DX Super Excavator</strong></td>
-                            <td>Heavy Machinery</td>
-                            <td>1,420 Engine Hrs</td>
-                            <td><span class="badge-status badge-success">Operational</span></td>
-                            <td><button onclick="triggerAppAction('Logged 8 engine hours for JCB 3DX')" class="btn-outline">Log Shift</button></td>
-                        </tr>
-                        <tr>
-                            <td style="font-family: monospace; color: var(--accent-blue);">EQP-502</td>
-                            <td><strong>CAT 320 Hydraulic Digger</strong></td>
-                            <td>Earthmover</td>
-                            <td>980 Engine Hrs</td>
-                            <td><span class="badge-status badge-warning">Maintenance Due</span></td>
-                            <td><button onclick="triggerAppAction('Scheduled hydraulic servicing')" class="btn-outline">Service</button></td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td style="font-family: monospace; color: var(--accent-blue);">REC-001</td>
-                            <td><strong>Standard Application Record #1</strong></td>
-                            <td>Primary Unit</td>
-                            <td>Active Operations</td>
-                            <td><span class="badge-status badge-success">Active</span></td>
-                            <td><button onclick="triggerAppAction('Updated record status')" class="btn-outline">Edit</button></td>
-                        </tr>
-                        <tr>
-                            <td style="font-family: monospace; color: var(--accent-blue);">REC-002</td>
-                            <td><strong>Enterprise Data Item #2</strong></td>
-                            <td>Secondary Unit</td>
-                            <td>Verified Audit</td>
-                            <td><span class="badge-status badge-info">Verified</span></td>
-                            <td><button onclick="triggerAppAction('Generated audit log')" class="btn-outline">Audit</button></td>
-                        </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            <!-- 6 Stat Cards Matching User Screenshot -->
+            <div class="pf-stats-grid">
+                <div class="pf-stat-card">
+                    <div class="pf-stat-head">
+                        <span>Rent Collected</span>
+                        <span class="pill-green">+12.4%</span>
+                    </div>
+                    <div class="pf-stat-val">{% if product.slug == 'property-management' %}$1,850.00{% else %}{{ product.dashboard_stats.stat1_val|default:"$1,850.00" }}{% endif %}</div>
+                    <div class="pf-stat-foot">Due: $4,900.00</div>
+                </div>
 
-        <!-- Features & Operational Modules Grid -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem;">
-            {% for feat in product.features %}
-            <div style="background: var(--panel-bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem;">
-                <h4 style="margin: 0 0 0.4rem; color: var(--accent-blue); font-size: 1.05rem;">{{ feat.title }}</h4>
-                <p style="margin: 0 0 1rem; color: var(--text-dim); font-size: 0.88rem; line-height: 1.5;">{{ feat.desc }}</p>
-                <button onclick="triggerAppAction('Executed module: {{ feat.title|escapejs }}')" class="btn-outline">
-                    ▶️ Launch {{ feat.title }}
-                </button>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
+                <div class="pf-stat-card">
+                    <div class="pf-stat-head">
+                        <span>Occupancy Rate</span>
+                        <span style="font-weight: 700; color: #2563eb;">4/6</span>
+                    </div>
+                    <div class="pf-stat-val">{% if product.slug == 'property-management' %}66.7%{% else %}{{ product.dashboard_stats.stat4_val|default:"92%" }}{% endif %}</div>
+                    <div class="pf-stat-foot">2 vacant units</div>
+                </div>
 
-    <!-- Secondary Reports Section -->
-    <div id="tab-reports" class="app-tab-section" style="display: none;">
-        <div class="app-card">
-            <h3>Analytics &amp; System Reports</h3>
-            <p style="color: var(--text-dim); font-size: 0.9rem;">Export financial summaries, audit trails, and operating metrics for <strong>{{ product.name }}</strong>.</p>
-            <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
-                <button onclick="triggerAppAction('Exported PDF Financial Report')" class="btn-action">📄 Download PDF Report</button>
-                <button onclick="triggerAppAction('Exported Excel Data Ledger')" class="btn-outline">📊 Export CSV / Excel</button>
+                <div class="pf-stat-card">
+                    <div class="pf-stat-head">
+                        <span>Net Income</span>
+                        <span style="font-weight: 700; color: #64748b;">YTD</span>
+                    </div>
+                    <div class="pf-stat-val">$560.00</div>
+                    <div class="pf-stat-foot">Exp: $1,290.00</div>
+                </div>
+
+                <div class="pf-stat-card">
+                    <div class="pf-stat-head">
+                        <span>Maintenance</span>
+                        <span class="pill-orange">2 Open</span>
+                    </div>
+                    <div class="pf-stat-val">2</div>
+                    <div class="pf-stat-foot">Work orders active</div>
+                </div>
+
+                <div class="pf-stat-card">
+                    <div class="pf-stat-head">
+                        <span>Portfolio Assets</span>
+                        <span style="font-weight: 700; color: #2563eb;">Real Estate</span>
+                    </div>
+                    <div class="pf-stat-val">3</div>
+                    <div class="pf-stat-foot">6 total units</div>
+                </div>
+
+                <div class="pf-stat-card">
+                    <div class="pf-stat-head">
+                        <span>Overdue Invoices</span>
+                        <span class="pill-orange">Follow-up</span>
+                    </div>
+                    <div class="pf-stat-val">1</div>
+                    <div class="pf-stat-foot">Action required</div>
+                </div>
+            </div>
+
+            <!-- Charts Section Matching User Screenshot -->
+            <div class="pf-charts-grid">
+                <!-- Line Chart Card -->
+                <div class="pf-chart-card">
+                    <div class="pf-chart-head">
+                        <div>
+                            <h3>Monthly Revenue vs Expenses Trend</h3>
+                            <p>Cash flow collection against operational expenditure.</p>
+                        </div>
+                        <div style="display: flex; gap: 0.8rem; font-size: 0.78rem; font-weight: 700;">
+                            <span style="color: #2563eb;">● Rent Collected</span>
+                            <span style="color: #ef4444;">● Expenses</span>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <svg viewBox="0 0 500 180" style="width: 100%; height: 100%;">
+                            <!-- Grid Lines -->
+                            <line x1="40" y1="20" x2="480" y2="20" stroke="#f1f5f9" stroke-dasharray="4"/>
+                            <line x1="40" y1="60" x2="480" y2="60" stroke="#f1f5f9" stroke-dasharray="4"/>
+                            <line x1="40" y1="100" x2="480" y2="100" stroke="#f1f5f9" stroke-dasharray="4"/>
+                            <line x1="40" y1="140" x2="480" y2="140" stroke="#f1f5f9"/>
+
+                            <!-- Y-Axis Labels -->
+                            <text x="30" y="24" font-size="9" fill="#94a3b8" text-anchor="end">18,000</text>
+                            <text x="30" y="64" font-size="9" fill="#94a3b8" text-anchor="end">12,000</text>
+                            <text x="30" y="104" font-size="9" fill="#94a3b8" text-anchor="end">6,000</text>
+                            <text x="30" y="144" font-size="9" fill="#94a3b8" text-anchor="end">0</text>
+
+                            <!-- X-Axis Labels -->
+                            <text x="60" y="160" font-size="10" fill="#64748b" text-anchor="middle">Jan</text>
+                            <text x="140" y="160" font-size="10" fill="#64748b" text-anchor="middle">Feb</text>
+                            <text x="220" y="160" font-size="10" fill="#64748b" text-anchor="middle">Mar</text>
+                            <text x="300" y="160" font-size="10" fill="#64748b" text-anchor="middle">Apr</text>
+                            <text x="380" y="160" font-size="10" fill="#64748b" text-anchor="middle">May</text>
+                            <text x="460" y="160" font-size="10" fill="#64748b" text-anchor="middle">Jun</text>
+
+                            <!-- Expenses Curve (Red Dotted) -->
+                            <path d="M 60 120 Q 140 100, 220 115 T 300 95 T 380 95 T 460 140" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="4"/>
+                            <circle cx="60" cy="120" r="3" fill="#ef4444"/>
+                            <circle cx="140" cy="105" r="3" fill="#ef4444"/>
+                            <circle cx="220" cy="115" r="3" fill="#ef4444"/>
+                            <circle cx="300" cy="95" r="3" fill="#ef4444"/>
+                            <circle cx="380" cy="95" r="3" fill="#ef4444"/>
+                            <circle cx="460" cy="140" r="3" fill="#ef4444"/>
+
+                            <!-- Rent Collected Curve (Blue Solid) -->
+                            <path d="M 60 70 Q 140 40, 220 50 T 300 25 T 380 30 T 460 135" fill="none" stroke="#2563eb" stroke-width="3"/>
+                            <circle cx="60" cy="70" r="4" fill="#2563eb"/>
+                            <circle cx="140" cy="42" r="4" fill="#2563eb"/>
+                            <circle cx="220" cy="50" r="4" fill="#2563eb"/>
+                            <circle cx="300" cy="25" r="4" fill="#2563eb"/>
+                            <circle cx="380" cy="30" r="4" fill="#2563eb"/>
+                            <circle cx="460" cy="135" r="4" fill="#2563eb"/>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Donut Chart Card -->
+                <div class="pf-chart-card">
+                    <div class="pf-chart-head">
+                        <div>
+                            <h3>Unit Status Distribution</h3>
+                            <p>Portfolio occupancy breakdown.</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 180px;">
+                        <svg viewBox="0 0 120 120" style="width: 130px; height: 130px;">
+                            <!-- Vacant Ring (Orange) -->
+                            <circle cx="60" cy="60" r="45" fill="none" stroke="#ea580c" stroke-width="16" stroke-dasharray="283" stroke-dashoffset="0"/>
+                            <!-- Occupied Ring (Green) -->
+                            <circle cx="60" cy="60" r="45" fill="none" stroke="#059669" stroke-width="16" stroke-dasharray="283" stroke-dashoffset="94" transform="rotate(-90 60 60)"/>
+                        </svg>
+                        <div style="display: flex; gap: 1rem; margin-top: 0.8rem; font-size: 0.78rem; font-weight: 700;">
+                            <span style="color: #059669;">● Occupied (4)</span>
+                            <span style="color: #ea580c;">● Vacant (2)</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Modal for Adding New Record -->
-<div class="modal-overlay" id="newRecordModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>+ Create New {{ product.name }} Entry</h3>
-            <button onclick="closeNewRecordModal()" class="modal-close">✕</button>
-        </div>
-        <form id="addRecordForm">
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.82rem; color: var(--text-dim); margin-bottom: 0.3rem;">Entry Title / Asset Name *</label>
-                <input type="text" id="inputTitle" required placeholder="e.g. Unit 5A / Vehicle #12 / Invoice #90" style="width: 100%; padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border); background: #090d16; color: #fff; font-size: 0.9rem;">
-            </div>
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; font-size: 0.82rem; color: var(--text-dim); margin-bottom: 0.3rem;">Category / Specification *</label>
-                <input type="text" id="inputCat" required placeholder="e.g. Commercial / Heavy Machinery / Primary" style="width: 100%; padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border); background: #090d16; color: #fff; font-size: 0.9rem;">
-            </div>
-            <div style="margin-bottom: 1.4rem;">
-                <label style="display: block; font-size: 0.82rem; color: var(--text-dim); margin-bottom: 0.3rem;">Primary Value / Amount *</label>
-                <input type="text" id="inputValue" required placeholder="e.g. ₹32,000 / mo or 1,200 Engine Hrs" style="width: 100%; padding: 0.65rem; border-radius: 6px; border: 1px solid var(--border); background: #090d16; color: #fff; font-size: 0.9rem;">
-            </div>
-            <div style="display: flex; gap: 0.8rem; justify-content: flex-end;">
-                <button type="button" onclick="closeNewRecordModal()" class="btn-outline">Cancel</button>
-                <button type="submit" class="btn-action">Save Record</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-function switchAppTab(tabId) {
-    document.querySelectorAll('.app-menu-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.app-tab-section').forEach(sec => sec.style.display = 'none');
-    
-    if (tabId === 'overview' || tabId === 'records') {
-        document.getElementById('tab-overview').style.display = 'block';
-    } else if (tabId === 'reports') {
-        document.getElementById('tab-reports').style.display = 'block';
-    }
-    event.target.classList.add('active');
-}
-
-function triggerAppAction(actionText) {
-    alert('⚡ ' + actionText + '\n\nAction executed successfully in live application workspace!');
-}
-
-function openNewRecordModal() {
-    document.getElementById('newRecordModal').style.display = 'flex';
-}
-function closeNewRecordModal() {
-    document.getElementById('newRecordModal').style.display = 'none';
-}
-
-document.getElementById('addRecordForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var title = document.getElementById('inputTitle').value;
-    var cat = document.getElementById('inputCat').value;
-    var val = document.getElementById('inputValue').value;
-    
-    var tbody = document.getElementById('appTableBody');
-    var newRow = document.createElement('tr');
-    var idNum = Math.floor(100 + Math.random() * 900);
-    
-    newRow.innerHTML = `
-        <td style="font-family: monospace; color: var(--accent-blue);">REC-${idNum}</td>
-        <td><strong>${title}</strong></td>
-        <td>${cat}</td>
-        <td>${val}</td>
-        <td><span class="badge-status badge-success">Active</span></td>
-        <td><button onclick="triggerAppAction('Viewed details for ${title}')" class="btn-outline">Manage</button></td>
-    `;
-    tbody.insertBefore(newRow, tbody.firstChild);
-    
-    // Update count
-    var stat1 = document.getElementById('stat1Val');
-    if (stat1) {
-        var curr = parseInt(stat1.innerText) || 24;
-        stat1.innerText = (curr + 1);
-    }
-    
-    closeNewRecordModal();
-    this.reset();
-    alert('✅ New entry "' + title + '" added to application workspace!');
-});
-</script>
 </div>
 {% endblock %}
