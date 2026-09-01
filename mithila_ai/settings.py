@@ -15,9 +15,13 @@ ALLOWED_HOSTS = config(
     cast=Csv(),
 )
 
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 CSRF_TRUSTED_ORIGINS = [
     "https://milddata.in",
     "https://www.milddata.in",
+    "https://curved-paloma-abhishekmishra-84f2da99.koyeb.app",
 ]
 
 INSTALLED_APPS = [
