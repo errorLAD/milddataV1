@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results - SupplierOS{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Search Results</h1>
+    <p class="page-subtitle">Results for "<span style="color: var(--brand);">{{ query }}</span>"</p>
+  </div>
+</div>
+
+<!-- Grouped Results -->
+{% if query %}
+  <!-- Suppliers Results -->
+  <div class="panel">
+    <div class="panel-header-strip">
+      <span class="panel-title">Suppliers ({{ suppliers|length }})</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table-saas">
+        <tbody>
+          {% for s in suppliers %}
+            <tr>
+              <td>
+                <a href="{% url 'supplier_detail' s.id %}" style="font-weight: 650; color: var(--text-primary); text-decoration: none;">
+                  {{ s.legal_name }}
+                </a>
+                <div style="font-size: 0.62rem; color: var(--text-tertiary);">{{ s.category }} · {{ s.country }}</div>
+              </td>
+              <td>
+                <span class="status-pill pill-{{ s.status|lower }}"><span class="dot"></span> {{ s.get_status_display }}</span>
+              </td>
+              <td style="text-align: right;">
+                <a href="{% url 'supplier_detail' s.id %}" class="btn-saas btn-saas-secondary">View Profile</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" style="padding: 1rem; color: var(--text-tertiary); text-align: center;">No suppliers found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Documents Results -->
+  <div class="panel">
+    <div class="panel-header-strip">
+      <span class="panel-title">Documents ({{ documents|length }})</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table-saas">
+        <tbody>
+          {% for d in documents %}
+            <tr>
+              <td style="font-weight: 650;">{{ d.document_type.name }}</td>
+              <td>{{ d.supplier.legal_name }}</td>
+              <td><span class="status-pill pill-{{ d.status|lower }}"><span class="dot"></span> {{ d.get_status_display }}</span></td>
+              <td style="text-align: right;">
+                <a href="{% url 'document_detail' d.id %}" class="btn-saas btn-saas-secondary">Review Document</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" style="padding: 1rem; color: var(--text-tertiary); text-align: center;">No documents found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="panel" style="text-align: center; padding: 2.5rem;">
+    <div style="font-size: 0.85rem; font-weight: 650; color: var(--text-primary);">Type a query in the top search bar</div>
+    <p style="font-size: 0.72rem; color: var(--text-secondary);">Search across suppliers, tax records, documents, and compliance issues.</p>
+  </div>
+{% endif %}
+{% endblock %}

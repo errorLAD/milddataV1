@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Invitation Sent - SupplierOS{% endblock %}
+
+{% block content %}
+<div style="max-width: 650px; margin: 1.5rem auto;">
+  <div class="panel" style="text-align: center;">
+    <div style="padding: 2rem 1.5rem;">
+      <div style="width: 44px; height: 44px; background: var(--success-soft); border: 1px solid var(--success-border); color: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 1rem auto;">
+        <i class="ri-checkbox-circle-line"></i>
+      </div>
+
+      <h1 class="page-title" style="font-size: 1.15rem; margin-bottom: 0.3rem;">Onboarding Invitation Dispatched!</h1>
+      <p style="font-size: 0.72rem; color: var(--text-secondary); max-width: 480px; margin: 0 auto 1.5rem auto;">
+        An automated portal invitation email has been sent to <strong>{{ supplier.company_email }}</strong> for <strong>{{ supplier.legal_name }}</strong>.
+      </p>
+
+      <div style="background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; text-align: left; margin-bottom: 1.5rem;">
+        <div style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.5rem;">Invitation Summary</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.72rem;">
+          <div>
+            <span style="color: var(--text-secondary);">Supplier:</span>
+            <div style="font-weight: 650;">{{ supplier.legal_name }}</div>
+          </div>
+          <div>
+            <span style="color: var(--text-secondary);">Onboarding Deadline:</span>
+            <div style="font-weight: 650;" class="font-tabular">{{ supplier.onboarding_deadline }}</div>
+          </div>
+          <div style="grid-column: span 2;">
+            <span style="color: var(--text-secondary);">Required Documents ({{ required_docs|length }}):</span>
+            <div style="margin-top: 0.3rem; display: flex; flex-wrap: wrap; gap: 0.35rem;">
+              {% for d in required_docs %}
+                <span class="status-pill pill-invited">{{ d.document_type.name }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Magic Portal Link Box -->
+      <div style="background: var(--brand-soft); border: 1px solid var(--brand-soft-border); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1.5rem; text-align: left;">
+        <div style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--brand); margin-bottom: 0.3rem;">Secure Supplier Portal Link</div>
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+          <input type="text" id="portalLinkInput" class="form-control" value="{{ request.scheme }}://{{ request.get_host }}{{ portal_url }}" readonly style="font-family: monospace; font-size: 0.7rem;">
+          <button onclick="navigator.clipboard.writeText(document.getElementById('portalLinkInput').value); alert('Copied portal link!');" class="btn-saas btn-saas-secondary">
+            Copy
+          </button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 0.6rem; justify-content: center;">
+        <a href="{% url 'supplier_detail' supplier.id %}" class="btn-saas btn-saas-secondary">
+          View Supplier Profile
+        </a>
+        <a href="{{ portal_url }}" target="_blank" class="btn-saas btn-saas-primary">
+          Open Supplier Portal <i class="ri-external-link-line"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

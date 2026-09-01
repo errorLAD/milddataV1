@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ supplier.legal_name }} - SupplierOS{% endblock %}
+
+{% block content %}
+<!-- Supplier Profile Header -->
+<div class="panel" style="margin-bottom: 0.875rem;">
+  <div style="padding: 1.2rem 1.25rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;">
+    <div>
+      <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <h1 class="page-title">{{ supplier.legal_name }}</h1>
+        <span class="status-pill pill-{{ supplier.status|lower }}">
+          <span class="dot"></span> {{ supplier.get_status_display }}
+        </span>
+      </div>
+      <div class="page-subtitle" style="margin-top: 0.2rem;">
+        {{ supplier.category }} · {{ supplier.country }} · Member since <span class="font-tabular">{{ supplier.created_at|date:"M Y" }}</span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 0.5rem;">
+      <a href="{% url 'portal_view' supplier.invitation_token %}" target="_blank" class="btn-saas btn-saas-whatsapp">
+        Supplier Portal <i class="ri-external-link-line"></i>
+      </a>
+      <a href="{% url 'documents_list' %}?q={{ supplier.legal_name }}" class="btn-saas btn-saas-secondary">
+        <i class="ri-file-add-line"></i> Request Document
+      </a>
+      <a href="{% url 'approvals_list' %}" class="btn-saas btn-saas-primary">
+        <i class="ri-checkbox-circle-line"></i> Approval Workspace
+      </a>
+    </div>
+  </div>
+
+  <!-- Profile Tabs Header -->
+  <div class="tabs-header" style="padding: 0 1.25rem;">
+    <a href="?tab=overview" class="tab-btn {% if active_tab == 'overview' %}active{% endif %}">Overview</a>
+    <a href="?tab=documents" class="tab-btn {% if active_tab == 'documents' %}active{% endif %}">Documents ({{ documents|length }})</a>
+    <a href="?tab=compliance" class="tab-btn {% if active_tab == 'compliance' %}active{% endif %}">Compliance ({{ compliance_issues|length }})</a>
+    <a href="?tab=contacts" class="tab-btn {% if active_tab == 'contacts' %}active{% endif %}">Contacts</a>
+    <a href="?tab=activity" class="tab-btn {% if active_tab == 'activity' %}active{% endif %}">Activity</a>
+  </div>
+</div>
+
+<!-- Tab Content Area -->
+{% if active_tab == 'overview' %}
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.875rem;">
+    <!-- Left Column: Company & Bank & Tax Info -->
+    <div>
+      <!-- Company Information Card -->
+      <div class="panel">
+        <div class="panel-header-strip">
+          <span class="panel-title">Company Information</span>
+        </div>
+        <div class="panel-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.72rem;">
+            <div>
+              <div class="text-tertiary" style="font-size: 0.6rem; uppercase; font-weight: 700;">Legal Name</div>
+              <div style="font-weight: 650; margin-top: 0.1rem;">{{ supplier.legal_name }}</div>
+            </div>
+            <div>
+              <div class="text-tertiary" style="font-size: 0.6rem; uppercase; font-weight: 700;">Trading / DBA Name</div>
+              <div style="font-weight: 650; margin-top: 0.1rem;">{{ supplier.trading_name|default:"--" }}</div>
+            </div>
+            <div>
+              <div class="text-tertiary" style="font-size: 0.6rem; uppercase; font-weight: 700;">Company Email</div>
+              <div style="font-weight: 650; margin-top: 0.1rem;">{{ supplier.company_email }}</div>
+            </div>
+            <div>
+              <div class="text-tertiary" style="font-size: 0.6rem; uppercase; font-weight: 700;">Phone Number</div>
+              <div style="font-weight: 650; margin-top: 0.1rem;">{{ supplier.phone|default:"--" }}</div>
+            </div>
+            <div>
+              <div class="text-tertiary" style="font-size: 0.6rem; uppercase; font-weight: 700;">Website</div>
+              <div style="font-weight: 650; margin-top: 0.1rem;">
+                {% if supplier.website %}
+                  <a href="{{ supplier.website }}" target="_blank" style="color: var(--brand);">{{ supplier.website }}</a>
+                {% else %}--{% endif %}
+              </div>
+            </div>
+            <div>
+              <div class="text-tertiary" style="font-size: 0.6rem; uppercase; font-weight: 700;">Address</div>
+              <div style="font-weight: 650; margin-top: 0.1rem;">{{ supplier.address|default:"" }} {{ supplier.city|default:"" }} {{ supplier.state|default:"" }} {{ supplier.country }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Financial & Tax Info -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem;">
+        <div class="panel">
+          <div class="panel-header-strip">
+            <span class="panel-title">Tax Information</span>
+          </div>
+          <div class="panel-body font-tabular" style="font-size: 0.72rem;">
+            {% if tax_info %}
+              <div style="margin-bottom: 0.5rem;">
+                <div class="text-tertiary" style="font-size: 0.6rem;">TAX ID / PAN</div>
+                <div style="font-weight: 650;">{{ tax_info.tax_id_number|default:"Not provided" }}</div>
+              </div>
+              <div>
+                <div class="text-tertiary" style="font-size: 0.6rem;">GST / VAT Number</div>
+                <div style="font-weight: 650;">{{ tax_info.gst_vat_number|default:"Not provided" }}</div>
+              </div>
+            {% else %}
+              <div class="text-tertiary">No tax details uploaded yet.</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header-strip">
+            <span class="panel-title">Bank Details</span>
+          </div>
+          <div class="panel-body font-tabular" style="font-size: 0.72rem;">
+            {% if bank_details %}
+              <div style="margin-bottom: 0.5rem;">
+                <div class="text-tertiary" style="font-size: 0.6rem;">Bank Name</div>
+                <div style="font-weight: 650;">{{ bank_details.bank_name }}</div>
+              </div>
+              <div>
+                <div class="text-tertiary" style="font-size: 0.6rem;">Account Number</div>
+                <div style="font-weight: 650;">{{ bank_details.account_number }}</div>
+              </div>
+            {% else %}
+              <div class="text-tertiary">No bank details uploaded yet.</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Compliance Score & Quick Status -->
+    <div>
+      <div class="panel">
+        <div class="panel-header-strip">
+          <span class="panel-title">Compliance Rating</span>
+        </div>
+        <div class="panel-body" style="text-align: center;">
+          <div class="metric-number font-tabular" style="font-size: 2rem; color: var(--brand); margin-bottom: 0.3rem;">
+            {{ supplier.compliance_score }}%
+          </div>
+          <div style="font-size: 0.7rem; font-weight: 650; margin-bottom: 0.75rem;">
+            {% if supplier.compliance_score >= 80 %}Fully Compliant Supplier{% elif supplier.compliance_score >= 60 %}At-Risk Onboarding Status{% else %}Non-Compliant Supplier{% endif %}
+          </div>
+          
+          <div class="progress-bar-container" style="height: 8px; margin-bottom: 1rem;">
+            <div class="progress-bar-fill {% if supplier.compliance_score >= 80 %}success{% elif supplier.compliance_score >= 60 %}warning{% else %}danger{% endif %}" style="width: {{ supplier.compliance_score }}%;"></div>
+          </div>
+
+          <div style="font-size: 0.68rem; color: var(--text-secondary); text-align: left;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+              <span>Documents Uploaded:</span>
+              <span class="font-tabular font-weight-650">{{ documents|length }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>Open Compliance Issues:</span>
+              <span class="font-tabular font-weight-650 text-danger">{{ compliance_issues|length }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% elif active_tab == 'documents' %}
+  <!-- Documents Tab -->
+  <div class="panel">
+    <div class="panel-header-strip">
+      <span class="panel-title">Required & Uploaded Documents</span>
+      <a href="{% url 'documents_list' %}" class="btn-saas btn-saas-secondary">All Documents</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table-saas">
+        <thead>
+          <tr>
+            <th>Document Type</th>
+            <th>File Name</th>
+            <th>Status</th>
+            <th>Expiry Date</th>
+            <th style="text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in documents %}
+            <tr>
+              <td style="font-weight: 650;">{{ d.document_type.name }}</td>
+              <td style="font-size: 0.68rem; color: var(--text-secondary);">{{ d.file_name|default:"Pending Upload" }}</td>
+              <td>
+                <span class="status-pill pill-{{ d.status|lower }}">
+                  <span class="dot"></span> {{ d.get_status_display }}
+                </span>
+              </td>
+              <td class="font-tabular">{{ d.expiry_date|default:"--" }}</td>
+              <td style="text-align: right;">
+                <a href="{% url 'document_detail' d.id %}" class="btn-saas btn-saas-secondary">Review</a>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 1.5rem; color: var(--text-tertiary);">No documents registered.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% elif active_tab == 'compliance' %}
+  <!-- Compliance Tab -->
+  <div class="panel">
+    <div class="panel-header-strip">
+      <span class="panel-title">Compliance Issues</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table-saas">
+        <thead>
+          <tr>
+            <th>Issue Title</th>
+            <th>Severity</th>
+            <th>Status</th>
+            <th>Due Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ci in compliance_issues %}
+            <tr>
+              <td style="font-weight: 650;">{{ ci.title }}</td>
+              <td>
+                <span class="status-pill pill-{{ ci.severity|lower }}">
+                  <span class="dot"></span> {{ ci.get_severity_display }}
+                </span>
+              </td>
+              <td>
+                <span class="status-pill pill-{{ ci.status|lower }}">
+                  <span class="dot"></span> {{ ci.get_status_display }}
+                </span>
+              </td>
+              <td class="font-tabular">{{ ci.due_date|default:"--" }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" style="text-align: center; padding: 1.5rem; color: var(--text-tertiary);">No compliance issues reported for this supplier.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% else %}
+  <div class="panel">
+    <div class="panel-body text-tertiary" style="text-align: center; padding: 2rem;">
+      Tab details loaded. Select Overview, Documents, or Compliance to view records.
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

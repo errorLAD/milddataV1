@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Overview - SupplierOS{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Overview</h1>
+    <p class="page-subtitle">Monitor supplier onboarding, documents, approvals, and compliance across your enterprise.</p>
+  </div>
+  <a href="{% url 'add_supplier' %}" class="btn-saas btn-saas-primary">
+    <i class="ri-add-line"></i> Add Supplier
+  </a>
+</div>
+
+<!-- 4-Column Metric Cards Grid -->
+<div class="metrics-grid">
+  <!-- Hero Card (Gradient background, brand blue tint) -->
+  <div class="metric-card metric-card-hero">
+    <div>
+      <div class="metric-label">Total Suppliers</div>
+      <div class="metric-number font-tabular">{{ total_suppliers }}</div>
+    </div>
+    <div class="metric-subtext">Active & onboarding vendors</div>
+  </div>
+
+  <div class="metric-card">
+    <div>
+      <div class="metric-label">Pending Onboarding</div>
+      <div class="metric-number font-tabular text-warning">{{ pending_onboarding }}</div>
+    </div>
+    <div class="metric-subtext">Suppliers completing portal</div>
+  </div>
+
+  <div class="metric-card">
+    <div>
+      <div class="metric-label">Pending Approvals</div>
+      <div class="metric-number font-tabular text-brand">{{ pending_approvals }}</div>
+    </div>
+    <div class="metric-subtext">Requires team verification</div>
+  </div>
+
+  <div class="metric-card">
+    <div>
+      <div class="metric-label">Compliance Issues</div>
+      <div class="metric-number font-tabular text-danger">{{ compliance_issues }}</div>
+    </div>
+    <div class="metric-subtext">Open risks & document gaps</div>
+  </div>
+</div>
+
+<!-- Dominant Primary Content Section: Compliance Overview -->
+<div class="panel">
+  <div class="panel-header-strip">
+    <div>
+      <h2 class="panel-title">Compliance Overview</h2>
+      <p class="panel-description">Real-time health breakdown of vendor documentation & regulatory requirements.</p>
+    </div>
+    <span class="status-pill pill-compliant font-tabular">
+      <span class="dot"></span> {{ overall_compliance }}% Compliant
+    </span>
+  </div>
+  <div class="panel-body">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+      <span style="font-size: 0.72rem; font-weight: 650;">Overall Enterprise Compliance</span>
+      <span class="font-tabular" style="font-size: 0.85rem; font-weight: 700; color: var(--brand);">{{ overall_compliance }}%</span>
+    </div>
+    
+    <!-- Progress Bar -->
+    <div class="progress-bar-container" style="height: 10px; margin-bottom: 1.25rem;">
+      <div class="progress-bar-fill {% if overall_compliance > 80 %}success{% elif overall_compliance > 60 %}warning{% else %}danger{% endif %}" style="width: {{ overall_compliance }}%;"></div>
+    </div>
+
+    <!-- Breakdown Stats -->
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center; background: var(--surface-alt); padding: 0.85rem; border-radius: var(--radius-lg); border: 1px solid var(--border);">
+      <div>
+        <div style="font-size: 0.58rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary);">Compliant</div>
+        <div class="font-tabular" style="font-size: 1rem; font-weight: 700; color: var(--success); margin-top: 0.1rem;">{{ compliant_count }}</div>
+      </div>
+      <div>
+        <div style="font-size: 0.58rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary);">At Risk</div>
+        <div class="font-tabular" style="font-size: 1rem; font-weight: 700; color: var(--warning); margin-top: 0.1rem;">{{ at_risk_count }}</div>
+      </div>
+      <div>
+        <div style="font-size: 0.58rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary);">Non-Compliant</div>
+        <div class="font-tabular" style="font-size: 1rem; font-weight: 700; color: var(--danger); margin-top: 0.1rem;">{{ non_compliant_count }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Secondary Content Row (2 Columns on Desktop) -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem;">
+  <!-- Attention Required Panel -->
+  <div class="panel">
+    <div class="panel-header-strip">
+      <div>
+        <h3 class="panel-title">Attention Required</h3>
+        <p class="panel-description">Actionable risks requiring immediate procurement action.</p>
+      </div>
+    </div>
+    <div style="padding: 0;">
+      {% for item in attention_items %}
+        <div style="padding: 0.75rem 1.1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size: 0.72rem; font-weight: 650; color: var(--text-primary);">{{ item.supplier.legal_name }}</div>
+            <div style="font-size: 0.66rem; color: var(--text-secondary); margin-top: 0.1rem;">{{ item.title }}</div>
+          </div>
+          <a href="{{ item.link }}" class="btn-saas btn-saas-secondary">
+            {{ item.action_text }}
+          </a>
+        </div>
+      {% empty %}
+        <div style="padding: 1.5rem; text-align: center; font-size: 0.72rem; color: var(--text-tertiary);">
+          No urgent items requiring attention.
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recent Activity Panel -->
+  <div class="panel">
+    <div class="panel-header-strip">
+      <div>
+        <h3 class="panel-title">Recent Activity</h3>
+        <p class="panel-description">Audit log of system events & supplier updates.</p>
+      </div>
+    </div>
+    <div style="padding: 0;">
+      {% for act in recent_activities %}
+        <div style="padding: 0.65rem 1.1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-primary);">
+              <span class="text-brand">{{ act.action }}</span> - {{ act.object_name }}
+            </div>
+            {% if act.details %}
+              <div style="font-size: 0.62rem; color: var(--text-secondary);">{{ act.details }}</div>
+            {% endif %}
+          </div>
+          <span style="font-size: 0.62rem; color: var(--text-tertiary);" class="font-tabular">{{ act.timestamp|timesince }} ago</span>
+        </div>
+      {% empty %}
+        <div style="padding: 1.5rem; text-align: center; font-size: 0.72rem; color: var(--text-tertiary);">
+          No activity logs recorded yet.
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Approval Workspace - {{ supplier.legal_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Approval Workspace: {{ supplier.legal_name }}</h1>
+    <p class="page-subtitle">Category: {{ supplier.category }} · Country: {{ supplier.country }}</p>
+  </div>
+  <a href="{% url 'approvals_list' %}" class="btn-saas btn-saas-secondary">
+    <i class="ri-arrow-left-line"></i> Back to Approvals
+  </a>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.875rem;">
+  <!-- Left Side: Supplier Info & Documents Verification Checklist -->
+  <div>
+    <!-- Overview & Risk Flags -->
+    <div class="panel">
+      <div class="panel-header-strip">
+        <span class="panel-title">Automated Risk Flags & Compliance Audit</span>
+        <span class="status-pill pill-{{ approval.status|lower }}">
+          <span class="dot"></span> {{ approval.get_status_display }}
+        </span>
+      </div>
+      <div class="panel-body">
+        <div style="margin-bottom: 1rem;">
+          <div style="font-size: 0.68rem; font-weight: 700; uppercase; color: var(--text-tertiary); margin-bottom: 0.3rem;">Identified Risk Flags</div>
+          {% if approval.risk_flags %}
+            <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+              {% for flag in approval.risk_flags %}
+                <span class="status-pill pill-warning"><span class="dot"></span> {{ flag }}</span>
+              {% endfor %}
+            </div>
+          {% else %}
+            <span class="status-pill pill-approved"><span class="dot"></span> Low Risk Assessment</span>
+          {% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; background: var(--surface-alt); padding: 0.85rem; border-radius: var(--radius-lg); border: 1px solid var(--border); font-size: 0.72rem;">
+          <div>
+            <span class="text-tertiary">Compliance Score:</span>
+            <div style="font-weight: 700; font-size: 0.9rem; color: var(--brand);" class="font-tabular">{{ supplier.compliance_score }}%</div>
+          </div>
+          <div>
+            <span class="text-tertiary">Unverified Documents:</span>
+            <div style="font-weight: 700; font-size: 0.9rem;" class="font-tabular {% if unverified_docs > 0 %}text-warning{% else %}text-success{% endif %}">{{ unverified_docs }} items</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Uploaded Documents Summary -->
+    <div class="panel">
+      <div class="panel-header-strip">
+        <span class="panel-title">Required Documents Verification Checklist</span>
+        <span class="font-tabular" style="font-size: 0.68rem; color: var(--text-secondary);">{{ documents|length }} items</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table-saas">
+          <thead>
+            <tr>
+              <th>Document Name</th>
+              <th>Status</th>
+              <th>Expiry Date</th>
+              <th style="text-align: right;">Review</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in documents %}
+              <tr>
+                <td style="font-weight: 650;">{{ d.document_type.name }}</td>
+                <td>
+                  <span class="status-pill pill-{{ d.status|lower }}"><span class="dot"></span> {{ d.get_status_display }}</span>
+                </td>
+                <td class="font-tabular">{{ d.expiry_date|default:"--" }}</td>
+                <td style="text-align: right;">
+                  <a href="{% url 'document_detail' d.id %}" class="btn-saas btn-saas-secondary">Inspect</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Executive Approval Decision Form -->
+  <div>
+    <div class="panel">
+      <div class="panel-header-strip">
+        <span class="panel-title">Approval Decision</span>
+      </div>
+      <div class="panel-body">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            <label class="form-label">Reviewer Comments / Internal Notes</label>
+            <textarea name="comments" class="form-control" rows="3" placeholder="Enter notes regarding compliance verification..."></textarea>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+            <button type="submit" name="action" value="approve" class="btn-saas btn-saas-primary" style="padding: 0.5rem;">
+              <i class="ri-checkbox-circle-line"></i> Approve & Activate Supplier
+            </button>
+
+            <button type="button" onclick="document.getElementById('rejectSupplierModal').classList.add('active')" class="btn-saas btn-saas-danger" style="padding: 0.5rem;">
+              <i class="ri-close-circle-line"></i> Reject Supplier
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Supplier Rejection Modal -->
+<div class="modal-overlay" id="rejectSupplierModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="panel-title">Reject Supplier Application</span>
+      <button class="icon-btn" onclick="document.getElementById('rejectSupplierModal').classList.remove('active')">&times;</button>
+    </div>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="reject">
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="form-label">Mandatory Rejection Reason *</label>
+          <textarea name="rejection_reason" class="form-control" rows="3" placeholder="Provide clear rationale for rejecting this vendor application..." required></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-saas btn-saas-secondary" onclick="document.getElementById('rejectSupplierModal').classList.remove('active')">Cancel</button>
+        <button type="submit" class="btn-saas btn-saas-danger">Confirm Rejection</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Supplier Wizard - SupplierOS{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Onboard New Supplier</h1>
+    <p class="page-subtitle">Configure supplier details and send secure onboarding portal invitation.</p>
+  </div>
+  <a href="{% url 'suppliers_list' %}" class="btn-saas btn-saas-secondary">
+    <i class="ri-arrow-left-line"></i> Back to Directory
+  </a>
+</div>
+
+<!-- Wizard Steps Stepper Bar -->
+<div class="panel" style="margin-bottom: 1rem;">
+  <div style="padding: 0.75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; background: var(--surface-alt);">
+    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--brand); font-weight: 650; font-size: 0.72rem;">
+      <span style="width: 20px; height: 20px; border-radius: 50%; background: var(--brand); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.6rem;">1</span>
+      Basic Information
+    </div>
+    <i class="ri-arrow-right-s-line text-tertiary"></i>
+    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.72rem;">
+      <span style="width: 20px; height: 20px; border-radius: 50%; background: var(--border-strong); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.6rem;">2</span>
+      Primary Contact
+    </div>
+    <i class="ri-arrow-right-s-line text-tertiary"></i>
+    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.72rem;">
+      <span style="width: 20px; height: 20px; border-radius: 50%; background: var(--border-strong); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.6rem;">3</span>
+      Required Documents
+    </div>
+    <i class="ri-arrow-right-s-line text-tertiary"></i>
+    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.72rem;">
+      <span style="width: 20px; height: 20px; border-radius: 50%; background: var(--border-strong); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.6rem;">4</span>
+      Send Invitation
+    </div>
+  </div>
+</div>
+
+<form method="POST" action="{% url 'add_supplier' %}">
+  {% csrf_token %}
+
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 0.875rem;">
+    <!-- Main Form Section -->
+    <div>
+      <!-- Step 1: Basic Information -->
+      <div class="panel">
+        <div class="panel-header-strip">
+          <span class="panel-title">Step 1: Company Profile</span>
+        </div>
+        <div class="panel-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">Legal Company Name *</label>
+              <input type="text" name="legal_name" class="form-control" placeholder="e.g. ABC Components Pvt Ltd" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Trading / DBA Name</label>
+              <input type="text" name="trading_name" class="form-control" placeholder="e.g. ABC Tech">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Supplier Category *</label>
+              <select name="category" class="form-control" required>
+                <option value="Manufacturing">Manufacturing</option>
+                <option value="Logistics">Logistics & Transportation</option>
+                <option value="Raw Materials">Raw Materials</option>
+                <option value="Contractor">Contractor & Services</option>
+                <option value="IT Hardware & Software">IT Hardware & Software</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Country of Incorporation *</label>
+              <select name="country" class="form-control" required>
+                <option value="India">India</option>
+                <option value="United States">United States</option>
+                <option value="United Kingdom">United Kingdom</option>
+                <option value="Germany">Germany</option>
+                <option value="Singapore">Singapore</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company Email *</label>
+              <input type="email" name="company_email" class="form-control" placeholder="procurement@supplier.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Company Phone</label>
+              <input type="text" name="phone" class="form-control" placeholder="+91 98765 43210">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Website URL</label>
+              <input type="url" name="website" class="form-control" placeholder="https://www.supplier.com">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Street Address</label>
+              <textarea name="address" class="form-control" rows="2" placeholder="Industrial Area Phase 2"></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <input type="text" name="city" class="form-control" placeholder="Bengaluru">
+            </div>
+            <div class="form-group">
+              <label class="form-label">State / Province</label>
+              <input type="text" name="state" class="form-control" placeholder="Karnataka">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Primary Contact -->
+      <div class="panel">
+        <div class="panel-header-strip">
+          <span class="panel-title">Step 2: Key Business Contact</span>
+        </div>
+        <div class="panel-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input type="text" name="contact_name" class="form-control" placeholder="John Doe" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Job Title</label>
+              <input type="text" name="contact_title" class="form-control" placeholder="Head of Compliance">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contact Email *</label>
+              <input type="email" name="contact_email" class="form-control" placeholder="johndoe@supplier.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contact Phone</label>
+              <input type="text" name="contact_phone" class="form-control" placeholder="+91 98123 45678">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: Required Documents Selection -->
+    <div>
+      <div class="panel">
+        <div class="panel-header-strip">
+          <span class="panel-title">Step 3: Document Requirements</span>
+        </div>
+        <div class="panel-body">
+          <p style="font-size: 0.68rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+            Select compliance certificates and verification documents required for this supplier:
+          </p>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            {% for dt in doc_types %}
+              <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; cursor: pointer;">
+                <input type="checkbox" name="required_docs" value="{{ dt.id }}" checked>
+                <span>{{ dt.name }}</span>
+              </label>
+            {% empty %}
+              <div style="font-size: 0.68rem; color: var(--text-tertiary);">No default document types defined in Settings.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Panel -->
+      <div class="panel">
+        <div class="panel-body">
+          <div style="font-size: 0.68rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+            Once created, a secure magic invitation token will be generated and dispatched to the supplier.
+          </div>
+          <button type="submit" class="btn-saas btn-saas-primary" style="width: 100%; padding: 0.5rem;">
+            <i class="ri-send-plane-fill"></i> Send Supplier Invitation
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

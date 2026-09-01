@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Activity Log - SupplierOS{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Activity & Audit Log</h1>
+    <p class="page-subtitle">Immutable audit trail of all supplier onboarding actions, document reviews, and status changes.</p>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header-strip">
+    <span class="panel-title">Audit Trail Records</span>
+    <span class="font-tabular" style="font-size: 0.68rem; color: var(--text-secondary);">Showing recent 100 events</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table-saas">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>User</th>
+          <th>Action</th>
+          <th>Object Name</th>
+          <th>Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+          <tr>
+            <td class="font-tabular" style="color: var(--text-secondary); font-size: 0.68rem;">
+              {{ log.timestamp|date:"d M Y, H:i:s" }}
+            </td>
+            <td>
+              <div style="font-weight: 600; font-size: 0.7rem;">{{ log.user.username|default:"Supplier Portal" }}</div>
+            </td>
+            <td>
+              <span class="status-pill pill-info"><span class="dot"></span> {{ log.action }}</span>
+            </td>
+            <td style="font-weight: 650;">{{ log.object_name|default:log.object_type }}</td>
+            <td style="font-size: 0.68rem; color: var(--text-secondary);">{{ log.details|default:"--" }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-tertiary);">No activity records found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

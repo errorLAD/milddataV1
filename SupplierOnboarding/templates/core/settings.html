@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - SupplierOS{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Settings & Governance</h1>
+    <p class="page-subtitle">Configure organization profile, user role permissions, document types, and compliance rules.</p>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem;">
+  <!-- Organization Profile Settings -->
+  <div class="panel">
+    <div class="panel-header-strip">
+      <span class="panel-title">Organization Settings</span>
+    </div>
+    <div class="panel-body">
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_org">
+        <div class="form-group">
+          <label class="form-label">Enterprise Company Name</label>
+          <input type="text" name="org_name" value="{{ org.name }}" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Corporate Domain</label>
+          <input type="text" name="domain" value="{{ org.domain|default:'acme.com' }}" class="form-control">
+        </div>
+        <button type="submit" class="btn-saas btn-saas-primary" style="margin-top: 0.5rem;">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Document Types Configuration -->
+  <div class="panel">
+    <div class="panel-header-strip">
+      <span class="panel-title">Add Document Type</span>
+    </div>
+    <div class="panel-body">
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_doc_type">
+        <div class="form-group">
+          <label class="form-label">Document Name *</label>
+          <input type="text" name="doc_name" class="form-control" placeholder="e.g. ISO 9001 Certificate" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Default Expiry Validity (Days)</label>
+          <input type="number" name="expiry_days" value="365" class="form-control">
+        </div>
+        <button type="submit" class="btn-saas btn-saas-secondary" style="margin-top: 0.5rem;">Add Document Type</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Active Users & Roles -->
+  <div class="panel" style="grid-column: span 2;">
+    <div class="panel-header-strip">
+      <span class="panel-title">Users & Role Permissions</span>
+      <span class="font-tabular" style="font-size: 0.68rem; color: var(--text-secondary);">{{ users|length }} active users</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table-saas">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+            <tr>
+              <td style="font-weight: 650;">{{ u.get_full_name|default:u.username }}</td>
+              <td class="font-tabular" style="color: var(--text-secondary);">{{ u.email|default:u.username }}</td>
+              <td>
+                <span class="status-pill pill-info">{{ u.get_role_display }}</span>
+              </td>
+              <td>
+                <span class="status-pill pill-approved"><span class="dot"></span> Active</span>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

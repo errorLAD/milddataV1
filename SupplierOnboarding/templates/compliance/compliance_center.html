@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}Compliance Center - SupplierOS{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Compliance Center</h1>
+    <p class="page-subtitle">Track risk alerts, expiring certificates, and regulatory document issues.</p>
+  </div>
+</div>
+
+<!-- Metrics Row (5 Summary Metric Cards) -->
+<div class="metrics-grid" style="grid-template-columns: repeat(5, 1fr);">
+  <div class="metric-card metric-card-hero">
+    <div class="metric-label">Compliance Score</div>
+    <div class="metric-number font-tabular text-brand">{{ compliance_score }}%</div>
+    <div class="metric-subtext">Enterprise average</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Critical Issues</div>
+    <div class="metric-number font-tabular text-danger">{{ critical_issues_count }}</div>
+    <div class="metric-subtext">Requires immediate resolution</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Expiring Docs</div>
+    <div class="metric-number font-tabular text-warning">{{ expiring_docs_count }}</div>
+    <div class="metric-subtext">Expiring in &lt;30 days</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Missing Docs</div>
+    <div class="metric-number font-tabular text-info">{{ missing_docs_count }}</div>
+    <div class="metric-subtext">Unsubmitted mandatory docs</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Rejected Docs</div>
+    <div class="metric-number font-tabular text-danger">{{ rejected_docs_count }}</div>
+    <div class="metric-subtext">Quality check failures</div>
+  </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="panel" style="margin-bottom: 0.875rem;">
+  <div style="padding: 0.75rem 1rem;">
+    <form method="GET" style="display: flex; gap: 0.6rem; align-items: center;">
+      <select name="severity" class="form-control" style="width: 150px;">
+        <option value="">All Severities</option>
+        {% for val, label in severities %}
+          <option value="{{ val }}" {% if severity_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="status" class="form-control" style="width: 140px;">
+        <option value="OPEN" {% if status_filter == 'OPEN' %}selected{% endif %}>Open Issues</option>
+        <option value="RESOLVED" {% if status_filter == 'RESOLVED' %}selected{% endif %}>Resolved</option>
+        <option value="ALL" {% if status_filter == 'ALL' %}selected{% endif %}>All Issues</option>
+      </select>
+
+      <button type="submit" class="btn-saas btn-saas-secondary">
+        <i class="ri-filter-3-line"></i> Filter
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Compliance Issues Directory Table -->
+<div class="panel">
+  <div class="panel-header-strip">
+    <span class="panel-title">Active Compliance Issues</span>
+    <span class="font-tabular" style="font-size: 0.68rem; color: var(--text-secondary);">{{ issues|length }} records</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table-saas">
+      <thead>
+        <tr>
+          <th>Supplier</th>
+          <th>Issue Title</th>
+          <th>Severity</th>
+          <th>Due Date</th>
+          <th>Status</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for issue in issues %}
+          <tr>
+            <td>
+              <a href="{% url 'supplier_detail' issue.supplier.id %}" style="font-weight: 650; color: var(--text-primary); text-decoration: none;">
+                {{ issue.supplier.legal_name }}
+              </a>
+            </td>
+            <td>
+              <div style="font-weight: 600;">{{ issue.title }}</div>
+              {% if issue.description %}
+                <div style="font-size: 0.62rem; color: var(--text-secondary);">{{ issue.description }}</div>
+              {% endif %}
+            </td>
+            <td>
+              <span class="status-pill pill-{{ issue.severity|lower }}">
+                <span class="dot"></span> {{ issue.get_severity_display }}
+              </span>
+            </td>
+            <td class="font-tabular" style="color: var(--text-secondary);">
+              {{ issue.due_date|date:"d M Y"|default:"--" }}
+            </td>
+            <td>
+              <span class="status-pill pill-{{ issue.status|lower }}">
+                <span class="dot"></span> {{ issue.get_status_display }}
+              </span>
+            </td>
+            <td style="text-align: right;">
+              {% if issue.status == 'OPEN' %}
+                <form method="POST" style="display: inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="issue_id" value="{{ issue.id }}">
+                  <button type="submit" name="action" value="resolve" class="btn-saas btn-saas-secondary">
+                    Mark Resolved
+                  </button>
+                </form>
+              {% else %}
+                <span class="text-tertiary font-tabular" style="font-size: 0.65rem;">Resolved</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 2.5rem 1rem;">
+              <div style="font-size: 0.85rem; font-weight: 650; color: var(--text-primary); margin-bottom: 0.3rem;">No compliance issues logged</div>
+              <p style="font-size: 0.72rem; color: var(--text-secondary);">Your supplier directory meets all active compliance rules.</p>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

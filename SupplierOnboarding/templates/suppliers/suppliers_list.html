@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Suppliers - SupplierOS{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Suppliers</h1>
+    <p class="page-subtitle">Manage supplier profiles, onboarding status, and compliance requirements.</p>
+  </div>
+  <a href="{% url 'add_supplier' %}" class="btn-saas btn-saas-primary">
+    <i class="ri-add-line"></i> Add Supplier
+  </a>
+</div>
+
+<!-- Filters Bar Panel -->
+<div class="panel" style="margin-bottom: 0.875rem;">
+  <div style="padding: 0.75rem 1rem;">
+    <form method="GET" style="display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center;">
+      <!-- Search input -->
+      <div style="flex-grow: 1; min-width: 200px;">
+        <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Filter by supplier name or email...">
+      </div>
+
+      <!-- Status filter -->
+      <select name="status" class="form-control" style="width: 140px;">
+        <option value="">All Statuses</option>
+        {% for val, label in statuses %}
+          <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Category filter -->
+      <select name="category" class="form-control" style="width: 150px;">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat }}" {% if category_filter == cat %}selected{% endif %}>{{ cat }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Country filter -->
+      <select name="country" class="form-control" style="width: 130px;">
+        <option value="">All Countries</option>
+        {% for c in countries %}
+          <option value="{{ c }}" {% if country_filter == c %}selected{% endif %}>{{ c }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit" class="btn-saas btn-saas-secondary">
+        <i class="ri-filter-3-line"></i> Filter
+      </button>
+      <a href="{% url 'suppliers_list' %}" class="btn-saas btn-saas-secondary">Reset</a>
+    </form>
+  </div>
+</div>
+
+<!-- Main Table Panel -->
+<div class="panel">
+  <div class="panel-header-strip">
+    <span class="panel-title">Supplier Directory</span>
+    <span class="font-tabular" style="font-size: 0.68rem; color: var(--text-secondary);">Showing {{ suppliers|length }} suppliers</span>
+  </div>
+  
+  <div class="table-responsive">
+    <table class="table-saas">
+      <thead>
+        <tr>
+          <th>Supplier</th>
+          <th>Category</th>
+          <th>Country</th>
+          <th>Status</th>
+          <th>Compliance</th>
+          <th>Documents</th>
+          <th>Last Activity</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in suppliers %}
+          <tr>
+            <td>
+              <a href="{% url 'supplier_detail' s.id %}" style="font-weight: 650; color: var(--text-primary); text-decoration: none;">
+                {{ s.legal_name }}
+              </a>
+              {% if s.trading_name %}
+                <div style="font-size: 0.62rem; color: var(--text-tertiary);">{{ s.trading_name }}</div>
+              {% endif %}
+            </td>
+            <td>{{ s.category }}</td>
+            <td>{{ s.country }}</td>
+            <td>
+              <span class="status-pill pill-{{ s.status|lower }}">
+                <span class="dot"></span> {{ s.get_status_display }}
+              </span>
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.4rem;" class="font-tabular">
+                <span style="font-weight: 650; width: 28px;">{{ s.compliance_score }}%</span>
+                <div class="progress-bar-container" style="width: 50px; height: 5px;">
+                  <div class="progress-bar-fill {% if s.compliance_score > 80 %}success{% elif s.compliance_score > 60 %}warning{% else %}danger{% endif %}" style="width: {{ s.compliance_score }}%;"></div>
+                </div>
+              </div>
+            </td>
+            <td class="font-tabular">
+              {{ s.documents.count }} items
+            </td>
+            <td class="font-tabular" style="color: var(--text-secondary);">
+              {{ s.updated_at|timesince }} ago
+            </td>
+            <td style="text-align: right;">
+              <div style="display: inline-flex; gap: 0.3rem;">
+                <a href="{% url 'supplier_detail' s.id %}" class="btn-saas btn-saas-secondary" title="View Supplier">
+                  View
+                </a>
+                <a href="{% url 'portal_view' s.invitation_token %}" target="_blank" class="btn-saas btn-saas-whatsapp" title="Open Supplier Portal">
+                  Portal <i class="ri-external-link-line" style="font-size: 0.65rem;"></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 2.5rem 1rem;">
+              <div style="font-size: 0.85rem; font-weight: 650; color: var(--text-primary); margin-bottom: 0.3rem;">No suppliers yet</div>
+              <p style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 1rem;">Invite your first supplier to begin automated onboarding & compliance tracking.</p>
+              <a href="{% url 'add_supplier' %}" class="btn-saas btn-saas-primary">
+                <i class="ri-add-line"></i> Add Supplier
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

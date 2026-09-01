@@ -1,0 +1,20 @@
+{
+  "short_name": "SupplierOS",
+  "name": "SupplierOS - Supplier Onboarding & Compliance Operating System",
+  "icons": [
+    {
+      "src": "/static/images/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/static/images/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#F7F8FA",
+  "theme_color": "#2451FF",
+  "display": "standalone"
+}

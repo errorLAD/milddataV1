@@ -1,0 +1,201 @@
+{% extends 'portal/portal_base.html' %}
+
+{% block content %}
+<!-- Welcome & Header Card -->
+<div class="portal-header-card">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+    <div>
+      <h1 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">{{ supplier.legal_name }}</h1>
+      <p style="font-size: 0.72rem; color: var(--text-secondary);">Welcome back. Complete your supplier onboarding checklist below.</p>
+    </div>
+    <span class="status-pill pill-{{ supplier.status|lower }}">
+      <span class="dot"></span> {{ supplier.get_status_display }}
+    </span>
+  </div>
+
+  <!-- Progress Bar -->
+  <div style="margin-top: 1rem;">
+    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; margin-bottom: 0.35rem;">
+      <span style="font-weight: 650; color: var(--text-primary);">Onboarding Progress</span>
+      <span class="font-tabular" style="font-weight: 700; color: var(--brand);">{{ completion_percentage }}% Complete</span>
+    </div>
+    <div class="progress-bar-container" style="height: 9px;">
+      <div class="progress-bar-fill {% if completion_percentage == 100 %}success{% else %}warning{% endif %}" style="width: {{ completion_percentage }}%;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Onboarding Checklist & Upload Sections -->
+<div class="panel">
+  <div class="panel-header-strip">
+    <span class="panel-title">Required Onboarding Steps</span>
+  </div>
+  <div style="padding: 0;">
+    <!-- Step 1: Company Information -->
+    <div style="padding: 1rem 1.1rem; border-bottom: 1px solid var(--border);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <i class="ri-checkbox-circle-fill text-success" style="font-size: 1.1rem;"></i>
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 650;">1. Company Profile Details</div>
+            <div style="font-size: 0.65rem; color: var(--text-secondary);">Legal entity address, category & contact info</div>
+          </div>
+        </div>
+        <button class="btn-saas btn-saas-secondary" onclick="togglePortalSection('companyForm')">Edit</button>
+      </div>
+
+      <div id="companyForm" style="display: none; margin-top: 0.75rem; background: var(--surface-alt); padding: 0.85rem; border-radius: var(--radius-md);">
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_company">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label">Legal Name</label>
+              <input type="text" name="legal_name" value="{{ supplier.legal_name }}" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Trading Name</label>
+              <input type="text" name="trading_name" value="{{ supplier.trading_name|default:'' }}" class="form-control">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Address</label>
+              <input type="text" name="address" value="{{ supplier.address|default:'' }}" class="form-control">
+            </div>
+          </div>
+          <button type="submit" class="btn-saas btn-saas-primary" style="margin-top: 0.5rem;">Save Company Details</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Step 2: Tax Details -->
+    <div style="padding: 1rem 1.1rem; border-bottom: 1px solid var(--border);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          {% if supplier.tax_info.tax_id_number %}
+            <i class="ri-checkbox-circle-fill text-success" style="font-size: 1.1rem;"></i>
+          {% else %}
+            <i class="ri-error-warning-line text-warning" style="font-size: 1.1rem;"></i>
+          {% endif %}
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 650;">2. Tax & VAT Information</div>
+            <div style="font-size: 0.65rem; color: var(--text-secondary);">Tax ID / PAN / GST Registration</div>
+          </div>
+        </div>
+        <button class="btn-saas btn-saas-secondary" onclick="togglePortalSection('taxForm')">Edit</button>
+      </div>
+
+      <div id="taxForm" style="display: none; margin-top: 0.75rem; background: var(--surface-alt); padding: 0.85rem; border-radius: var(--radius-md);">
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_tax">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label">Tax ID / PAN</label>
+              <input type="text" name="tax_id_number" value="{{ supplier.tax_info.tax_id_number|default:'' }}" class="form-control" placeholder="AAACB1234C">
+            </div>
+            <div class="form-group">
+              <label class="form-label">GST / VAT Number</label>
+              <input type="text" name="gst_vat_number" value="{{ supplier.tax_info.gst_vat_number|default:'' }}" class="form-control" placeholder="27AAACB1234C1Z5">
+            </div>
+          </div>
+          <button type="submit" class="btn-saas btn-saas-primary" style="margin-top: 0.5rem;">Save Tax Info</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Step 3: Bank Details -->
+    <div style="padding: 1rem 1.1rem; border-bottom: 1px solid var(--border);">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          {% if supplier.bank_details.account_number %}
+            <i class="ri-checkbox-circle-fill text-success" style="font-size: 1.1rem;"></i>
+          {% else %}
+            <i class="ri-error-warning-line text-warning" style="font-size: 1.1rem;"></i>
+          {% endif %}
+          <div>
+            <div style="font-size: 0.75rem; font-weight: 650;">3. Bank Account Information</div>
+            <div style="font-size: 0.65rem; color: var(--text-secondary);">Direct deposit & settlement details</div>
+          </div>
+        </div>
+        <button class="btn-saas btn-saas-secondary" onclick="togglePortalSection('bankForm')">Edit</button>
+      </div>
+
+      <div id="bankForm" style="display: none; margin-top: 0.75rem; background: var(--surface-alt); padding: 0.85rem; border-radius: var(--radius-md);">
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_bank">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+            <div class="form-group">
+              <label class="form-label">Bank Name</label>
+              <input type="text" name="bank_name" value="{{ supplier.bank_details.bank_name|default:'' }}" class="form-control" placeholder="HDFC Bank">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Account Name</label>
+              <input type="text" name="account_name" value="{{ supplier.bank_details.account_name|default:'' }}" class="form-control" placeholder="ABC Components Pvt Ltd">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Account Number</label>
+              <input type="text" name="account_number" value="{{ supplier.bank_details.account_number|default:'' }}" class="form-control" placeholder="5010023456789">
+            </div>
+          </div>
+          <button type="submit" class="btn-saas btn-saas-primary" style="margin-top: 0.5rem;">Save Bank Details</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Step 4: Required Document Upload Checklist -->
+    <div style="padding: 1rem 1.1rem;">
+      <div style="font-size: 0.75rem; font-weight: 650; margin-bottom: 0.6rem;">4. Required Compliance Documents</div>
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        {% for doc in documents %}
+          <div style="background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 0.85rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <div>
+                <div style="font-size: 0.72rem; font-weight: 650; color: var(--text-primary);">{{ doc.document_type.name }}</div>
+                <div style="font-size: 0.62rem; color: var(--text-secondary);">Accepted: PDF, JPG, PNG (Max 10 MB)</div>
+              </div>
+              <span class="status-pill pill-{{ doc.status|lower }}">
+                <span class="dot"></span> {{ doc.get_status_display }}
+              </span>
+            </div>
+
+            <!-- Upload Form -->
+            <form method="POST" action="{% url 'portal_upload_doc' token doc.id %}" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="drag-drop-zone" onclick="this.querySelector('input[type=file]').click();">
+                <i class="ri-upload-cloud-2-line text-brand" style="font-size: 1.5rem; display: block;"></i>
+                <span style="font-size: 0.7rem; font-weight: 600; color: var(--text-primary);">
+                  {% if doc.file %}Replace {{ doc.file_name }}{% else %}Drag & Drop file here or Click to Choose{% endif %}
+                </span>
+                <input type="file" name="file" accept=".pdf,.jpg,.jpeg,.png" style="display: none;" onchange="this.form.submit();">
+              </div>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Submit CTA Button -->
+<div style="margin-top: 1.5rem; text-align: center;">
+  <form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="submit_for_review">
+    <button type="submit" class="btn-saas btn-saas-primary" style="padding: 0.65rem 1.5rem; font-size: 0.8rem;" {% if supplier.status == 'APPROVED' %}disabled{% endif %}>
+      <i class="ri-send-plane-fill"></i> Submit Onboarding for Internal Review
+    </button>
+  </form>
+</div>
+
+<script>
+  function togglePortalSection(id) {
+    const el = document.getElementById(id);
+    if (el.style.display === 'none' || !el.style.display) {
+      el.style.display = 'block';
+    } else {
+      el.style.display = 'none';
+    }
+  }
+</script>
+{% endblock %}

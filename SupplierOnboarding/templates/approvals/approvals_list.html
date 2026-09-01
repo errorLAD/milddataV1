@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Approvals Center - SupplierOS{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Approval Center</h1>
+    <p class="page-subtitle">Review supplier onboarding submissions, risk flags, and grant active status.</p>
+  </div>
+</div>
+
+<!-- Filter Tabs -->
+<div class="tabs-header" style="margin-bottom: 0.875rem;">
+  <a href="?status=PENDING" class="tab-btn {% if status_filter == 'PENDING' %}active{% endif %}">Pending Review</a>
+  <a href="?status=APPROVED" class="tab-btn {% if status_filter == 'APPROVED' %}active{% endif %}">Approved</a>
+  <a href="?status=REJECTED" class="tab-btn {% if status_filter == 'REJECTED' %}active{% endif %}">Rejected</a>
+  <a href="?status=ALL" class="tab-btn {% if status_filter == 'ALL' %}active{% endif %}">All Submissions</a>
+</div>
+
+<!-- Approvals Directory Panel -->
+<div class="panel">
+  <div class="panel-header-strip">
+    <span class="panel-title">Pending & Historical Approvals</span>
+    <span class="font-tabular" style="font-size: 0.68rem; color: var(--text-secondary);">{{ approvals|length }} items</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table-saas">
+      <thead>
+        <tr>
+          <th>Supplier</th>
+          <th>Submitted Date</th>
+          <th>Documents</th>
+          <th>Compliance Rating</th>
+          <th>Reviewer</th>
+          <th>Status</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in approvals %}
+          <tr>
+            <td>
+              <a href="{% url 'approval_detail' app.id %}" style="font-weight: 650; color: var(--text-primary); text-decoration: none;">
+                {{ app.supplier.legal_name }}
+              </a>
+              <div style="font-size: 0.62rem; color: var(--text-tertiary);">{{ app.supplier.category }}</div>
+            </td>
+            <td class="font-tabular" style="color: var(--text-secondary);">
+              {{ app.submitted_at|date:"d M Y, H:i" }}
+            </td>
+            <td class="font-tabular">
+              {{ app.supplier.documents.count }} items
+            </td>
+            <td>
+              <span class="status-pill pill-compliant font-tabular">
+                <span class="dot"></span> {{ app.supplier.compliance_score }}%
+              </span>
+            </td>
+            <td style="font-size: 0.68rem; color: var(--text-secondary);">
+              {{ app.reviewer.username|default:"Unassigned" }}
+            </td>
+            <td>
+              <span class="status-pill pill-{{ app.status|lower }}">
+                <span class="dot"></span> {{ app.get_status_display }}
+              </span>
+            </td>
+            <td style="text-align: right;">
+              <a href="{% url 'approval_detail' app.id %}" class="btn-saas btn-saas-primary">
+                Open Workspace
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 2.5rem 1rem;">
+              <div style="font-size: 0.85rem; font-weight: 650; color: var(--text-primary); margin-bottom: 0.3rem;">No approval requests found</div>
+              <p style="font-size: 0.72rem; color: var(--text-secondary);">Submissions from onboarding suppliers will automatically appear here.</p>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

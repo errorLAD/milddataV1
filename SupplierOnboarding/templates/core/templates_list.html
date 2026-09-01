@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Onboarding Templates - SupplierOS{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Onboarding Templates</h1>
+    <p class="page-subtitle">Define required document packages and compliance rules per supplier category.</p>
+  </div>
+  <button class="btn-saas btn-saas-primary" onclick="document.getElementById('createTemplateModal').classList.add('active')">
+    <i class="ri-add-line"></i> Create Template
+  </button>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.875rem;">
+  {% for t in templates %}
+    <div class="panel">
+      <div class="panel-header-strip">
+        <span class="panel-title">{{ t.name }}</span>
+        <span class="status-pill pill-info">{{ t.supplier_category }}</span>
+      </div>
+      <div class="panel-body">
+        <p style="font-size: 0.68rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+          {{ t.description|default:"Standard onboarding requirement package." }}
+        </p>
+
+        <div style="font-size: 0.62rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.35rem;">
+          Required Documents ({{ t.requirements.count }})
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+          {% for r in t.requirements.all %}
+            <div style="font-size: 0.68rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 0.2rem;">
+              <span>{{ r.document_type.name }}</span>
+              <i class="ri-check-line text-success"></i>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="panel" style="grid-column: span 3; text-align: center; padding: 2rem;">
+      <div style="font-weight: 650; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.3rem;">No custom templates yet</div>
+      <p style="font-size: 0.72rem; color: var(--text-secondary);">Create onboarding requirement templates for Manufacturing, Logistics, or Services suppliers.</p>
+    </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: Create Template -->
+<div class="modal-overlay" id="createTemplateModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="panel-title">Create Onboarding Template</span>
+      <button class="icon-btn" onclick="document.getElementById('createTemplateModal').classList.remove('active')">&times;</button>
+    </div>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="panel-body">
+        <div class="form-group">
+          <label class="form-label">Template Name *</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Manufacturing Supplier Template" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Supplier Category *</label>
+          <input type="text" name="supplier_category" class="form-control" placeholder="Manufacturing" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea name="description" class="form-control" rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Required Document Types</label>
+          {% for dt in doc_types %}
+            <label style="display: block; font-size: 0.72rem; margin-bottom: 0.25rem;">
+              <input type="checkbox" name="document_types" value="{{ dt.id }}" checked> {{ dt.name }}
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-saas btn-saas-secondary" onclick="document.getElementById('createTemplateModal').classList.remove('active')">Cancel</button>
+        <button type="submit" class="btn-saas btn-saas-primary">Save Template</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications Center - SupplierOS{% endblock %}
+
+{% block content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Notification Center</h1>
+    <p class="page-subtitle">Real-time alert log for document expirations, submissions, and approvals.</p>
+  </div>
+  <form method="POST">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="mark_all_read">
+    <button type="submit" class="btn-saas btn-saas-secondary">
+      <i class="ri-check-double-line"></i> Mark All as Read
+    </button>
+  </form>
+</div>
+
+<div class="panel">
+  <div class="panel-header-strip">
+    <span class="panel-title">System Alerts</span>
+    <span class="font-tabular" style="font-size: 0.68rem; color: var(--text-secondary);">{{ notifications|length }} alerts</span>
+  </div>
+  <div style="padding: 0;">
+    {% for notif in notifications %}
+      <div style="padding: 0.85rem 1.1rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: {% if not notif.is_read %}var(--brand-soft){% else %}var(--surface){% endif %};">
+        <div>
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <span class="status-pill pill-info" style="font-size: 0.55rem;">{{ notif.get_notification_type_display }}</span>
+            <span style="font-size: 0.75rem; font-weight: 650; color: var(--text-primary);">{{ notif.title }}</span>
+          </div>
+          <p style="font-size: 0.68rem; color: var(--text-secondary); margin-top: 0.2rem;">{{ notif.message }}</p>
+        </div>
+        <div style="text-align: right;">
+          <span style="font-size: 0.62rem; color: var(--text-tertiary);" class="font-tabular">{{ notif.created_at|timesince }} ago</span>
+          {% if notif.link %}
+            <div style="margin-top: 0.2rem;">
+              <a href="{{ notif.link }}" class="btn-saas btn-saas-secondary" style="font-size: 0.62rem; padding: 0.15rem 0.4rem;">View Record</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <div style="padding: 2.5rem; text-align: center; font-size: 0.72rem; color: var(--text-tertiary);">
+        No notifications recorded.
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

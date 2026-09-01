@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Documents - SupplierOS{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header-row">
+  <div>
+    <h1 class="page-title">Document Management</h1>
+    <p class="page-subtitle">Track, verify, and monitor document expirations across all onboarding suppliers.</p>
+  </div>
+  <a href="{% url 'suppliers_list' %}" class="btn-saas btn-saas-primary">
+    <i class="ri-file-add-line"></i> Request Document
+  </a>
+</div>
+
+<!-- Status Tabs Header -->
+<div class="tabs-header" style="margin-bottom: 0.875rem;">
+  <a href="?status=all" class="tab-btn {% if status_tab == 'all' %}active{% endif %}">All Documents</a>
+  <a href="?status=pending_review" class="tab-btn {% if status_tab == 'pending_review' %}active{% endif %}">Pending Review</a>
+  <a href="?status=verified" class="tab-btn {% if status_tab == 'verified' %}active{% endif %}">Verified</a>
+  <a href="?status=missing" class="tab-btn {% if status_tab == 'missing' %}active{% endif %}">Missing</a>
+  <a href="?status=expiring_soon" class="tab-btn {% if status_tab == 'expiring_soon' %}active{% endif %}">Expiring Soon</a>
+  <a href="?status=expired" class="tab-btn {% if status_tab == 'expired' %}active{% endif %}">Expired</a>
+  <a href="?status=rejected" class="tab-btn {% if status_tab == 'rejected' %}active{% endif %}">Rejected</a>
+</div>
+
+<!-- Documents Directory Panel -->
+<div class="panel">
+  <div class="panel-header-strip">
+    <span class="panel-title">Document Directory</span>
+    <span class="font-tabular" style="font-size: 0.68rem; color: var(--text-secondary);">{{ documents|length }} records</span>
+  </div>
+  
+  <div class="table-responsive">
+    <table class="table-saas">
+      <thead>
+        <tr>
+          <th>Document</th>
+          <th>Supplier</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Uploaded Date</th>
+          <th>Expiry Date</th>
+          <th>Verified By</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in documents %}
+          <tr>
+            <td>
+              <a href="{% url 'document_detail' d.id %}" style="font-weight: 650; color: var(--text-primary); text-decoration: none;">
+                {{ d.document_type.name }}
+              </a>
+              {% if d.file_name %}
+                <div style="font-size: 0.62rem; color: var(--text-tertiary);">{{ d.file_name }}</div>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{% url 'supplier_detail' d.supplier.id %}" style="color: var(--text-primary); text-decoration: none; font-weight: 600;">
+                {{ d.supplier.legal_name }}
+              </a>
+            </td>
+            <td>{{ d.document_type.code|upper }}</td>
+            <td>
+              <span class="status-pill pill-{{ d.status|lower }}">
+                <span class="dot"></span> {{ d.get_status_display }}
+              </span>
+            </td>
+            <td class="font-tabular" style="color: var(--text-secondary);">
+              {{ d.uploaded_at|date:"d M Y"|default:"--" }}
+            </td>
+            <td class="font-tabular">
+              {% if d.expiry_date %}
+                <span class="{% if d.status == 'EXPIRED' %}text-danger font-weight-650{% elif d.status == 'EXPIRING_SOON' %}text-warning font-weight-650{% endif %}">
+                  {{ d.expiry_date|date:"d M Y" }}
+                </span>
+              {% else %}
+                <span class="text-tertiary">--</span>
+              {% endif %}
+            </td>
+            <td style="font-size: 0.68rem; color: var(--text-secondary);">
+              {{ d.verified_by.username|default:"Unverified" }}
+            </td>
+            <td style="text-align: right;">
+              <a href="{% url 'document_detail' d.id %}" class="btn-saas btn-saas-secondary">
+                Review & Verify
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 2.5rem 1rem;">
+              <div style="font-size: 0.85rem; font-weight: 650; color: var(--text-primary); margin-bottom: 0.3rem;">No documents matching criteria</div>
+              <p style="font-size: 0.72rem; color: var(--text-secondary);">All supplier document requirements are up to date.</p>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

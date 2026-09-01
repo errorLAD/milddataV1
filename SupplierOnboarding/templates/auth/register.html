@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - SupplierOS Enterprise</title>
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+  <style>
+    body { background-color: var(--bg); display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Inter', sans-serif; }
+    .auth-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-xl); box-shadow: var(--shadow-sm); width: 100%; max-width: 440px; padding: 2rem; }
+  </style>
+</head>
+<body>
+
+<div class="auth-card">
+  <div style="text-align: center; margin-bottom: 1.5rem;">
+    <div style="width: 36px; height: 36px; background: var(--brand); border-radius: var(--radius-md); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; margin: 0 auto 0.6rem auto;">S</div>
+    <h1 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">Create SupplierOS Workspace</h1>
+    <p style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.2rem;">Multi-tenant Supplier Onboarding & Compliance System</p>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="status-pill pill-{% if message.tags == 'error' %}rejected{% else %}approved{% endif %}" style="padding: 0.5rem 0.8rem; width: 100%; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; border-radius: var(--radius-md); font-size: 0.7rem;">
+        <span class="dot"></span> {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Continue as Guest Banner Option -->
+  <div style="background: var(--brand-soft); border: 1px solid var(--brand-soft-border); border-radius: var(--radius-lg); padding: 0.85rem; margin-bottom: 1.25rem; text-align: center;">
+    <div style="font-size: 0.68rem; font-weight: 650; color: var(--brand); margin-bottom: 0.35rem;">Just testing out features?</div>
+    <a href="{% url 'guest_login' %}" class="btn-saas btn-saas-primary" style="width: 100%; padding: 0.45rem;">
+      <i class="ri-user-shared-line"></i> Continue as Guest (Demo Sandbox)
+    </a>
+  </div>
+
+  <!-- Registration Form -->
+  <form method="POST" action="{% url 'register' %}">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label">Enterprise Company Name *</label>
+      <input type="text" name="org_name" class="form-control" placeholder="Acme Procurement Corp" required>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+      <div class="form-group">
+        <label class="form-label">First Name</label>
+        <input type="text" name="first_name" class="form-control" placeholder="John">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Last Name</label>
+        <input type="text" name="last_name" class="form-control" placeholder="Doe">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Work Email Address *</label>
+      <input type="email" name="email" class="form-control" placeholder="john@acme.com" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Password *</label>
+      <input type="password" name="password" class="form-control" placeholder="••••••••" required minlength="8">
+    </div>
+
+    <button type="submit" class="btn-saas btn-saas-secondary" style="width: 100%; padding: 0.5rem; margin-top: 0.5rem;">
+      Create Organization Workspace
+    </button>
+  </form>
+
+  <div style="text-align: center; margin-top: 1.25rem; font-size: 0.7rem; color: var(--text-secondary);">
+    Already have an account? <a href="{% url 'login' %}" style="color: var(--brand); font-weight: 650;">Sign In</a>
+  </div>
+</div>
+
+</body>
+</html>
