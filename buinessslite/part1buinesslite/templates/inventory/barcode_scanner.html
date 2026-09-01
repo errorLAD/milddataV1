@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Barcode Scanner - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">📷 Barcode / QR Scanner</h1>
+        <div class="page-subtitle">Scan product barcode using camera or enter SKU to view live stock details</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+    <div class="card-panel">
+        <div class="panel-header">
+            <div class="panel-title">Camera / Barcode Input</div>
+        </div>
+        <div class="panel-body" style="text-align: center;">
+            <div style="background: #000; border-radius: var(--radius-md); height: 220px; display: flex; align-items: center; justify-content: center; color: #fff; margin-bottom: 1rem; position: relative;">
+                <div id="videoContainer">
+                    <span style="font-size: 2rem;">📷</span>
+                    <div style="font-size: 0.7rem; color: #ccc; margin-top: 0.5rem;">Camera scanner active</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Or Manual Barcode / SKU Entry</label>
+                <div style="display: flex; gap: 0.4rem;">
+                    <input type="text" id="manualCode" class="form-input" placeholder="e.g. 890123456789 or ROUTER-X-01">
+                    <button onclick="lookupBarcode()" class="btn-saas btn-primary">Scan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Panel -->
+    <div class="card-panel">
+        <div class="panel-header">
+            <div class="panel-title">Scanned Product Details</div>
+        </div>
+        <div class="panel-body" id="scanResult">
+            <div style="text-align: center; color: var(--text-tertiary); padding: 2rem;">
+                Scan or enter a barcode to view product info.
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function lookupBarcode() {
+        const code = document.getElementById('manualCode').value.trim();
+        if (!code) return;
+
+        const res = await fetch(`/inventory/api/barcode-lookup/?code=${encodeURIComponent(code)}`);
+        const data = await res.json();
+        
+        const resultBox = document.getElementById('scanResult');
+        if (data.found) {
+            resultBox.innerHTML = `
+                <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); mb-1">${data.name}</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    SKU: <strong>${data.sku}</strong> | Barcode: <strong>${data.barcode || 'N/A'}</strong>
+                </div>
+
+                <div class="metrics-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 1rem;">
+                    <div class="metric-card">
+                        <div class="metric-label">Selling Price</div>
+                        <div class="metric-number">${data.currency}${data.price.toFixed(2)}</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Current Stock</div>
+                        <div class="metric-number">${data.stock} ${data.unit}</div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem;">
+                    <a href="/inventory/products/${data.id}/" class="btn-saas btn-primary">View Product</a>
+                    <a href="/inventory/products/${data.id}/adjust/" class="btn-saas btn-secondary">Adjust Stock</a>
+                    <a href="/sales/invoices/create/" class="btn-saas btn-secondary">+ Add to Sale</a>
+                </div>
+            `;
+        } else {
+            resultBox.innerHTML = `
+                <div style="padding: 1.5rem; text-align: center; color: var(--danger);">
+                    ⚠️ No product found for barcode '${code}'.
+                </div>
+            `;
+        }
+    }
+</script>
+{% endblock %}

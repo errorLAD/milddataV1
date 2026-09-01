@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Login | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center min-vh-100 py-5">
+    <div class="col-12 col-sm-10 col-md-7 col-lg-5 col-xl-4">
+        <div class="card card-custom p-4 p-md-5 shadow-lg border-0">
+            <div class="text-center mb-4">
+                <div class="brand-badge mx-auto mb-3" style="width: 54px; height: 54px; font-size: 1.6rem; border-radius: 16px;">K</div>
+                <h3 class="fw-bold text-dark mb-1">KarobarPlus</h3>
+                <p class="text-muted fs-7">Smart Udhaar Recovery & Sales for Small Business</p>
+            </div>
+
+            <form method="post" action="{% url 'accounts:login' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold fs-7">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
+                        {{ form.username }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold fs-7">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                        {{ form.password }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary-custom w-100 py-2.5 fs-6 mb-3">
+                    Sign In to Business Account <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </form>
+
+            <div class="text-center mt-3 pt-3 border-top">
+                <a href="{% url 'accounts:guest_login' %}" class="btn btn-outline-indigo w-100 py-2 fs-7 fw-semibold mb-3 d-flex align-items-center justify-content-center gap-2" style="border: 1.5px dashed #4F46E5; color: #4F46E5; background: #EEF2FF;">
+                    <i class="bi bi-person-badge-fill"></i> Continue as Guest / Try Demo Mode
+                </a>
+
+                <span class="text-muted fs-7">Don't have a business account yet?</span>
+                <a href="{% url 'accounts:register' %}" class="text-primary fw-bold text-decoration-none ms-1 fs-7">Create Business Free</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

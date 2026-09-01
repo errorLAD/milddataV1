@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% load localization_tags %}
+
+{% block title %}Payments Register | NextSlot{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2.5">
+
+    <!-- Page Header Row -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+        <div>
+            <div class="kp-eyebrow mb-1">
+                <i class="bi bi-credit-card-2-front"></i> Collections & Receipts
+            </div>
+            <h1 class="kp-page-title mb-0">Payments Ledger</h1>
+            <p class="kp-page-sub mb-0">Audit trail of all customer collections, verification states, and transaction channels.</p>
+        </div>
+    </div>
+
+    <!-- 3-Column Metric Grid -->
+    <div class="kp-metric-grid mb-3" style="grid-template-columns: repeat(3, 1fr);">
+        <!-- Hero Card: Total Collections -->
+        <div class="kp-card kp-hero-card">
+            <div class="kp-metric-top">
+                <span class="hero-label">Total Collections</span>
+                <span class="kp-icon-action"><i class="bi bi-cash-coin"></i></span>
+            </div>
+            <div class="hero-value text-success">{{ total_received|money:business_currency_symbol }}</div>
+            <div class="hero-sub">Cumulative customer collections</div>
+        </div>
+
+        <!-- Collected Today -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label">Collected Today</span>
+                <span class="kp-pill normal"><span class="kp-dot"></span>Today</span>
+            </div>
+            <div class="kp-metric-number">{{ today_received|money:business_currency_symbol }}</div>
+            <div class="kp-metric-sub"><i class="bi bi-calendar-check"></i> Today's receipt total</div>
+        </div>
+
+        <!-- Pending Verification -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label text-warning">Pending Verification</span>
+                <span class="kp-pill high"><span class="kp-dot"></span>Audit</span>
+            </div>
+            <div class="kp-metric-number text-warning">{{ pending_verification_count }}</div>
+            <div class="kp-metric-sub text-warning"><i class="bi bi-shield-exclamation"></i> Receipts needing verification</div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title">Payment Filter &amp; Search</h2>
+                <p class="kp-panel-desc">Search by customer name, reference number, or transaction channel.</p>
+            </div>
+        </div>
+        <div class="p-3">
+            <form method="get" action="{% url 'payments:list' %}" class="row g-2 align-items-center">
+                <div class="col-12 col-md-5">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-secondary-subtle text-muted fs-8"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control fs-8 border-secondary-subtle" placeholder="Search by customer name, reference #...">
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <select name="method" class="form-select form-select-sm fs-8 border-secondary-subtle">
+                        <option value="">All Payment Methods</option>
+                        <option value="UPI" {% if method_filter == 'UPI' %}selected{% endif %}>UPI Payment</option>
+                        <option value="Cash" {% if method_filter == 'Cash' %}selected{% endif %}>Cash</option>
+                        <option value="Bank Transfer" {% if method_filter == 'Bank Transfer' %}selected{% endif %}>Bank Transfer</option>
+                        <option value="Online" {% if method_filter == 'Online' %}selected{% endif %}>Online Gateway</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <select name="verification" class="form-select form-select-sm fs-8 border-secondary-subtle">
+                        <option value="">All Verification</option>
+                        <option value="Verified" {% if verification_filter == 'Verified' %}selected{% endif %}>Verified</option>
+                        <option value="Payment Claimed" {% if verification_filter == 'Payment Claimed' %}selected{% endif %}>Payment Claimed</option>
+                        <option value="Pending Verification" {% if verification_filter == 'Pending Verification' %}selected{% endif %}>Pending Verification</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 d-flex gap-1.5">
+                    <button type="submit" class="btn-kp-primary w-100 justify-content-center">Filter</button>
+                    {% if search_query or method_filter or verification_filter %}
+                    <a href="{% url 'payments:list' %}" class="btn-kp-secondary px-2" title="Clear Filters"><i class="bi bi-x-circle"></i></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payments Table Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title">Receipts Register</h2>
+                <p class="kp-panel-desc">All customer payment receipts recorded in NextSlot.</p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="kp-table">
+                <thead>
+                    <tr>
+                        <th class="ps-3" style="min-width: 100px;">Payment ID</th>
+                        <th style="min-width: 160px;">Customer Name</th>
+                        <th style="min-width: 140px;">Date &amp; Time</th>
+                        <th style="min-width: 120px;" class="text-end">Amount Received</th>
+                        <th style="min-width: 110px;">Method</th>
+                        <th style="min-width: 150px;">Reference / UTR #</th>
+                        <th class="text-end pe-3" style="min-width: 130px;">Verification Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in payments %}
+                    <tr>
+                        <td class="ps-3 font-monospace text-muted fw-bold">#PAY-{{ p.pk }}</td>
+                        <td>
+                            <a href="{% url 'customers:detail' p.customer.pk %}" class="fw-bold text-dark text-decoration-none">
+                                {{ p.customer.name }}
+                            </a>
+                        </td>
+                        <td class="text-muted fs-8">{{ p.created_at|date:"d M Y, h:i A" }}</td>
+                        <td class="text-end fw-bold text-success font-monospace fs-7">
+                            {{ p|money_record:p.amount }}
+                        </td>
+                        <td><span class="kp-pill neutral"><span class="kp-dot"></span>{{ p.payment_method }}</span></td>
+                        <td class="font-monospace fs-8 text-secondary">{{ p.reference_id|default:"—" }}</td>
+                        <td class="text-end pe-3">
+                            {% if p.verification_status == 'Verified' %}
+                                <span class="kp-pill success"><span class="kp-dot"></span>Verified</span>
+                            {% elif p.verification_status == 'Payment Claimed' %}
+                                <span class="kp-pill high"><span class="kp-dot"></span>Claimed</span>
+                            {% else %}
+                                <span class="kp-pill urgent"><span class="kp-dot"></span>Pending</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="bi bi-credit-card text-muted fs-4 d-block mb-1 opacity-50"></i>
+                            <div class="fw-bold text-dark fs-8">No payment receipts found</div>
+                            <div class="fs-9">Customer collections recorded in NextSlot will appear here.</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

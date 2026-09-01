@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}My Orders — Mithila AI{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="container">
+        <h1>My Orders</h1>
+        <p class="lead">Your purchased AI agents and SaaS tools.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        {% if orders %}
+        <div class="orders-list">
+            {% for order in orders %}
+            <div class="order-card">
+                <div class="order-header">
+                    <h3>{{ order.product.name }}</h3>
+                    <span class="badge {% if order.product.category == 'ai_agent' %}badge-agent{% else %}badge-saas{% endif %}">
+                        {{ order.product.get_category_display }}
+                    </span>
+                </div>
+                <p style="color: var(--color-muted); margin: 0.5rem 0;">
+                    Order #{{ order.pk }} &middot; {{ order.created_at|date:"M d, Y" }}
+                </p>
+                {% if order.product.access_info %}
+                <div class="access-info" style="margin-top: 1rem;">
+                    <strong>Access Information</strong>
+                    <p style="margin: 0.5rem 0 0;">{{ order.product.access_info|linebreaks }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>You haven't purchased anything yet.</p>
+            <a href="{% url 'products:catalog' %}" class="btn btn-primary" style="margin-top: 1rem;">Browse Products</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

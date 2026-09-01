@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Settings & Localization — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Workspace Settings & Localization</h1>
+    <p class="kp-page-subtitle">Configure organization profile, country localization, currency symbol, and notification rules.</p>
+  </div>
+</div>
+
+<div class="kp-row-split">
+  
+  <!-- Country & Currency Localization Panel -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title"><i class="fa-solid fa-earth-americas"></i> Localization & Regional Currency</div>
+    </div>
+    <div class="kp-panel-body">
+      <form action="{% url 'update_localization' %}" method="POST">
+        {% csrf_token %}
+        <div class="kp-form-group">
+          <label class="kp-label">Select Business Country</label>
+          <select name="country_code" class="kp-select">
+            <option value="IN" {% if currency_symbol == '₹' %}selected{% endif %}>🇮🇳 India (INR - ₹)</option>
+            <option value="US" {% if currency_symbol == '$' %}selected{% endif %}>🇺🇸 United States (USD - $)</option>
+            <option value="AE" {% if currency_symbol == 'AED' %}selected{% endif %}>🇦🇪 United Arab Emirates (AED)</option>
+            <option value="UK" {% if currency_symbol == '£' %}selected{% endif %}>🇬🇧 United Kingdom (GBP - £)</option>
+            <option value="DE" {% if currency_symbol == '€' %}selected{% endif %}>🇩🇪 Germany / EU (EUR - €)</option>
+            <option value="AU" {% if currency_symbol == 'A$' %}selected{% endif %}>🇦🇺 Australia (AUD - A$)</option>
+          </select>
+        </div>
+
+        <div style="background: var(--surface-alt); border: 1px solid var(--border); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.7rem;">
+          <strong>Current Active Formatting:</strong><br>
+          • Currency Symbol: <code>{{ currency_symbol }}</code><br>
+          • Timezone: <code>{{ current_tenant.timezone|default:"Asia/Kolkata" }}</code><br>
+          • Number Format: <code>1,25,000 (Tabular Nums)</code>
+        </div>
+
+        <button type="submit" class="kp-btn kp-btn-primary" style="width: 100%; justify-content: center;">
+          Apply Localization Settings
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Business Profile & Audit Log Access -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title"><i class="fa-solid fa-building"></i> Organization Info</div>
+    </div>
+    <div class="kp-panel-body" style="display: flex; flex-direction: column; gap: 0.75rem;">
+      <div class="kp-form-group">
+        <label class="kp-label">Organization Name</label>
+        <input type="text" class="kp-input" value="{{ org_name }}" readonly>
+      </div>
+
+      <div class="kp-form-group">
+        <label class="kp-label">Organization Tenant Code</label>
+        <input type="text" class="kp-input" value="{{ current_tenant.code }}" readonly>
+      </div>
+
+      <div class="kp-form-group">
+        <label class="kp-label">Security & Audit Status</label>
+        <span class="kp-badge kp-badge-success" style="padding: 0.4rem 0.6rem;">
+          <span class="kp-dot"></span> Multi-Tenant Data Scoped & Audit Logged
+        </span>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

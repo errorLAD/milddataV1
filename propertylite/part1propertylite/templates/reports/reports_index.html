@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Reports | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Executive Reports & Data Exports</h1>
+    <p class="kp-page-subtitle">Profitability statements, rent collection ledgers, and property performance metrics.</p>
+  </div>
+</div>
+
+<!-- Export Options Card -->
+<div class="kp-card p-3 mb-3">
+  <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center">
+    <div class="fw-semibold text-dark fs-7">Instant CSV Data Downloads:</div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'export_csv' report_type='rent' %}" class="kp-btn kp-btn-secondary">
+        <i class="bi bi-file-earmark-spreadsheet text-success me-1"></i> Rent Invoices CSV
+      </a>
+      <a href="{% url 'export_csv' report_type='expenses' %}" class="kp-btn kp-btn-secondary">
+        <i class="bi bi-file-earmark-spreadsheet text-danger me-1"></i> Expenses Ledger CSV
+      </a>
+      <a href="{% url 'export_csv' report_type='properties' %}" class="kp-btn kp-btn-secondary">
+        <i class="bi bi-file-earmark-spreadsheet text-primary me-1"></i> Property Asset CSV
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- 3 Financial Metric Highlights -->
+<div class="kp-metrics-grid mb-3">
+  <div class="kp-card kp-hero-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label text-primary">Gross Revenue</div>
+      <div class="kp-metric-number text-primary">${{ total_revenue|intcomma }}</div>
+    </div>
+  </div>
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label text-danger">Operating Expenses</div>
+      <div class="kp-metric-number text-danger">${{ total_expenses|intcomma }}</div>
+    </div>
+  </div>
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label text-success">Net Profit</div>
+      <div class="kp-metric-number text-success">${{ net_profit|intcomma }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Summary Tables -->
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Recent Rent Invoices</h3>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Tenant</th>
+              <th>Due Date</th>
+              <th class="text-end">Amount ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inv in invoices %}
+            <tr>
+              <td>#{{ inv.invoice_number }}</td>
+              <td>{{ inv.tenant.get_full_name }}</td>
+              <td>{{ inv.due_date }}</td>
+              <td class="text-end tabular-nums">${{ inv.total_due|intcomma }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Recent Operating Expenses</h3>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Property</th>
+              <th>Category</th>
+              <th class="text-end">Amount ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for exp in expenses %}
+            <tr>
+              <td>{{ exp.date }}</td>
+              <td>{{ exp.property.name }}</td>
+              <td>{{ exp.get_category_display }}</td>
+              <td class="text-end tabular-nums text-danger">${{ exp.amount|intcomma }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

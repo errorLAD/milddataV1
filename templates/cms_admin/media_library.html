@@ -1,0 +1,66 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Media Assets Library — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Media Assets Library</h1>
+        <p class="page-subtitle">Upload images, videos, logos, and documents. Copy media URLs for use across CMS pages.</p>
+    </div>
+</div>
+
+<!-- Upload Card -->
+<div class="cms-form-card">
+    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem;">📤 Upload New Media Asset</h3>
+    <form method="post" enctype="multipart/form-data" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: flex-end;">
+        {% csrf_token %}
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Asset Title</label>
+            {{ form.title }}
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Select File</label>
+            {{ form.file }}
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Media Type</label>
+            {{ form.media_type }}
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Alt Text</label>
+            {{ form.alt_text }}
+        </div>
+        <button type="submit" class="btn-cms btn-primary" style="height: 42px;">Upload File</button>
+    </form>
+</div>
+
+<!-- Media Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem;">
+    {% for asset in media_assets %}
+    <div style="background: var(--cms-card); border: 1px solid var(--cms-border); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="height: 140px; background: #0f172a; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+            {% if asset.media_type == 'image' and asset.file %}
+            <img src="{{ asset.file.url }}" alt="{{ asset.alt_text }}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+            {% else %}
+            <span style="font-size: 2.5rem;">📄</span>
+            {% endif %}
+        </div>
+        <div style="padding: 0.85rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="font-weight: 700; font-size: 0.88rem; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ asset.title }}</div>
+                <div style="font-size: 0.76rem; color: var(--cms-muted); margin-top: 0.2rem;">{{ asset.get_media_type_display }} &bull; {{ asset.upload_date|date:"M d" }}</div>
+            </div>
+            <div style="margin-top: 0.85rem; display: flex; gap: 0.4rem;">
+                {% if asset.file %}
+                <button type="button" class="btn-cms btn-outline btn-sm" style="flex: 1; text-align: center;" onclick="navigator.clipboard.writeText('{{ asset.file.url }}'); alert('Media URL copied!');">Copy URL</button>
+                {% endif %}
+                <a href="{% url 'website_cms:media_delete' asset.pk %}" class="btn-cms btn-danger btn-sm" onclick="return confirm('Delete this media asset?');">Delete</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p style="color: var(--cms-muted); grid-column: 1 / -1;">No media files uploaded yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

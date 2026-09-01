@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}CSV Importer — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">CSV Importer</h1>
+    <p class="page-subtitle">Batch import Products, Customers, or Suppliers with validation error previewing.</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'download_template_csv' %}?type={{ entity_type }}" class="btn btn-secondary">📥 Download CSV Template</a>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <span class="panel-title">Upload & Validate CSV File</span>
+  </div>
+  <div class="panel-body">
+    <form method="post" enctype="multipart/form-data" action="{% url 'import_csv' %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="preview">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Import Target *</label>
+          <select name="entity_type" class="form-select" onchange="window.location.href='?entity_type=' + this.value">
+            <option value="products" {% if entity_type == 'products' %}selected{% endif %}>Products</option>
+            <option value="customers" {% if entity_type == 'customers' %}selected{% endif %}>Customers</option>
+            <option value="suppliers" {% if entity_type == 'suppliers' %}selected{% endif %}>Suppliers</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Select CSV File *</label>
+          <input type="file" name="csv_file" accept=".csv" class="form-control" required>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">Validate CSV File</button>
+    </form>
+  </div>
+</div>
+
+{% if preview_rows %}
+<div class="panel">
+  <div class="panel-header" style="background: {% if has_errors %}var(--warning-soft){% else %}var(--success-soft){% endif %};">
+    <span class="panel-title">Pre-Import Validation Report ({{ valid_count }} Valid, {{ error_count }} Errors)</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Row #</th>
+          <th>Status</th>
+          <th>Summary / Errors</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in preview_rows %}
+        <tr style="background-color: {% if not row.is_valid %}var(--danger-soft){% endif %};">
+          <td class="tabular-nums" style="font-weight: 700;">Row {{ row.index }}</td>
+          <td>
+            {% if row.is_valid %}
+              <span class="badge badge-success">Valid</span>
+            {% else %}
+              <span class="badge badge-danger">Validation Error</span>
+            {% endif %}
+          </td>
+          <td style="color: {% if not row.is_valid %}var(--danger){% else %}var(--text-primary){% endif %};">
+            {% if row.is_valid %}
+              Ready to import: {{ row.data.Name|default:row.data.Company_Name|default:row.data }}
+            {% else %}
+              <strong>{{ row.errors }}</strong>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% if valid_count > 0 %}
+  <div class="panel-body" style="border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+    <form method="post" enctype="multipart/form-data" action="{% url 'import_csv' %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="confirm">
+      <input type="hidden" name="entity_type" value="{{ entity_type }}">
+      <button type="submit" class="btn btn-primary">Confirm & Import {{ valid_count }} Valid Records</button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

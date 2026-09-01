@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% load localization_tags %}
+
+{% block title %}Sales & Invoices Register | NextSlot{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2.5">
+
+    <!-- Page Header Row -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+        <div>
+            <div class="kp-eyebrow mb-1">
+                <i class="bi bi-receipt"></i> Accounts Receivable Billing
+            </div>
+            <h1 class="kp-page-title mb-0">Sales &amp; Invoices Register</h1>
+            <p class="kp-page-sub mb-0">Track every customer sales invoice, payments received, and outstanding credit extended.</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{% url 'sales:create' %}" class="btn-kp-primary">
+                <i class="bi bi-plus-lg"></i>
+                <span>New Invoice / Sale</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter & Search Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title">Invoice Filter &amp; Search</h2>
+                <p class="kp-panel-desc">Search by invoice number, customer name, or payment status.</p>
+            </div>
+        </div>
+        <div class="p-3">
+            <form method="get" action="{% url 'sales:list' %}" class="row g-2 align-items-center">
+                <div class="col-12 col-md-6">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-secondary-subtle text-muted fs-8"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control fs-8 border-secondary-subtle" placeholder="Search by invoice number, customer name, phone...">
+                    </div>
+                </div>
+                <div class="col-6 col-md-4">
+                    <select name="method" class="form-select form-select-sm fs-8 border-secondary-subtle">
+                        <option value="">All Payment Methods</option>
+                        <option value="Cash" {% if method_filter == 'Cash' %}selected{% endif %}>Cash</option>
+                        <option value="UPI" {% if method_filter == 'UPI' %}selected{% endif %}>UPI Payment</option>
+                        <option value="Bank Transfer" {% if method_filter == 'Bank Transfer' %}selected{% endif %}>Bank Transfer</option>
+                        <option value="Udhaar / Credit" {% if method_filter == 'Udhaar / Credit' %}selected{% endif %}>Udhaar / Credit</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2 d-flex gap-1.5">
+                    <button type="submit" class="btn-kp-primary w-100 justify-content-center">Filter</button>
+                    {% if search_query or method_filter %}
+                    <a href="{% url 'sales:list' %}" class="btn-kp-secondary px-2" title="Clear Filters"><i class="bi bi-x-circle"></i></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sales Table Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title">Invoices Register</h2>
+                <p class="kp-panel-desc">All sales transactions and invoice balances recorded in NextSlot.</p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="kp-table">
+                <thead>
+                    <tr>
+                        <th class="ps-3" style="min-width: 110px;">Invoice #</th>
+                        <th style="min-width: 160px;">Customer Name</th>
+                        <th style="min-width: 140px;">Date &amp; Time</th>
+                        <th style="min-width: 120px;" class="text-end">Total Amount</th>
+                        <th style="min-width: 120px;" class="text-end">Paid Amount</th>
+                        <th style="min-width: 130px;" class="text-end">Outstanding Credit</th>
+                        <th style="min-width: 110px;">Method</th>
+                        <th class="text-end pe-3" style="min-width: 110px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in sales %}
+                    <tr>
+                        <td class="ps-3 font-monospace text-dark fw-bold">#{{ s.invoice_number }}</td>
+                        <td>
+                            <a href="{% url 'customers:detail' s.customer.pk %}" class="fw-bold text-dark text-decoration-none">
+                                {{ s.customer.name }}
+                            </a>
+                        </td>
+                        <td class="text-muted fs-8">{{ s.sale_date|date:"d M Y, h:i A" }}</td>
+                        <td class="text-end fw-bold text-dark font-monospace fs-7">
+                            {{ s|money_record:s.total_amount }}
+                        </td>
+                        <td class="text-end fw-bold text-success font-monospace fs-7">
+                            {{ s|money_record:s.paid_amount }}
+                        </td>
+                        <td class="text-end font-monospace fs-7">
+                            {% if s.udhaar_amount > 0 %}
+                                <span class="kp-pill urgent"><span class="kp-dot"></span>{{ s|money_record:s.udhaar_amount }}</span>
+                            {% else %}
+                                <span class="kp-pill success"><span class="kp-dot"></span>Settled</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="kp-pill neutral"><span class="kp-dot"></span>{{ s.payment_method }}</span></td>
+                        <td class="text-end pe-3">
+                            <a href="{% url 'sales:detail' s.pk %}" class="btn-kp-secondary py-0.5 px-2">
+                                <i class="bi bi-file-earmark-text"></i> Invoice
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="bi bi-receipt text-muted fs-4 d-block mb-1 opacity-50"></i>
+                            <div class="fw-bold text-dark fs-8">No sales records found</div>
+                            <div class="fs-9 mb-2">Every invoice created in NextSlot will show up here with what's paid and what's on credit.</div>
+                            <a href="{% url 'sales:create' %}" class="btn-kp-primary">
+                                <i class="bi bi-plus-lg"></i> Record First Sale
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

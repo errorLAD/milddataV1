@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Sales &amp; Support — Milda Data{% endblock %}
+
+{% block extra_head %}
+<style>
+    .contact-card {
+        background: #ffffff;
+        padding: 2.5rem;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    }
+    .contact-field-group {
+        margin-bottom: 1.25rem;
+    }
+    .contact-field-label {
+        display: block;
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 0.45rem;
+    }
+    .contact-input {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        background: #f8fafc !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        padding: 0.75rem 1rem !important;
+        color: #0f172a !important;
+        font-family: inherit !important;
+        font-size: 0.94rem !important;
+        outline: none !important;
+        transition: all 0.2s ease !important;
+        display: block !important;
+    }
+    .contact-input:focus {
+        border-color: #2563eb !important;
+        background: #ffffff !important;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12) !important;
+    }
+    textarea.contact-input {
+        resize: vertical;
+        min-height: 130px;
+        line-height: 1.6;
+    }
+    .info-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+    .info-card-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.3rem;
+    }
+    .info-card-val {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 0 3rem; background: #0f172a; color: #ffffff;">
+    <div class="container" style="text-align: center; max-width: 800px;">
+        <span style="display: inline-block; background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px 12px; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem;">Get In Touch</span>
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; margin-bottom: 1rem;">Contact Milda Data Team</h1>
+        <p style="font-size: 1.15rem; color: #94a3b8; line-height: 1.6;">Book a product demo, request enterprise pricing, or inquire about custom software development.</p>
+    </div>
+</section>
+
+<section style="padding: 4rem 0; background: #f8fafc;">
+    <div class="container" style="max-width: 1050px;">
+        <div style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 2.5rem; align-items: start;">
+            <!-- Contact Info Sidebar -->
+            <div>
+                <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-bottom: 0.75rem;">Let's Talk Business</h2>
+                <p style="color: #475569; font-size: 1rem; line-height: 1.6; margin-bottom: 2rem;">Our sales and engineering teams respond to all business inquiries within 24 hours.</p>
+
+                <div class="info-card">
+                    <div class="info-card-label">✉️ Primary Sales Email</div>
+                    <div class="info-card-val"><a href="mailto:{{ cms_settings.contact_email|default:'ab.mishra@yahoo.com' }}" style="color: #2563eb; text-decoration: none;">{{ cms_settings.contact_email|default:'ab.mishra@yahoo.com' }}</a></div>
+                </div>
+
+                {% if cms_settings.phone_number %}
+                <div class="info-card">
+                    <div class="info-card-label">📞 Phone / WhatsApp</div>
+                    <div class="info-card-val">{{ cms_settings.phone_number }}</div>
+                </div>
+                {% endif %}
+
+                <div class="info-card">
+                    <div class="info-card-label">🕒 Business Hours</div>
+                    <div class="info-card-val" style="font-size: 0.95rem;">{{ cms_settings.business_hours|default:'Mon - Fri: 9:00 AM - 6:00 PM IST' }}</div>
+                </div>
+            </div>
+
+            <!-- Redesigned Contact Form Card -->
+            <div class="contact-card">
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 1.5rem;">Send Inquiry Message</h3>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+                        <div class="contact-field-group">
+                            <label class="contact-field-label">Your Name *</label>
+                            <input type="text" name="name" required class="contact-input" placeholder="e.g. John Doe">
+                        </div>
+                        <div class="contact-field-group">
+                            <label class="contact-field-label">Email Address *</label>
+                            <input type="email" name="email" required class="contact-input" placeholder="e.g. john@company.com">
+                        </div>
+                    </div>
+
+                    <div class="contact-field-group">
+                        <label class="contact-field-label">Company Name</label>
+                        <input type="text" name="company" class="contact-input" placeholder="e.g. Acme Corp">
+                    </div>
+
+                    <div class="contact-field-group">
+                        <label class="contact-field-label">Interested Product or Service</label>
+                        <input type="text" name="product_or_service" class="contact-input" value="{{ request.GET.service|default:'' }}" placeholder="e.g. Udhaar, StockFlow, MachineOS, AI Dataset">
+                    </div>
+
+                    <div class="contact-field-group">
+                        <label class="contact-field-label">Your Message / Business Requirements *</label>
+                        <textarea name="message" rows="4" required class="contact-input" placeholder="Please describe your project requirements, volume, or timeline..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.95rem; font-size: 1rem; border-radius: 8px; margin-top: 0.5rem;">Submit Contact Request &rarr;</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

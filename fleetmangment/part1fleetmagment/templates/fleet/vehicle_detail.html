@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}Vehicle {{ vehicle.vehicle_code }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h1 class="page-title mb-0">{{ vehicle.vehicle_code }} - {{ vehicle.registration_number }}</h1>
+    <p class="page-subtitle mb-0">{{ vehicle.brand }} {{ vehicle.model }} ({{ vehicle.year }}) | {{ vehicle.get_vehicle_type_display }}</p>
+  </div>
+  <a href="{% url 'vehicles_list' %}" class="btn-kp btn-kp-secondary">Back to Vehicles</a>
+</div>
+
+<div class="row g-3 mb-3">
+  <!-- Vehicle Specs Summary Card -->
+  <div class="col-lg-8">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Asset Specifications & Telemetry</h3>
+      </div>
+      <div class="kp-panel-body">
+        <div class="row g-3" style="font-size: 0.72rem;">
+          <div class="col-sm-4">
+            <span class="text-muted d-block">VIN / Chassis:</span>
+            <strong class="text-dark num">{{ vehicle.vin|default:"VIN-99382104" }}</strong>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted d-block">Engine Number:</span>
+            <strong class="text-dark num">{{ vehicle.engine_number|default:"ENG-441209" }}</strong>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted d-block">Fuel Type:</span>
+            <strong class="text-dark">{{ vehicle.get_fuel_type_display }}</strong>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted d-block">Odometer (km):</span>
+            <strong class="text-dark num">{{ vehicle.mileage_km|floatformat:0 }} km</strong>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted d-block">Engine Hours:</span>
+            <strong class="text-dark num">{{ vehicle.engine_hours|floatformat:0 }} hrs</strong>
+          </div>
+          <div class="col-sm-4">
+            <span class="text-muted d-block">Assigned Driver:</span>
+            <strong class="text-primary">{{ vehicle.current_driver.get_full_name|default:"Unassigned" }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Health Score Calculation Card -->
+  <div class="col-lg-4">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Fleet Health Score Engine</h3>
+      </div>
+      <div class="kp-panel-body text-center">
+        <div class="metric-val display-6 fw-bold {% if health_info.score >= 80 %}text-success{% elif health_info.score >= 60 %}text-warning{% else %}text-danger{% endif %}">
+          {{ health_info.score }}<span style="font-size: 1rem; font-weight: 500;" class="text-muted"> / 100</span>
+        </div>
+        <p class="text-muted mb-3" style="font-size: 0.68rem;">Calculated in real-time from maintenance logs, document expiries, mileage, and digital inspection results.</p>
+        
+        <div class="text-start border-top pt-2" style="font-size: 0.68rem;">
+          <span class="fw-bold text-dark d-block mb-1">Score Breakdown & Causes:</span>
+          <ul class="ps-3 mb-0 text-secondary">
+            {% for item in health_info.deductions %}
+            <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs for History -->
+<div class="kp-panel">
+  <div class="kp-panel-header p-2">
+    <ul class="nav nav-tabs border-0" id="vehicleTabs" style="font-size: 0.72rem;">
+      <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-maint">Maintenance History</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-fuel">Fuel Logs</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-exp">Expenses</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-docs">Documents</button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="tab-content">
+    <!-- Maintenance Tab -->
+    <div class="tab-pane fade show active" id="tab-maint">
+      <div class="table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Service Title</th>
+              <th>Type</th>
+              <th>Workshop</th>
+              <th>Total Cost</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in maintenance_history %}
+            <tr>
+              <td class="num">{{ m.service_date }}</td>
+              <td class="fw-semibold">{{ m.title }}</td>
+              <td>{{ m.get_maintenance_type_display }}</td>
+              <td>{{ m.workshop_name }}</td>
+              <td class="num font-bold">${{ m.total_cost }}</td>
+              <td><span class="status-pill brand"><span class="status-dot"></span> {{ m.get_status_display }}</span></td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center py-3 text-muted">No maintenance logs.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Fuel Tab -->
+    <div class="tab-pane fade" id="tab-fuel">
+      <div class="table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Liters</th>
+              <th>Price/L</th>
+              <th>Total Cost</th>
+              <th>Odometer</th>
+              <th>Station</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in fuel_history %}
+            <tr>
+              <td class="num">{{ f.date }}</td>
+              <td class="num">{{ f.fuel_quantity_liters }} L</td>
+              <td class="num">${{ f.price_per_liter }}</td>
+              <td class="num fw-bold">${{ f.total_cost }}</td>
+              <td class="num">{{ f.odometer_km }} km</td>
+              <td>{{ f.fuel_station }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center py-3 text-muted">No fuel logs recorded.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Expenses Tab -->
+    <div class="tab-pane fade" id="tab-exp">
+      <div class="table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in expense_history %}
+            <tr>
+              <td class="num">{{ e.date }}</td>
+              <td>{{ e.get_category_display }}</td>
+              <td class="num fw-bold">${{ e.amount }}</td>
+              <td>{{ e.notes }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center py-3 text-muted">No expense records.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Documents Tab -->
+    <div class="tab-pane fade" id="tab-docs">
+      <div class="table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Document Title</th>
+              <th>Type</th>
+              <th>Expiry Date</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in documents %}
+            <tr>
+              <td class="fw-semibold">{{ d.title }}</td>
+              <td>{{ d.get_doc_type_display }}</td>
+              <td class="num">{{ d.expiry_date }}</td>
+              <td>
+                {% if d.status == 'EXPIRED' %}
+                <span class="status-pill danger"><span class="status-dot"></span> Expired</span>
+                {% elif d.status == 'EXPIRING_SOON' %}
+                <span class="status-pill warning"><span class="status-dot"></span> Expiring Soon</span>
+                {% else %}
+                <span class="status-pill success"><span class="status-dot"></span> Valid</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center py-3 text-muted">No documents uploaded.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}{{ customer.company_name }} — Customer Detail{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ customer.company_name }}</h1>
+    <p class="page-subtitle">Contact: {{ customer.contact_person|default:'N/A' }} • Email: {{ customer.email }} • Country: {{ customer.country }} • Tax ID: {{ customer.tax_id|default:'N/A' }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'invoice_create' %}?customer_id={{ customer.id }}" class="btn btn-primary">+ Create Invoice</a>
+    <a href="{% url 'quote_create' %}?customer_id={{ customer.id }}" class="btn btn-secondary">+ Create Quote</a>
+  </div>
+</div>
+
+<div class="metrics-grid">
+  <div class="metric-card hero-card">
+    <div class="metric-label">Total Sales Volume</div>
+    <div class="metric-value money">{{ customer.total_sales|money:org }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Outstanding Balance</div>
+    <div class="metric-value money" style="color: var(--brand);">{{ customer.outstanding_balance|money:org }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Payment Terms</div>
+    <div class="metric-value">{{ customer.payment_terms }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <span class="panel-title">Invoices History</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Date</th>
+          <th>Due Date</th>
+          <th>Status</th>
+          <th>Total</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td><a href="{% url 'invoice_detail' inv.id %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">{{ inv.invoice_number }}</a></td>
+          <td>{{ inv.invoice_date|date_fmt:org }}</td>
+          <td>{{ inv.due_date|date_fmt:org }}</td>
+          <td>
+            {% if inv.status == 'PAID' %}
+              <span class="badge badge-success"><span class="badge-dot-mark"></span> Paid</span>
+            {% elif inv.status == 'OVERDUE' %}
+              <span class="badge badge-danger"><span class="badge-dot-mark"></span> Overdue</span>
+            {% else %}
+              <span class="badge badge-warning"><span class="badge-dot-mark"></span> {{ inv.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td class="money" style="font-weight: 650;">{{ inv.total_amount|money:org }}</td>
+          <td class="money">{{ inv.remaining_balance|money:org }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No invoices generated for this customer.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

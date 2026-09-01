@@ -1,0 +1,46 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Team Members — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Team Members Directory</h1>
+        <p class="page-subtitle">Manage public team profiles, bios, photos, and social links.</p>
+    </div>
+    <a href="{% url 'website_cms:team_create' %}" class="btn-cms btn-primary">+ Add Team Member</a>
+</div>
+
+<div class="cms-table-card">
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Public Email</th>
+                    <th>Sort Order</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in team %}
+                <tr>
+                    <td><strong>{{ member.name }}</strong></td>
+                    <td>{{ member.role }}</td>
+                    <td>{{ member.public_email|default:'-' }}</td>
+                    <td>{{ member.sort_order }}</td>
+                    <td><span class="badge {% if member.is_active %}badge-success{% else %}badge-danger{% endif %}">{% if member.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+                    <td>
+                        <a href="{% url 'website_cms:team_edit' member.pk %}" class="btn-cms btn-outline btn-sm">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">No team members added yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

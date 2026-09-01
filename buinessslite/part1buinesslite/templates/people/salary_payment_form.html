@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Record Payout / Wage - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Record Employee Payout / Wage</h1>
+        <div class="page-subtitle">Disburse monthly salary, daily wage, piece work pay, advance, or bonus</div>
+    </div>
+</div>
+
+<div class="card-panel" style="max-width: 520px;">
+    <div class="panel-header">
+        <div class="panel-title">Payout Information</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST" action="{% url 'salary_payment_create' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Employee / Staff Member</label>
+                <select name="employee_id" class="form-select" required>
+                    <option value="">Select Employee</option>
+                    {% for e in employees %}
+                    <option value="{{ e.id }}">{{ e.name }} ({{ e.job_title }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Payout Type</label>
+                    <select name="payout_type" class="form-select" required>
+                        {% for val, label in payout_types %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Amount Paid</label>
+                    <input type="number" step="0.01" name="amount" class="form-input" placeholder="0.00" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Payment Date</label>
+                    <input type="date" name="payment_date" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payment Mode</label>
+                    <select name="payment_mode" class="form-select" required>
+                        {% for val, label in modes %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Reference / Transaction ID (UPI / UTR / Check #)</label>
+                <input type="text" name="reference_number" class="form-input" placeholder="e.g. UPI-889021 or Cash Voucher">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notes (e.g. Paid for 3 days repair work / small task)</label>
+                <textarea name="notes" class="form-textarea" rows="2" placeholder="Describe work done or payment details..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-saas btn-primary">Save Payout Record</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

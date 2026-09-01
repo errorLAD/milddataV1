@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Account Suspended | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-12 col-md-6 text-center">
+        <div class="card card-custom p-5 border-danger shadow-sm">
+            <div class="text-danger mb-3">
+                <i class="bi bi-shield-lock-fill display-1"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-2">Business Account Suspended</h3>
+            <p class="text-muted mb-4 fs-6">
+                Your business account <strong>"{{ request.business.name }}"</strong> has been temporarily blocked or suspended by the platform administrator.
+            </p>
+            <div class="p-3 bg-light rounded text-secondary fs-7 mb-4">
+                If you believe this is an error or wish to restore access, please contact platform support or system administrator.
+            </div>
+            <div>
+                <a href="{% url 'accounts:logout' %}" class="btn btn-outline-danger px-4 py-2 fw-semibold">
+                    <i class="bi bi-box-arrow-right me-1"></i> Log Out
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

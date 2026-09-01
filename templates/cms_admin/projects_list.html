@@ -1,0 +1,49 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Projects &amp; Portfolio CMS — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Portfolio Projects CMS</h1>
+        <p class="page-subtitle">Showcase case studies, client success stories, challenge/solution analysis, and tech stacks.</p>
+    </div>
+    <a href="{% url 'website_cms:project_create' %}" class="btn-cms btn-primary">+ Add New Project</a>
+</div>
+
+<div class="cms-table-card">
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Project Title</th>
+                    <th>Client / Category</th>
+                    <th>Status</th>
+                    <th>Featured</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td>
+                        <strong>{{ project.title }}</strong>
+                        <div style="font-size: 0.76rem; color: var(--cms-muted);">/projects/{{ project.slug }}/</div>
+                    </td>
+                    <td>{{ project.client_name|default:'Internal' }}<br><small style="color: var(--cms-muted);">{{ project.category }}</small></td>
+                    <td><span class="badge {% if project.status == 'published' %}badge-success{% else %}badge-warning{% endif %}">{{ project.get_status_display }}</span></td>
+                    <td>{% if project.is_featured %}<span class="badge badge-info">⭐ Featured</span>{% else %}-{% endif %}</td>
+                    <td>
+                        <a href="{% url 'website_cms:project_edit' project.pk %}" class="btn-cms btn-outline btn-sm">Edit</a>
+                        <a href="{% url 'website_cms:project_detail' project.slug %}" target="_blank" class="btn-cms btn-outline btn-sm">View Live</a>
+                        <a href="{% url 'website_cms:project_delete' project.pk %}" class="btn-cms btn-danger btn-sm" onclick="return confirm('Delete this project?');">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No portfolio projects configured yet. <a href="{% url 'website_cms:project_create' %}">Add first project</a>.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

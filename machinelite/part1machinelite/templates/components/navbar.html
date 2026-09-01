@@ -1,0 +1,223 @@
+{% include 'components/guest_banner.html' %}
+
+<header style="background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.5rem 1rem; position: relative;">
+  <div style="max-width: 1440px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: nowrap; gap: 0.75rem;">
+    
+    <!-- 1. Left Group: Hamburger + Brand + Tenant Pill -->
+    <div style="display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0;">
+      <button class="kp-icon-btn kp-mobile-only" id="mobile-drawer-toggle" aria-label="Toggle Mobile Menu" style="display: none;">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <a href="{% url 'dashboard' %}" style="display: flex; align-items: center; gap: 0.4rem; text-decoration: none; color: var(--text-primary);">
+        <div style="width: 28px; height: 28px; background: var(--brand); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 800; font-size: 0.8rem;">
+          M
+        </div>
+        <span style="font-weight: 700; font-size: 0.9rem; letter-spacing: -0.02em;">Machine OS</span>
+      </a>
+
+      {% if is_guest %}
+        <span class="kp-badge kp-badge-warning" style="text-transform: uppercase;">
+          <span class="kp-dot"></span> Guest Mode
+        </span>
+      {% else %}
+        <span class="kp-badge kp-badge-brand" style="text-transform: uppercase;">
+          <span class="kp-dot"></span> {{ org_name }}
+        </span>
+      {% endif %}
+    </div>
+
+    <!-- 2. Center Group: Categorized Dropdown Navigation Menu -->
+    <nav class="kp-desktop-nav" style="display: flex; align-items: center; gap: 0.25rem;">
+      
+      <!-- Dashboard -->
+      <a href="{% url 'dashboard' %}" class="kp-btn kp-btn-secondary" style="border: none;">
+        <i class="fa-solid fa-chart-pie"></i> Dashboard
+      </a>
+
+      <!-- Fleet & Health Dropdown -->
+      <div class="kp-nav-dropdown">
+        <button class="kp-btn kp-btn-secondary" style="border: none;">
+          <i class="fa-solid fa-truck-monster"></i> Fleet & Health <i class="fa-solid fa-chevron-down" style="font-size: 0.55rem; margin-left: 0.15rem;"></i>
+        </button>
+        <div class="kp-dropdown-menu">
+          <a href="{% url 'machine_list' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-list-check" style="color: var(--brand);"></i> Heavy Equipment Directory
+          </a>
+          <a href="{% url 'fleet_map' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-earth-americas" style="color: var(--info);"></i> Equipment Site Map
+          </a>
+          <a href="{% url 'machine_health_matrix' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-heart-pulse" style="color: var(--success);"></i> Fleet Health (0–100) Matrix
+          </a>
+        </div>
+      </div>
+
+      <!-- Operations & Logistics Dropdown -->
+      <div class="kp-nav-dropdown">
+        <button class="kp-btn kp-btn-secondary" style="border: none;">
+          <i class="fa-solid fa-route"></i> Operations <i class="fa-solid fa-chevron-down" style="font-size: 0.55rem; margin-left: 0.15rem;"></i>
+        </button>
+        <div class="kp-dropdown-menu">
+          <a href="{% url 'operator_list' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-id-card" style="color: var(--brand);"></i> Drivers & Operators Roster
+          </a>
+          <a href="{% url 'trip_list' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-location-arrow" style="color: var(--info);"></i> Trips & Dispatch System
+          </a>
+          <a href="{% url 'inventory_list' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-boxes-stacked" style="color: var(--warning);"></i> Spare Parts & Inventory
+          </a>
+          <a href="{% url 'rental_list' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-file-contract" style="color: var(--brand);"></i> Equipment Rental Contracts
+          </a>
+        </div>
+      </div>
+
+      <!-- Finance & Analytics Dropdown -->
+      <div class="kp-nav-dropdown">
+        <button class="kp-btn kp-btn-secondary" style="border: none;">
+          <i class="fa-solid fa-scale-balanced"></i> Analytics <i class="fa-solid fa-chevron-down" style="font-size: 0.55rem; margin-left: 0.15rem;"></i>
+        </button>
+        <div class="kp-dropdown-menu">
+          <a href="{% url 'fuel_list' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-gas-pump" style="color: var(--warning);"></i> Fuel Operations & Spikes
+          </a>
+          <a href="{% url 'maintenance_list' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-wrench" style="color: var(--danger);"></i> Maintenance & Repairs
+          </a>
+          <a href="{% url 'profit_loss' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-chart-line" style="color: var(--success);"></i> Machine-Level P&L Engine
+          </a>
+          <a href="{% url 'reports_overview' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-chart-column" style="color: var(--brand);"></i> Executive Reports
+          </a>
+          <a href="{% url 'import_index' %}" class="kp-dropdown-item">
+            <i class="fa-solid fa-file-import" style="color: var(--info);"></i> Bulk CSV Import & Export
+          </a>
+        </div>
+      </div>
+
+    </nav>
+
+    <!-- 3. Right Action Utilities -->
+    <div style="display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0;">
+      
+      <!-- Global Search CTA -->
+      <button class="kp-btn kp-btn-secondary" data-modal-target="modal-global-search" style="font-size: 0.65rem; color: var(--text-secondary);">
+        <i class="fa-solid fa-magnifying-glass"></i> <span class="kp-desktop-only">Search...</span> <kbd style="background: var(--border); padding: 0.05rem 0.25rem; border-radius: 3px; font-size: 0.58rem;">Ctrl+K</kbd>
+      </button>
+
+      <!-- Notifications Bell Icon -->
+      <a href="{% url 'notification_list' %}" class="kp-icon-btn" style="position: relative;" title="Notifications">
+        <i class="fa-solid fa-bell"></i>
+        <span style="position: absolute; top: -3px; right: -3px; background: var(--danger); color: #FFFFFF; width: 14px; height: 14px; border-radius: 50%; font-size: 0.55rem; font-weight: 700; display: flex; align-items: center; justify-content: center;">!</span>
+      </a>
+
+      <!-- Settings Icon -->
+      <a href="{% url 'settings_index' %}" class="kp-icon-btn" title="Settings & Localization">
+        <i class="fa-solid fa-gear"></i>
+      </a>
+
+      <!-- AI Assistant Icon Button -->
+      <a href="{% url 'ai_assistant_chat' %}" class="kp-icon-btn" title="AI Fleet Business Assistant" style="color: var(--brand); border-color: var(--brand-soft-border); background-color: var(--brand-soft);">
+        <i class="fa-solid fa-robot"></i>
+      </a>
+
+      {% if user.is_superuser %}
+        <a href="{% url 'admin_portal_dashboard' %}" class="kp-icon-btn" title="System Administrator Portal" style="color: var(--danger); border-color: var(--danger-border);">
+          <i class="fa-solid fa-shield-halved"></i>
+        </a>
+      {% endif %}
+
+      {% if is_guest %}
+        <a href="{% url 'upgrade_account' %}" class="kp-btn kp-btn-primary">Register Account</a>
+      {% elif user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="kp-icon-btn" title="Sign Out">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </a>
+      {% else %}
+        <a href="{% url 'login' %}" class="kp-btn kp-btn-primary">Sign In</a>
+      {% endif %}
+    </div>
+
+  </div>
+</header>
+
+{% include 'components/global_search_modal.html' %}
+
+<!-- Mobile Navigation Drawer -->
+<div class="kp-mobile-drawer-backdrop" id="mobile-drawer">
+  <div class="kp-mobile-drawer">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); background: var(--surface-alt);">
+      <div style="display: flex; align-items: center; gap: 0.4rem;">
+        <div style="width: 24px; height: 24px; background: var(--brand); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 800; font-size: 0.75rem;">M</div>
+        <span style="font-weight: 700; font-size: 0.85rem;">Machine OS Menu</span>
+      </div>
+      <button class="kp-icon-btn" id="mobile-drawer-close"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    
+    <div style="padding: 1rem; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto;">
+      <a href="{% url 'dashboard' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-chart-pie"></i> Operations Dashboard
+      </a>
+      <a href="{% url 'machine_list' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-truck-monster"></i> Heavy Equipment Fleet
+      </a>
+      <a href="{% url 'fleet_map' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%; color: var(--brand);">
+        <i class="fa-solid fa-earth-americas"></i> Equipment Site Map
+      </a>
+      <a href="{% url 'machine_health_matrix' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%; color: var(--success);">
+        <i class="fa-solid fa-heart-pulse"></i> Health Score (0-100) Matrix
+      </a>
+      <a href="{% url 'operator_list' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-id-card"></i> Drivers & Operators Roster
+      </a>
+      <a href="{% url 'trip_list' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-route"></i> Trips & Dispatch System
+      </a>
+      <a href="{% url 'inventory_list' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-boxes-stacked"></i> Spare Parts & Inventory
+      </a>
+      <a href="{% url 'rental_list' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-file-contract"></i> Equipment Rental Contracts
+      </a>
+      <a href="{% url 'fuel_list' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-gas-pump"></i> Fuel Operations & Spikes
+      </a>
+      <a href="{% url 'maintenance_list' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-wrench"></i> Maintenance & Repairs
+      </a>
+      <a href="{% url 'document_list' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-file-contract"></i> Compliance Documents
+      </a>
+      <a href="{% url 'profit_loss' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-scale-balanced"></i> Machine-Level P&L
+      </a>
+      <a href="{% url 'reports_overview' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-chart-column"></i> Reports & Analytics
+      </a>
+      <a href="{% url 'ai_assistant_chat' %}" class="kp-btn kp-btn-primary" style="justify-content: flex-start; width: 100%;">
+        <i class="fa-solid fa-robot"></i> AI Fleet Business Assistant
+      </a>
+      
+      {% if user.is_superuser %}
+        <a href="{% url 'admin_portal_dashboard' %}" class="kp-btn kp-btn-secondary" style="justify-content: flex-start; width: 100%; color: var(--danger); border-color: var(--danger-border);">
+          <i class="fa-solid fa-shield-halved"></i> System Admin Portal
+        </a>
+      {% endif %}
+
+      <hr style="border: none; border-top: 1px solid var(--border); margin: 0.5rem 0;">
+      
+      {% if is_guest %}
+        <a href="{% url 'upgrade_account' %}" class="kp-btn kp-btn-primary" style="justify-content: center; width: 100%;">
+          Create Full Account
+        </a>
+      {% else %}
+        <a href="{% url 'logout' %}" class="kp-btn kp-btn-secondary" style="justify-content: center; width: 100%; color: var(--danger);">
+          <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+        </a>
+      {% endif %}
+    </div>
+  </div>
+</div>

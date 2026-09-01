@@ -1,0 +1,431 @@
+{% load indian_formatting %}
+<!-- Scoped Khata Paper Notebook Styles -->
+<style>
+    .khata-paper {
+        background-color: #faf6ec;
+        background-image: repeating-linear-gradient(
+            transparent,
+            transparent 35px,
+            #e4dac9 35px,
+            #e4dac9 36px
+        );
+        line-height: 36px;
+        padding: 24px 28px 28px 64px;
+        border-radius: 10px;
+        border: 1px solid #e2d5c1;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+        position: relative;
+        font-family: 'Inter', sans-serif;
+        color: #1a1a1a;
+        min-height: 400px;
+    }
+
+    /* Left Margin Line like physical ledger notebook */
+    .khata-paper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 48px;
+        width: 2px;
+        background-color: #f0a3a3;
+        opacity: 0.75;
+        pointer-events: none;
+    }
+
+    /* Handwritten font for amount only */
+    .khata-amount {
+        font-family: 'Caveat', 'Kalam', cursive;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #000000;
+        vertical-align: middle;
+    }
+
+    .khata-row {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 2px 0;
+        border-bottom: 1px solid transparent;
+        transition: all 0.2s ease;
+    }
+
+    .khata-row-content {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 0.95rem;
+    }
+
+    /* Pen cut-the-line strikethrough animation */
+    .khata-row.paid .khata-row-content::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 100%;
+        height: 2px;
+        background-color: #1a1a1a;
+        transform: translateY(-50%) rotate(-0.5deg);
+        animation: penStrike 0.5s ease-out forwards;
+    }
+
+    .khata-row.partially-paid .khata-row-content::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 100%;
+        height: 2px;
+        border-bottom: 2px dashed #444;
+        transform: translateY(-50%);
+        animation: penStrike 0.5s ease-out forwards;
+    }
+
+    @keyframes penStrike {
+        from { width: 0%; }
+        to { width: 100%; }
+    }
+
+    /* Stamped Paid Note */
+    .khata-stamp {
+        font-family: 'Caveat', 'Kalam', cursive;
+        color: #b91c1c;
+        font-size: 1rem;
+        font-weight: 700;
+        border: 1px dashed #b91c1c;
+        padding: 0px 8px;
+        border-radius: 4px;
+        display: inline-block;
+        transform: rotate(-1.5deg);
+        background-color: rgba(254, 242, 242, 0.7);
+        margin-left: 8px;
+        line-height: 1.3;
+    }
+
+    .khata-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 16px;
+        margin-bottom: 12px;
+        border-bottom: 2px solid #d4c5b0;
+    }
+
+    .khata-inline-card {
+        background-color: #fff9ef;
+        border: 1px dashed #d1c1a9;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+        line-height: 1.5;
+    }
+</style>
+
+<div class="khata-paper">
+    <!-- Header with Trust Score & Fixed "+" Button -->
+    <div class="khata-header">
+        <div class="d-flex align-items-center gap-3">
+            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-book me-2"></i> Khata Notebook Ledger</h5>
+            <!-- Trust Badge in Khata Header -->
+            <span class="badge {{ customer.trust_score.badge_class }} rounded-pill px-3 py-1 fs-7" title="Customer Trust Score Tier">
+                <i class="bi bi-shield-check me-1"></i> Trust Score: {{ customer.trust_score.label }}
+            </span>
+        </div>
+
+        <button class="btn btn-dark btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 36px; height: 36px;" id="toggle-add-khata-btn" title="Add Udhaar Entry">
+            <i class="bi bi-plus-lg fs-5"></i>
+        </button>
+    </div>
+
+    <!-- Inline Add Entry Form (Hidden by Default) -->
+    <div id="add-khata-form-container" class="khata-inline-card shadow-sm" style="display: none;">
+        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pencil-square me-1"></i> New Khata Entry</h6>
+        <form method="post" action="{% url 'udhaar:create' %}" id="khata-add-form">
+            {% csrf_token %}
+            <input type="hidden" name="customer" value="{{ customer.pk }}">
+            <input type="hidden" name="source" value="khata">
+            
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label fs-7 fw-semibold text-secondary">Product / Item</label>
+                    <select name="product_id" id="khata-product-select" class="form-select fs-7">
+                        <option value="">-- Select Product (Optional) --</option>
+                        {% for prod in products %}
+                        <option value="{{ prod.id }}" data-price="{{ prod.selling_price }}">{{ prod.name }} (₹{{ prod.selling_price|floatformat:2 }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fs-7 fw-semibold text-secondary">Amount (₹) *</label>
+                    <input type="number" step="0.01" name="total_amount" id="khata-amount-input" class="form-control fs-7" placeholder="0.00" required>
+                </div>
+
+                <div class="col-md-5">
+                    <label class="form-label fs-7 fw-semibold text-secondary">Note / Particulars</label>
+                    <input type="text" name="notes" class="form-control fs-7" placeholder="Optional notes (e.g. 2kg Sugar, paid partial)">
+                </div>
+
+                <div class="col-12 d-flex align-items-center justify-content-between pt-2">
+                    <small class="text-muted fs-8"><i class="bi bi-clock me-1"></i> Timestamp: Server standard ({{ "now"|date:"d M Y, h:i A" }})</small>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-light btn-sm border" id="cancel-add-khata-btn">Cancel</button>
+                        <button type="submit" class="btn btn-primary-custom btn-sm"><i class="bi bi-check-circle me-1"></i> Save to Ledger</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Khata Entries List -->
+    <div class="khata-entries-list" id="khata-entries-container">
+        {% for u in udhaars %}
+            {% if u.status == 'Paid' %}
+                <!-- Fully Paid Row -->
+                <div class="khata-row paid py-1">
+                    <div class="khata-row-content">
+                        <span class="fw-semibold text-secondary">{{ u.created_at|date:"d M Y" }}</span>
+                        <span class="text-dark">—</span>
+                        <span class="text-dark">{{ u.notes|default:"Udhaar Record" }}</span>
+                        <span class="text-dark">—</span>
+                        <span class="khata-amount">₹{{ u.total_amount|floatformat:2 }}</span>
+                        
+                        <!-- Stamped note with payment date -->
+                        {% with last_pay=u.payments.last %}
+                        <span class="khata-stamp">
+                            Paid ₹{{ u.paid_amount|default:u.total_amount|floatformat:2 }} on {{ last_pay.created_at|date:"d M Y, h:i A"|default:u.created_at|date:"d M Y" }}
+                        </span>
+                        {% endwith %}
+                    </div>
+                </div>
+            {% elif u.paid_amount > 0 and u.remaining_amount > 0 %}
+                <!-- Partially Paid Original Row -->
+                <div class="khata-row partially-paid py-1 mb-1">
+                    <div class="khata-row-content">
+                        <span class="fw-semibold text-secondary">{{ u.created_at|date:"d M Y" }}</span>
+                        <span class="text-dark">—</span>
+                        <span class="text-dark">{{ u.notes|default:"Udhaar Record" }}</span>
+                        <span class="text-dark">—</span>
+                        <span class="khata-amount">Paid ₹{{ u.paid_amount|floatformat:2 }}, ₹{{ u.remaining_amount|floatformat:2 }} remaining</span>
+                        
+                        {% with last_pay=u.payments.last %}
+                        <span class="khata-stamp">
+                            Paid ₹{{ u.paid_amount|floatformat:2 }} on {{ last_pay.created_at|date:"d M Y, h:i A"|default:u.created_at|date:"d M Y" }}
+                        </span>
+                        {% endwith %}
+                    </div>
+                </div>
+
+                <!-- Remaining Open Balance Row -->
+                <div class="khata-row py-1 ps-3" id="khata-row-{{ u.pk }}">
+                    <div class="khata-row-content">
+                        <span class="fw-semibold text-primary"><i class="bi bi-arrow-return-right me-1"></i> {{ u.created_at|date:"d M Y" }}</span>
+                        <span class="text-dark">—</span>
+                        <span class="text-dark">{{ u.notes|default:"Udhaar" }} (Remaining Balance)</span>
+                        <span class="text-dark">—</span>
+                        <span class="khata-amount">₹{{ u.remaining_amount|floatformat:2 }}</span>
+                    </div>
+
+                    <!-- Cut the Line Action Button -->
+                    <div class="d-flex align-items-center gap-1 ms-2">
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-circle py-0 px-2 toggle-pay-prompt" data-udhaar-id="{{ u.pk }}" title="Mark as Paid (Cut the line)">
+                            ✓
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Inline Payment Prompt Form for this row -->
+                <div class="khata-inline-card py-2 px-3 my-1 ms-3 shadow-sm" id="pay-prompt-{{ u.pk }}" style="display: none;">
+                    <form method="post" action="{% url 'udhaar:record_payment' u.pk %}" class="khata-pay-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="source" value="khata">
+                        <input type="hidden" name="payment_method" value="Cash">
+                        
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="fw-bold text-dark fs-7">Record Payment for ₹{{ u.remaining_amount|floatformat:2 }}:</div>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="number" step="0.01" name="amount" class="form-control form-control-sm fs-7" value="{{ u.remaining_amount }}" max="{{ u.remaining_amount }}" style="width: 130px;" required>
+                                <button type="submit" class="btn btn-success btn-sm py-1"><i class="bi bi-check2-circle me-1"></i> Confirm</button>
+                                <button type="button" class="btn btn-light border btn-sm py-1 cancel-pay-prompt" data-udhaar-id="{{ u.pk }}">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            {% else %}
+                <!-- Open Unpaid Row -->
+                <div class="khata-row py-1" id="khata-row-{{ u.pk }}">
+                    <div class="khata-row-content">
+                        <span class="fw-semibold text-secondary">{{ u.created_at|date:"d M Y" }}</span>
+                        <span class="text-dark">—</span>
+                        <span class="text-dark">{{ u.notes|default:"Udhaar Item" }}</span>
+                        <span class="text-dark">—</span>
+                        <span class="khata-amount">₹{{ u.remaining_amount|floatformat:2 }}</span>
+                    </div>
+
+                    <!-- Cut the Line Action Button -->
+                    <div class="d-flex align-items-center gap-1 ms-2">
+                        <button type="button" class="btn btn-sm btn-outline-success rounded-circle py-0 px-2 toggle-pay-prompt" data-udhaar-id="{{ u.pk }}" title="Mark as Paid (Cut the line)">
+                            ✓
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Inline Payment Prompt Form for this row -->
+                <div class="khata-inline-card py-2 px-3 my-1 shadow-sm" id="pay-prompt-{{ u.pk }}" style="display: none;">
+                    <form method="post" action="{% url 'udhaar:record_payment' u.pk %}" class="khata-pay-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="source" value="khata">
+                        <input type="hidden" name="payment_method" value="Cash">
+                        
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                            <div class="fw-bold text-dark fs-7">Record Payment (Full or Partial):</div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fs-8 text-muted">Amount (₹):</span>
+                                <input type="number" step="0.01" name="amount" class="form-control form-control-sm fs-7" value="{{ u.remaining_amount }}" max="{{ u.remaining_amount }}" style="width: 130px;" required>
+                                <button type="submit" class="btn btn-success btn-sm py-1"><i class="bi bi-check2-circle me-1"></i> Confirm</button>
+                                <button type="button" class="btn btn-light border btn-sm py-1 cancel-pay-prompt" data-udhaar-id="{{ u.pk }}">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            {% endif %}
+        {% empty %}
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-journal-text fs-1 opacity-50 d-block mb-2"></i>
+                <p class="mb-0 fs-6">No khata entries recorded yet.</p>
+                <small class="fs-7">Click the <strong>+</strong> button above to write a new entry on this paper.</small>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- PAY OUTSTANDING CARD (STATEMENT QR & UPI PAYMENT APP) -->
+{% if customer.get_outstanding_udhaar > 0 %}
+<div class="card card-custom p-4 mt-4 border-2 border-primary shadow-sm text-center">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 border-bottom pb-2">
+        <span class="badge bg-danger-subtle text-danger fw-bold fs-7 px-3 py-1 rounded-pill">
+            <i class="bi bi-clock-history me-1"></i> PAY OUTSTANDING
+        </span>
+        <a href="{% url 'customers:public_detail' customer.pk %}" target="_blank" class="btn btn-outline-primary btn-sm fw-semibold">
+            <i class="bi bi-box-arrow-up-right me-1"></i> Open Customer Statement Link
+        </a>
+    </div>
+
+    <h2 class="fw-extrabold text-dark display-6 mb-1">{{ customer.get_outstanding_udhaar|inr }}</h2>
+    <div class="text-muted fs-7 mb-4">
+        UPI ID: <strong class="text-dark font-monospace bg-light px-2 py-1 rounded border">{{ business_settings.upi_id|default:"shopname@upi" }}</strong>
+    </div>
+
+    <!-- DUAL QR CODE OPTIONS SECTION -->
+    <div class="row g-4 align-items-stretch justify-content-center">
+        <!-- 1. CUSTOMER STATEMENT QR CODE (SCANS TO OPEN UDHAAR STATEMENT ONLINE) -->
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border text-center h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <span class="badge bg-primary-subtle text-primary fw-bold fs-8 mb-2"><i class="bi bi-phone me-1"></i> ONLINE STATEMENT QR</span>
+                    <div class="fw-bold text-dark fs-7 mb-1">Scan for Customer Udhaar Statement</div>
+                    <div class="text-muted fs-8 mb-2">Opens online statement with product breakdown, UPI & Pay button</div>
+                </div>
+                <div class="my-2">
+                    <div class="p-2 bg-white rounded-3 shadow-sm border d-inline-block">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data={{ statement_url|urlencode }}" 
+                             alt="Customer Udhaar Statement QR Code" 
+                             class="img-fluid rounded-2"
+                             style="width: 170px; height: 170px;" />
+                    </div>
+                </div>
+                <div class="fs-8 text-secondary mt-1">
+                    <i class="bi bi-camera me-1"></i> Scan with any Phone Camera / Lens
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. DIRECT UPI PAYMENT QR CODE (SCANS IN UPI APP TO PAY DIRECTLY) -->
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded-3 border text-center h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <span class="badge bg-success-subtle text-success fw-bold fs-8 mb-2"><i class="bi bi-qr-code-scan me-1"></i> DIRECT UPI QR</span>
+                    <div class="fw-bold text-dark fs-7 mb-1">Scan using any UPI App</div>
+                    <div class="text-muted fs-8 mb-2">Directly opens payment screen in GPay, PhonePe, Paytm</div>
+                </div>
+                <div class="my-2">
+                    <div class="p-2 bg-white rounded-3 shadow-sm border d-inline-block">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi%3A%2F%2Fpay%3Fpa%3D{{ business_settings.upi_id|default:'shopname@upi'|urlencode }}%26pn%3D{{ current_business.name|urlencode }}%26am%3D{{ customer.get_outstanding_udhaar|stringformat:'.2f' }}%26cu%3DINR%26tn%3DUdhaar%2520Payment" 
+                             alt="Direct UPI Payment QR Code" 
+                             class="img-fluid rounded-2"
+                             style="width: 170px; height: 170px;" />
+                </div>
+                </div>
+                <div class="fs-8 text-secondary mt-1">
+                    Scan with GPay / PhonePe / Paytm • Exact: <strong>{{ customer.get_outstanding_udhaar|inr }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Vanilla JS for Khata Interactions -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Toggle Add Entry Form
+    const toggleBtn = document.getElementById('toggle-add-khata-btn');
+    const formContainer = document.getElementById('add-khata-form-container');
+    const cancelAddBtn = document.getElementById('cancel-add-khata-btn');
+
+    if (toggleBtn && formContainer) {
+        toggleBtn.addEventListener('click', function() {
+            if (formContainer.style.display === 'none') {
+                formContainer.style.display = 'block';
+            } else {
+                formContainer.style.display = 'none';
+            }
+        });
+    }
+
+    if (cancelAddBtn && formContainer) {
+        cancelAddBtn.addEventListener('click', function() {
+            formContainer.style.display = 'none';
+        });
+    }
+
+    // 2. Auto-fill price when product selected
+    const prodSelect = document.getElementById('khata-product-select');
+    const amtInput = document.getElementById('khata-amount-input');
+    if (prodSelect && amtInput) {
+        prodSelect.addEventListener('change', function() {
+            const selectedOpt = prodSelect.options[prodSelect.selectedIndex];
+            const price = selectedOpt ? selectedOpt.getAttribute('data-price') : null;
+            if (price && parseFloat(price) > 0) {
+                amtInput.value = parseFloat(price).toFixed(2);
+            }
+        });
+    }
+
+    // 3. Toggle Inline Payment Prompt forms
+    document.querySelectorAll('.toggle-pay-prompt').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const uid = this.getAttribute('data-udhaar-id');
+            const promptEl = document.getElementById('pay-prompt-' + uid);
+            if (promptEl) {
+                promptEl.style.display = (promptEl.style.display === 'none') ? 'block' : 'none';
+            }
+        });
+    });
+
+    document.querySelectorAll('.cancel-pay-prompt').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const uid = this.getAttribute('data-udhaar-id');
+            const promptEl = document.getElementById('pay-prompt-' + uid);
+            if (promptEl) {
+                promptEl.style.display = 'none';
+            }
+        });
+    });
+});
+</script>

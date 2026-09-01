@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Lease #{{ lease.id }} | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{% url 'lease_list' %}" class="text-secondary text-decoration-none fs-7"><i class="bi bi-arrow-left"></i> Leases</a>
+      <span class="text-muted">/</span>
+      <span class="kp-status-badge kp-status-success">Lease #{{ lease.id }}</span>
+    </div>
+    <h1 class="kp-page-title mt-1">Lease Agreement: {{ lease.tenant.get_full_name }}</h1>
+    <p class="kp-page-subtitle">Unit {{ lease.unit.unit_number }} at {{ lease.property.name }}</p>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Contract Specs -->
+  <div class="col-lg-5">
+    <div class="kp-panel mb-3">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Contract Terms</h3>
+      </div>
+      <div class="p-3">
+        <dl class="row g-2 mb-0 fs-7">
+          <dt class="col-sm-5 text-secondary">Tenant:</dt>
+          <dd class="col-sm-7 fw-semibold text-dark">{{ lease.tenant.get_full_name }}</dd>
+
+          <dt class="col-sm-5 text-secondary">Property:</dt>
+          <dd class="col-sm-7 fw-semibold text-dark">{{ lease.property.name }}</dd>
+
+          <dt class="col-sm-5 text-secondary">Unit Number:</dt>
+          <dd class="col-sm-7 fw-semibold text-dark">Unit {{ lease.unit.unit_number }}</dd>
+
+          <dt class="col-sm-5 text-secondary">Lease Duration:</dt>
+          <dd class="col-sm-7 text-dark">{{ lease.start_date }} to {{ lease.end_date }}</dd>
+
+          <dt class="col-sm-5 text-secondary">Monthly Rent:</dt>
+          <dd class="col-sm-7 tabular-nums fw-bold text-primary">${{ lease.monthly_rent|intcomma }}</dd>
+
+          <dt class="col-sm-5 text-secondary">Security Deposit:</dt>
+          <dd class="col-sm-7 tabular-nums text-dark">${{ lease.security_deposit|intcomma }}</dd>
+
+          <dt class="col-sm-5 text-secondary">Due Day of Month:</dt>
+          <dd class="col-sm-7 text-dark">Day {{ lease.rent_due_day }} of month</dd>
+
+          <dt class="col-sm-5 text-secondary">Grace Period:</dt>
+          <dd class="col-sm-7 text-dark">{{ lease.grace_period_days }} Days</dd>
+
+          <dt class="col-sm-5 text-secondary">Late Fee Charge:</dt>
+          <dd class="col-sm-7 tabular-nums text-danger">${{ lease.late_fee_amount }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <!-- Associated Invoices -->
+  <div class="col-lg-7">
+    <div class="kp-panel mb-3">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Generated Invoices & Rent Schedule</h3>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Due Date</th>
+              <th>Rent Amount</th>
+              <th>Status</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inv in invoices %}
+            <tr>
+              <td class="fw-semibold">#{{ inv.invoice_number }}</td>
+              <td>{{ inv.due_date }}</td>
+              <td class="tabular-nums fw-semibold">${{ inv.total_due|intcomma }}</td>
+              <td>
+                <span class="kp-status-badge {% if inv.status == 'PAID' %}kp-status-success{% elif inv.status == 'OVERDUE' %}kp-status-danger{% else %}kp-status-warning{% endif %}">
+                  {{ inv.get_status_display }}
+                </span>
+              </td>
+              <td class="text-end">
+                {% if inv.status != 'PAID' %}
+                <a href="{% url 'payment_record' invoice_pk=inv.id %}" class="kp-btn kp-btn-primary py-0.5 px-2">Record Payment</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-3 text-muted">No rent invoices issued yet for this lease.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

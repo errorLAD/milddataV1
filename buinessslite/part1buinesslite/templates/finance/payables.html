@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Payables - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Accounts Payable</h1>
+        <div class="page-subtitle">Supplier balances and pending purchase orders</div>
+    </div>
+</div>
+
+<div class="metrics-grid" style="grid-template-columns: 1fr;">
+    <div class="metric-card">
+        <div class="metric-label">Total Outstanding Payables</div>
+        <div class="metric-number">{{ currency_symbol }}{{ total_payables|floatformat:2 }}</div>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Pending Purchase Orders</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>PO Number</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for po in pending_pos %}
+                <tr>
+                    <td style="font-weight: 650;">
+                        <a href="{% url 'po_detail' po.id %}" style="color: var(--text-primary); text-decoration: none;">{{ po.po_number }}</a>
+                    </td>
+                    <td>{{ po.supplier.company_name }}</td>
+                    <td>{{ po.date }}</td>
+                    <td><span class="badge-pill badge-warning">{{ po.status }}</span></td>
+                    <td class="num" style="font-weight: 700;">{{ currency_symbol }}{{ po.total_amount|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'po_detail' po.id %}" class="btn-saas btn-secondary" style="padding: 0.2rem 0.4rem; font-size: 0.65rem;">View PO</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-tertiary);">No pending supplier payables.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Fuel Operations & Anomaly Tracking — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Fuel Operations & Efficiency Analytics</h1>
+    <p class="kp-page-subtitle">Log diesel fill-ups, track fuel consumption rates (L/Hr), and catch abnormal usage flags.</p>
+  </div>
+  <div>
+    <button class="kp-btn kp-btn-primary" data-modal-target="modal-add-fuel">
+      <i class="fa-solid fa-plus"></i> Record Refuel Log
+    </button>
+  </div>
+</div>
+
+<!-- Metrics Bar -->
+<div class="kp-metrics-grid">
+  <div class="kp-metric-card kp-metric-card-hero">
+    <div>
+      <div class="kp-metric-label">Total Diesel Spend</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ total_cost|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub num-tabular">Total Volume: {{ total_liters|floatformat:1 }} Liters</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Fleet Avg Consumption</div>
+      <div class="kp-metric-val num-tabular">{{ avg_efficiency }} L/Hr</div>
+    </div>
+    <div class="kp-metric-sub">Average across active units</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Abnormal Fuel Flags</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--danger);">{{ abnormal_count }} Flags</div>
+    </div>
+    <div class="kp-metric-sub">High consumption entries</div>
+  </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="kp-panel" style="margin-bottom: 0.875rem;">
+  <div class="kp-panel-body" style="padding: 0.65rem 0.9rem;">
+    <form method="GET" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+      <div style="width: 220px;">
+        <select name="machine" class="kp-select" onchange="this.form.submit()">
+          <option value="">All Fleet Equipment</option>
+          {% for m in machines %}
+            <option value="{{ m.pk }}" {% if selected_machine == m.pk|stringformat:"s" %}selected{% endif %}>{{ m.name }} ({{ m.reg_number }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.35rem;">
+        <input type="checkbox" name="abnormal" value="1" id="abnormalCheck" {% if flag_only == '1' %}checked{% endif %} onchange="this.form.submit()">
+        <label for="abnormalCheck" class="kp-label" style="margin: 0; cursor: pointer;">Show Abnormal Spikes Only</label>
+      </div>
+      <button type="submit" class="kp-btn kp-btn-secondary">Filter</button>
+      {% if selected_machine or flag_only %}
+        <a href="{% url 'fuel_list' %}" class="kp-btn kp-btn-secondary">Reset</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Fuel Table -->
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title">Refueling Logs</div>
+    <button class="kp-btn kp-btn-whatsapp" onclick="alert('Exporting Fuel Log Report via WhatsApp...')">
+      <i class="fa-brands fa-whatsapp"></i> Share WhatsApp Summary
+    </button>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Equipment</th>
+          <th>Volume (L)</th>
+          <th>Rate / Liters</th>
+          <th>Total Cost</th>
+          <th>Efficiency</th>
+          <th>Vendor / Tanker</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in fuel_logs %}
+          <tr>
+            <td class="num-tabular">{{ f.date }}</td>
+            <td>
+              <a href="{% url 'machine_detail' f.machine.pk %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">
+                {{ f.machine.name }}
+              </a>
+              <div style="font-size: 0.64rem; color: var(--text-tertiary);">{{ f.machine.reg_number }}</div>
+            </td>
+            <td class="num-tabular" style="font-weight: 600;">{{ f.fuel_liters }} L</td>
+            <td class="num-tabular">{{ currency_symbol }}{{ f.cost_per_liter }}</td>
+            <td class="num-tabular" style="font-weight: 700;">{{ currency_symbol }}{{ f.total_cost|floatformat:2|intcomma }}</td>
+            <td class="num-tabular">{{ f.efficiency_rate }} L/Hr</td>
+            <td>{{ f.fuel_vendor|default:"Site Pump" }}</td>
+            <td>
+              {% if f.is_abnormal_flag %}
+                <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Abnormal Spike</span>
+              {% else %}
+                <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Normal</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No refueling logs match your filter.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Add Fuel -->
+<div class="kp-modal-backdrop" id="modal-add-fuel">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Record Refuel Entry</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_fuel' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Select Heavy Equipment</label>
+          <select name="machine" class="kp-select" required>
+            {% for m in machines %}
+              <option value="{{ m.pk }}">{{ m.name }} ({{ m.reg_number }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Refuel Date</label>
+            <input type="date" name="date" class="kp-input" value="{% now 'Y-m-d' %}" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Fuel Filled (Liters)</label>
+            <input type="number" step="0.5" name="fuel_liters" class="kp-input" placeholder="e.g. 100" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Cost / Liter ({{ currency_symbol }})</label>
+            <input type="number" step="0.1" name="cost_per_liter" class="kp-input" value="94.50" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Hours Operated Since Last Fill</label>
+            <input type="number" step="0.1" name="hours_run_since_last" class="kp-input" placeholder="e.g. 8.5" required>
+          </div>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Fuel Vendor / Site Tanker</label>
+          <input type="text" name="fuel_vendor" class="kp-input" placeholder="e.g. HP Fuel Station #42">
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Save Refuel Log</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

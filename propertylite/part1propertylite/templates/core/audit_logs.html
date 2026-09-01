@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Audit Logs | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Immutable Audit Trail</h1>
+    <p class="kp-page-subtitle">Security log of all user logins, financial transactions, lease edits, and entity updates.</p>
+  </div>
+</div>
+
+<div class="kp-panel mb-3">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Audit History</h3>
+  </div>
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>User</th>
+          <th>Action Performed</th>
+          <th>Entity Type</th>
+          <th>IP Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td class="text-muted tabular-nums">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+          <td class="fw-semibold">{{ log.user.get_full_name|default:log.user.username }}</td>
+          <td>{{ log.action }}</td>
+          <td><span class="kp-status-badge kp-status-info">{{ log.entity_type }}</span></td>
+          <td class="tabular-nums text-muted">{{ log.ip_address|default:"127.0.0.1" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center py-4 text-muted">No audit logs recorded yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

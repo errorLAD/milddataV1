@@ -1,0 +1,343 @@
+/* KarobarPlus Dashboard System - Stripe / Ramp / Mercury Light Enterprise SaaS Theme */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;650;700&display=swap');
+
+:root {
+  --bg: #F7F8FA;
+  --surface: #FFFFFF;
+  --surface-alt: #FAFAFB;
+  --border: #E4E7EC;
+  --border-strong: #D0D5DD;
+  --text-primary: #101828;
+  --text-secondary: #475467;
+  --text-tertiary: #98A2B3;
+
+  --brand: #2451FF;
+  --brand-dark: #1939B7;
+  --brand-soft: #EEF2FF;
+  --brand-soft-border: #D6E0FF;
+
+  --success: #067647;
+  --success-soft: #ECFDF3;
+  --success-border: #ABEFC6;
+
+  --danger: #B42318;
+  --danger-soft: #FEF3F2;
+  --danger-border: #FECDCA;
+
+  --warning: #B54708;
+  --warning-soft: #FFFAEB;
+  --warning-border: #FEDF89;
+
+  --info: #175CD3;
+  --info-soft: #EFF8FF;
+  --info-border: #B2DDFF;
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tabular-nums, .num, .money, .metric-value, .table-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Page Layout Wrapper */
+.kp-page-wrapper {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+@media (min-width: 768px) {
+  .kp-page-wrapper {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Header Row: Title + Subtitle Left, Actions Right */
+.kp-header-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+@media (min-width: 768px) {
+  .kp-header-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.kp-page-title {
+  font-size: 1.02rem;
+  font-weight: 650;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.kp-page-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin: 0.15rem 0 0 0;
+}
+
+/* Metrics Grid: 4-col desktop -> 2-col <=1200px -> 1-col <=576px */
+.kp-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 0.875rem;
+  margin-bottom: 1rem;
+}
+@media (min-width: 576px) {
+  .kp-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 1200px) {
+  .kp-metrics-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Cards & Panels */
+.kp-card, .kp-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+}
+
+/* Single Hero Metric Card */
+.kp-hero-card {
+  background: linear-gradient(135deg, #F5F7FF 0%, #FFFFFF 100%);
+  border: 1px solid var(--brand-soft-border);
+}
+
+.kp-card-body {
+  padding: 0.875rem 1rem;
+}
+
+.kp-metric-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.kp-metric-number {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.kp-metric-subtext {
+  font-size: 0.66rem;
+  color: var(--text-tertiary);
+  margin-top: 0.25rem;
+}
+
+/* Panel Header Strip: --surface-alt background + bottom border */
+.kp-panel-header {
+  background-color: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+  padding: 0.9rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.kp-panel-title {
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.kp-panel-desc {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  margin: 0.1rem 0 0 0;
+}
+
+/* Tables */
+.kp-table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.kp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.72rem;
+  color: var(--text-primary);
+}
+
+.kp-table th {
+  background-color: var(--surface-alt);
+  font-size: 0.58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.kp-table td {
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.kp-table tbody tr:hover {
+  background-color: var(--surface-alt);
+}
+
+/* Status Badges: soft-fill pill + 6px colored dot */
+.kp-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  line-height: 1;
+
+  background-color: var(--surface-alt);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+
+.kp-status-badge .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  background-color: var(--text-tertiary);
+}
+
+/* Deep/muted status colors on soft tints */
+.kp-status-success {
+  background-color: var(--success-soft);
+  color: var(--success);
+  border-color: var(--success-border);
+}
+.kp-status-success .dot { background-color: var(--success); }
+
+.kp-status-danger {
+  background-color: var(--danger-soft);
+  color: var(--danger);
+  border-color: var(--danger-border);
+}
+.kp-status-danger .dot { background-color: var(--danger); }
+
+.kp-status-warning {
+  background-color: var(--warning-soft);
+  color: var(--warning);
+  border-color: var(--warning-border);
+}
+.kp-status-warning .dot { background-color: var(--warning); }
+
+.kp-status-info {
+  background-color: var(--info-soft);
+  color: var(--info);
+  border-color: var(--info-border);
+}
+.kp-status-info .dot { background-color: var(--info); }
+
+.kp-status-brand {
+  background-color: var(--brand-soft);
+  color: var(--brand);
+  border-color: var(--brand-soft-border);
+}
+.kp-status-brand .dot { background-color: var(--brand); }
+
+/* Buttons */
+.kp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-decoration: none;
+}
+
+.kp-btn-primary {
+  background-color: var(--brand);
+  color: #FFFFFF !important;
+  border-color: var(--brand);
+}
+.kp-btn-primary:hover {
+  background-color: var(--brand-dark);
+  border-color: var(--brand-dark);
+}
+
+.kp-btn-secondary {
+  background-color: var(--surface);
+  color: var(--text-primary) !important;
+  border-color: var(--border-strong);
+}
+.kp-btn-secondary:hover {
+  background-color: var(--surface-alt);
+}
+
+/* Icon Buttons & Avatars: 27px, radius 8px, border-strong */
+.kp-btn-icon, .kp-avatar {
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background-color: var(--surface);
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+.kp-btn-icon:hover {
+  background-color: var(--surface-alt);
+  color: var(--text-primary);
+}
+
+/* Modals */
+.modal-content.kp-modal {
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  background-color: var(--surface);
+}
+.kp-modal .modal-header, .kp-modal .modal-footer {
+  background-color: var(--surface-alt);
+  border-color: var(--border);
+  padding: 0.9rem 1.1rem;
+}

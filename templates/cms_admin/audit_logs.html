@@ -1,0 +1,41 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Audit Trail Logs — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Administrative Audit Logs</h1>
+        <p class="page-subtitle">Security audit trail of all content updates, settings changes, user logins, and administrative actions.</p>
+    </div>
+</div>
+
+<div class="cms-table-card">
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Target Model / ID</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td><code>{{ log.timestamp|date:"Y-m-d H:i:s" }}</code></td>
+                    <td><strong>{{ log.user_email|default:'System' }}</strong></td>
+                    <td>{{ log.action }}</td>
+                    <td><span class="badge badge-info">{{ log.target_model }}</span> {% if log.target_id %}#{{ log.target_id }}{% endif %}</td>
+                    <td><code>{{ log.ip_address|default:'-' }}</code></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No audit log entries recorded.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

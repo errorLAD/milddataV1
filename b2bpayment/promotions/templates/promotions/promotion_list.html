@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Promotions & Offers | NextSlot{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2.5">
+
+    <!-- Page Header Row -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+        <div>
+            <div class="kp-eyebrow mb-1">
+                <i class="bi bi-megaphone"></i> Campaign Marketing &amp; Engagement
+            </div>
+            <h1 class="kp-page-title mb-0">Promotions &amp; Offers</h1>
+            <p class="kp-page-sub mb-0">Create promotional campaigns, upload offer poster media, and broadcast deals directly via WhatsApp.</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{% url 'promotions:create' %}" class="btn-kp-primary">
+                <i class="bi bi-plus-lg"></i>
+                <span>Create Promotion</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title">Search Campaigns</h2>
+                <p class="kp-panel-desc">Search promotions by campaign title, offer details, or message broadcast body.</p>
+            </div>
+        </div>
+        <div class="p-3">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-12 col-md-9">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-secondary-subtle text-muted fs-8"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" value="{{ q }}" class="form-control fs-8 border-secondary-subtle" placeholder="Search promotions by name, offer title, or message...">
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <button type="submit" class="btn-kp-primary w-100 justify-content-center">Search Campaigns</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Promotions Grid Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title">Active Campaigns</h2>
+                <p class="kp-panel-desc">All marketing promotions and broadcast offers configured in NextSlot.</p>
+            </div>
+            <span class="kp-pill neutral"><span class="kp-dot"></span>{{ promotions.count }} campaigns</span>
+        </div>
+
+        <div class="p-3">
+            <div class="row g-3">
+                {% for promo in promotions %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="kp-card h-100 d-flex flex-column justify-content-between p-3">
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                {% if promo.is_active %}
+                                    <span class="kp-pill success"><span class="kp-dot"></span>Active</span>
+                                {% elif promo.status == 'Draft' %}
+                                    <span class="kp-pill neutral"><span class="kp-dot"></span>Draft</span>
+                                {% else %}
+                                    <span class="kp-pill urgent"><span class="kp-dot"></span>Ended</span>
+                                {% endif %}
+                                <span class="fs-9 text-muted"><i class="bi bi-image me-0.5"></i> {{ promo.images.count }}/2 Posters</span>
+                            </div>
+
+                            <h3 class="kp-panel-title mb-1" style="font-size: 0.85rem;">{{ promo.name }}</h3>
+                            <div class="fw-semibold text-primary fs-8 mb-1.5">{{ promo.title }}</div>
+                            <p class="kp-panel-desc text-secondary mb-3" style="font-size: 0.72rem; line-height: 1.4; max-height: 3.6em; overflow: hidden;">
+                                {{ promo.message }}
+                            </p>
+
+                            {% if promo.start_date or promo.end_date %}
+                            <div class="fs-9 text-muted mb-3 font-monospace">
+                                <i class="bi bi-calendar-event me-1"></i>
+                                {% if promo.start_date %}{{ promo.start_date|date:"d M" }}{% endif %}
+                                {% if promo.end_date %} to {{ promo.end_date|date:"d M Y" }}{% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex align-items-center gap-1.5 pt-2 border-top">
+                            <a href="{% url 'promotions:send' promo.pk %}" class="btn-kp-whatsapp flex-fill justify-content-center py-1">
+                                <i class="bi bi-whatsapp"></i> Broadcast
+                            </a>
+                            <a href="{% url 'promotions:detail' promo.pk %}" class="kp-icon-action" title="View & Manage Posters">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a href="{% url 'promotions:edit' promo.pk %}" class="kp-icon-action" title="Edit Campaign">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'promotions:delete' promo.pk %}" class="kp-icon-action text-danger" title="Delete Campaign">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-4 text-muted">
+                    <i class="bi bi-megaphone text-muted fs-4 d-block mb-1 opacity-50"></i>
+                    <div class="fw-bold text-dark fs-8">No promotions created yet</div>
+                    <div class="fs-9 mb-2">Build an offer, upload a poster, and broadcast it straight to your customers via WhatsApp.</div>
+                    <a href="{% url 'promotions:create' %}" class="btn-kp-primary">
+                        <i class="bi bi-plus-lg"></i> Create First Promotion
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

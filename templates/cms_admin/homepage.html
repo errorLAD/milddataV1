@@ -1,0 +1,178 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Homepage Manager — Milda Data CMS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Homepage CMS Controller</h1>
+        <p class="page-subtitle">Manage every homepage section without writing code or editing templates.</p>
+    </div>
+    <a href="/" target="_blank" class="btn-cms btn-outline">👁️ Preview Homepage</a>
+</div>
+
+<!-- SECTION 1: HERO MANAGEMENT -->
+<div class="cms-form-card">
+    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1rem; color: var(--cms-primary);">1. Home Hero Banner</h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_hero">
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Badge Text</label>
+                {{ hero_form.badge }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Main Heading</label>
+                {{ hero_form.heading }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Subheading</label>
+            {{ hero_form.subheading }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Detailed Description</label>
+            {{ hero_form.description }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Primary CTA Label</label>
+                {{ hero_form.primary_cta }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Primary CTA Target URL</label>
+                {{ hero_form.primary_cta_url }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Secondary CTA Label</label>
+                {{ hero_form.secondary_cta }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Secondary CTA Target URL</label>
+                {{ hero_form.secondary_cta_url }}
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Hero Image URL</label>
+                {{ hero_form.hero_image_url }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Hero Video URL</label>
+                {{ hero_form.hero_video_url }}
+            </div>
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+            {{ hero_form.is_visible }}
+            <label class="form-label" style="margin: 0;">Show Hero Banner on Homepage</label>
+        </div>
+
+        <button type="submit" class="btn-cms btn-primary">Save Hero Changes</button>
+    </form>
+</div>
+
+<!-- SECTION 2: STATS MANAGEMENT -->
+<div class="cms-form-card">
+    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1rem; color: #38bdf8;">2. Trust &amp; Metrics Bar</h2>
+    
+    <div class="cms-table-card" style="margin-bottom: 1.5rem;">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Number</th>
+                    <th>Label</th>
+                    <th>Icon</th>
+                    <th>Sort Order</th>
+                    <th>Active</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in stats %}
+                <tr>
+                    <td><strong>{{ stat.number }}</strong></td>
+                    <td>{{ stat.label }}</td>
+                    <td>{{ stat.icon }}</td>
+                    <td>{{ stat.sort_order }}</td>
+                    <td><span class="badge {% if stat.is_active %}badge-success{% else %}badge-danger{% endif %}">{% if stat.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No stats configured yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem;">+ Add New Stat Metric</h4>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_stat">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.85rem;">
+            <div class="form-group">
+                <label class="form-label">Number (e.g. 10+)</label>
+                {{ stat_form.number }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Label (e.g. Products)</label>
+                {{ stat_form.label }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Icon (Emoji/Class)</label>
+                {{ stat_form.icon }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Sort Order</label>
+                {{ stat_form.sort_order }}
+            </div>
+        </div>
+        <button type="submit" class="btn-cms btn-outline">Add Metric</button>
+    </form>
+</div>
+
+<!-- SECTION 3: WHY MILDA DATA -->
+<div class="cms-form-card">
+    <h2 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; margin-bottom: 1rem; color: #a7f3d0;">3. Why Choose Milda Data</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+        {% for item in why_items %}
+        <div style="background: #0f172a; padding: 1rem; border-radius: 8px; border: 1px solid var(--cms-border);">
+            <div style="font-size: 1.5rem; margin-bottom: 0.4rem;">{{ item.icon }}</div>
+            <h4 style="color: #ffffff; margin-bottom: 0.3rem;">{{ item.heading }}</h4>
+            <p style="font-size: 0.82rem; color: var(--cms-muted);">{{ item.description }}</p>
+        </div>
+        {% empty %}
+        <p style="color: var(--cms-muted);">No Why Milda Data items added yet.</p>
+        {% endfor %}
+    </div>
+
+    <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem;">+ Add Feature / Advantage</h4>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_why">
+        <div class="form-group">
+            <label class="form-label">Heading</label>
+            {{ why_form.heading }}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            {{ why_form.description }}
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Icon</label>
+                {{ why_form.icon }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Sort Order</label>
+                {{ why_form.sort_order }}
+            </div>
+        </div>
+        <button type="submit" class="btn-cms btn-outline">Add Feature</button>
+    </form>
+</div>
+{% endblock %}

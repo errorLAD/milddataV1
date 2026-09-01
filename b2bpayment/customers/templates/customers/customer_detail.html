@@ -1,0 +1,377 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}{{ customer.name }} - Collection Profile | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-4 py-3">
+
+    <!-- Profile Header Card -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="avatar-initial rounded-4 fs-2 fw-bold d-flex align-items-center justify-content-center text-white" style="width: 68px; height: 68px; background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);">
+                    {{ customer.name|slice:":1"|upper }}
+                </div>
+                <div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                        <h3 class="fw-bold text-dark mb-0">{{ customer.name }}</h3>
+                        <!-- Priority / Risk Badge -->
+                        <span class="badge {{ customer.risk_score.badge_class }} rounded-pill px-3 py-1 fs-8 fw-bold">
+                            <i class="bi bi-shield-exclamation me-1"></i> {{ customer.risk_score.level }}
+                        </span>
+                        {% if customer.promises_broken_count > 0 %}
+                        <span class="badge bg-warning-subtle text-warning-emphasis rounded-pill px-3 py-1 fs-8 fw-bold">
+                            ⚠️ {{ customer.promises_broken_count }} Missed Promise{{ customer.promises_broken_count|pluralize }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex flex-wrap align-items-center gap-3 text-muted fs-7 mt-1">
+                        <span><i class="bi bi-telephone text-primary me-1"></i> {{ customer.phone }}</span>
+                        {% if customer.email %}<span><i class="bi bi-envelope me-1"></i> {{ customer.email }}</span>{% endif %}
+                        {% if customer.address %}<span><i class="bi bi-geo-alt me-1"></i> {{ customer.address|truncatechars:35 }}</span>{% endif %}
+                        <span><i class="bi bi-calendar3 me-1"></i> Added {{ customer.created_at|date:"d M Y" }}</span>
+                    </div>
+
+                    <!-- Customer Tags -->
+                    <div class="mt-2">
+                        {% for tag in customer.tags.all %}
+                        <span class="badge text-white fs-9 me-1" style="background-color: {{ tag.color }};">{{ tag.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'sales:create' %}?customer_id={{ customer.pk }}" class="btn btn-primary-custom btn-sm d-flex align-items-center gap-1">
+                    <i class="bi bi-plus-circle"></i> New Invoice
+                </a>
+                <a href="{% url 'udhaar:create' %}?customer_id={{ customer.pk }}" class="btn btn-outline-warning text-dark btn-sm fw-semibold d-flex align-items-center gap-1">
+                    <i class="bi bi-cash-stack"></i> Record Udhaar
+                </a>
+                <a href="{% url 'whatsapp:inbox' %}?customer_id={{ customer.pk }}" class="btn btn-outline-success btn-sm d-flex align-items-center gap-1">
+                    <i class="bi bi-whatsapp"></i> Chat
+                </a>
+                <a href="{% url 'customers:edit' customer.pk %}" class="btn btn-light border btn-sm d-flex align-items-center gap-1">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            </div>
+        </div>
+
+        <!-- Credit Limit Progress Bar -->
+        {% if customer.credit_limit > 0 %}
+        <div class="mt-3 pt-3 border-top">
+            <div class="d-flex justify-content-between align-items-center fs-8 mb-1">
+                <span class="text-muted fw-semibold">Credit Limit Utilization:</span>
+                <span class="fw-bold {% if customer.is_credit_limit_exceeded %}text-danger{% else %}text-dark{% endif %}">
+                    {{ customer.get_outstanding_udhaar|inr }} / {{ customer.credit_limit|inr }} ({{ customer.credit_limit_used_percent }}%)
+                </span>
+            </div>
+            <div class="progress" style="height: 6px;">
+                <div class="progress-bar {% if customer.is_credit_limit_exceeded %}bg-danger{% else %}bg-primary{% endif %}" role="progressbar" style="width: {{ customer.credit_limit_used_percent }}%;"></div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- Collection-Focused Summary KPI Cards                                      -->
+    <!-- ========================================================================= -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                <span class="text-muted fs-8 fw-semibold text-uppercase">Total Sales</span>
+                <div class="fs-5 fw-bolder text-dark mt-1">{{ customer.get_total_sales_amount|inr }}</div>
+                <span class="text-muted fs-9 mt-1">Lifetime invoices</span>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                <span class="text-muted fs-8 fw-semibold text-uppercase">Total Paid</span>
+                <div class="fs-5 fw-bolder text-success mt-1">{{ customer.get_total_paid_amount|inr }}</div>
+                <span class="text-success fs-9 mt-1"><i class="bi bi-check-all"></i> Collected</span>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                <span class="text-muted fs-8 fw-semibold text-uppercase">Outstanding</span>
+                <div class="fs-5 fw-bolder text-primary mt-1">{{ customer.get_outstanding_udhaar|inr }}</div>
+                <span class="text-primary fs-9 mt-1">Pending balance</span>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                <span class="text-muted fs-8 fw-semibold text-uppercase">Overdue</span>
+                <div class="fs-5 fw-bolder text-danger mt-1">{{ customer.get_overdue_udhaar|inr }}</div>
+                <span class="text-danger fs-9 mt-1">Past due date</span>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                <span class="text-muted fs-8 fw-semibold text-uppercase">Avg Payment Delay</span>
+                <div class="fs-5 fw-bolder text-dark mt-1">{{ avg_payment_delay }} <small class="fs-8 fw-normal">days</small></div>
+                <span class="text-muted fs-9 mt-1">Historical avg</span>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card border-0 shadow-sm rounded-4 p-3 bg-white h-100">
+                <span class="text-muted fs-8 fw-semibold text-uppercase">Last Payment</span>
+                {% if last_payment %}
+                <div class="fs-6 fw-bolder text-success mt-1">{{ last_payment.amount|inr }}</div>
+                <span class="text-muted fs-9">{{ last_payment.created_at|date:"d M Y" }}</span>
+                {% else %}
+                <div class="fs-6 text-muted mt-1">No payments</div>
+                <span class="text-muted fs-9">Never paid</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="card border-0 shadow-sm rounded-4 bg-white overflow-hidden">
+        <div class="card-header bg-light-subtle border-bottom px-4 pt-3 pb-0">
+            <ul class="nav nav-tabs card-header-tabs gap-2" id="customerDetailTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active fw-bold fs-7" id="collections-tab" data-bs-toggle="tab" data-bs-target="#collections-pane">
+                        <i class="bi bi-collection me-1"></i> Invoices & Collections ({{ udhaars.count }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold fs-7" id="timeline-tab" data-bs-toggle="tab" data-bs-target="#timeline-pane">
+                        <i class="bi bi-clock-history me-1"></i> Activity Timeline ({{ timeline.count|default:timeline|length }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold fs-7" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments-pane">
+                        <i class="bi bi-credit-card me-1"></i> Payments ({{ payments.count }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold fs-7" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales-pane">
+                        <i class="bi bi-receipt me-1"></i> Sales History ({{ sales.count }})
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link fw-bold fs-7" id="whatsapp-tab" data-bs-toggle="tab" data-bs-target="#whatsapp-pane">
+                        <i class="bi bi-whatsapp me-1"></i> WhatsApp Log ({{ whatsapp_messages|length }})
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="card-body p-4">
+            <div class="tab-content" id="customerDetailTabsContent">
+                
+                <!-- 1. Collections & Invoices Pane -->
+                <div class="tab-pane fade show active" id="collections-pane">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted fs-8 text-uppercase">
+                                <tr>
+                                    <th class="ps-3 py-3">Invoice Ref</th>
+                                    <th class="py-3">Invoice Amount</th>
+                                    <th class="py-3">Paid</th>
+                                    <th class="py-3">Outstanding</th>
+                                    <th class="py-3">Due Date</th>
+                                    <th class="py-3">Promise to Pay</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="text-end pe-3 py-3">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="fs-7">
+                                {% for u in udhaars %}
+                                <tr>
+                                    <td class="ps-3 py-3 fw-bold text-dark">
+                                        {% if u.sale %}
+                                        <a href="{% url 'sales:detail' u.sale.pk %}" class="text-decoration-none text-dark">
+                                            #{{ u.sale.invoice_number }}
+                                        </a>
+                                        {% else %}
+                                        #UDH-{{ u.pk }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3">{{ u.total_amount|inr }}</td>
+                                    <td class="py-3 text-success">{{ u.paid_amount|inr }}</td>
+                                    <td class="py-3 fw-bold text-danger">{{ u.remaining_amount|inr }}</td>
+                                    <td class="py-3">
+                                        {{ u.due_date|date:"d M Y" }}
+                                        {% if u.days_overdue > 0 and u.status != 'Paid' %}
+                                        <span class="badge bg-danger text-white ms-1 fs-9">{{ u.days_overdue }}d overdue</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3">
+                                        {% if u.status == 'Payment Promised' and u.promised_date %}
+                                        <span class="badge bg-primary-subtle text-primary fs-8">
+                                            <i class="bi bi-handshake me-1"></i>{{ u.promised_date|date:"d M Y" }}
+                                        </span>
+                                        {% elif u.promise_broken %}
+                                        <span class="badge bg-warning text-dark fs-8">
+                                            ⚠️ Missed ({{ u.promised_date|date:"d M" }})
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted fs-8">None</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3">
+                                        <span class="badge {{ u.status|status_badge }}">{{ u.status }}</span>
+                                    </td>
+                                    <td class="text-end pe-3 py-3">
+                                        <a href="{% url 'udhaar:detail' u.pk %}" class="btn btn-sm btn-outline-primary">
+                                            Manage <i class="bi bi-chevron-right ms-1"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        No collection records found for this customer.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. Chronological Collection Activity Timeline Pane -->
+                <div class="tab-pane fade" id="timeline-pane">
+                    <h6 class="fw-bold mb-3 text-dark">Chronological Customer & Collection Timeline</h6>
+                    <div class="timeline">
+                        {% for item in timeline %}
+                        <div class="timeline-item position-relative ps-4 pb-3 border-start" style="margin-left: 10px;">
+                            <div class="timeline-marker position-absolute start-0 translate-middle-x rounded-circle bg-{{ item.badge|default:'primary' }}" style="width: 12px; height: 12px; top: 4px;"></div>
+                            <div class="timeline-content bg-light-subtle rounded-3 p-3 border">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold text-dark fs-7">
+                                        <i class="bi {{ item.icon|default:'bi-dot' }} me-1 text-{{ item.badge|default:'primary' }}"></i>
+                                        {{ item.title }}
+                                    </span>
+                                    <small class="text-muted fs-8">{{ item.timestamp|date:"d M Y, h:i A" }}</small>
+                                </div>
+                                <div class="fs-7 text-muted">{{ item.description }}</div>
+                                {% if item.amount %}
+                                <div class="fw-bold fs-7 mt-1 text-dark">
+                                    Amount: {{ item.amount|inr }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4 text-muted">No timeline activity logged yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 3. Payments Pane -->
+                <div class="tab-pane fade" id="payments-pane">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted fs-8 text-uppercase">
+                                <tr>
+                                    <th class="ps-3 py-3">Date & Time</th>
+                                    <th class="py-3">Amount Received</th>
+                                    <th class="py-3">Method</th>
+                                    <th class="py-3">Reference / Txn ID</th>
+                                    <th class="py-3">Status</th>
+                                    <th class="py-3">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody class="fs-7">
+                                {% for p in payments %}
+                                <tr>
+                                    <td class="ps-3 py-3 text-dark fw-semibold">{{ p.created_at|date:"d M Y, h:i A" }}</td>
+                                    <td class="py-3 fw-bold text-success fs-6">+{{ p.amount|inr }}</td>
+                                    <td class="py-3">{{ p.payment_method }}</td>
+                                    <td class="py-3 text-muted">{{ p.reference_id|default:"-" }}</td>
+                                    <td class="py-3"><span class="badge bg-success-subtle text-success">{{ p.status }}</span></td>
+                                    <td class="py-3 text-muted">{{ p.notes|default:"-" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No payments recorded yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. Sales History Pane -->
+                <div class="tab-pane fade" id="sales-pane">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light text-muted fs-8 text-uppercase">
+                                <tr>
+                                    <th class="ps-3 py-3">Invoice Number</th>
+                                    <th class="py-3">Date</th>
+                                    <th class="py-3">Total Amount</th>
+                                    <th class="py-3">Paid</th>
+                                    <th class="py-3">On Credit</th>
+                                    <th class="text-end pe-3 py-3">Invoice PDF</th>
+                                </tr>
+                            </thead>
+                            <tbody class="fs-7">
+                                {% for s in sales %}
+                                <tr>
+                                    <td class="ps-3 py-3 fw-bold text-dark">
+                                        <a href="{% url 'sales:detail' s.pk %}" class="text-decoration-none text-dark">
+                                            #{{ s.invoice_number }}
+                                        </a>
+                                    </td>
+                                    <td class="py-3">{{ s.sale_date|date:"d M Y" }}</td>
+                                    <td class="py-3 fw-bold text-dark">{{ s.total_amount|inr }}</td>
+                                    <td class="py-3 text-success">{{ s.paid_amount|inr }}</td>
+                                    <td class="py-3 text-danger">{{ s.udhaar_amount|inr }}</td>
+                                    <td class="text-end pe-3 py-3">
+                                        <a href="{% url 'sales:pdf_invoice' s.pk %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4 text-muted">No sales recorded yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 5. WhatsApp Log Pane -->
+                <div class="tab-pane fade" id="whatsapp-pane">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-dark mb-0">WhatsApp Message History</h6>
+                        <a href="{% url 'whatsapp:inbox' %}?customer_id={{ customer.pk }}" class="btn btn-sm btn-success">
+                            <i class="bi bi-whatsapp me-1"></i> Open Live Chat
+                        </a>
+                    </div>
+                    <div class="list-group list-group-flush">
+                        {% for m in whatsapp_messages %}
+                        <div class="list-group-item px-0 py-3 border-bottom">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge {% if m.sender == 'customer' %}bg-success{% else %}bg-primary{% endif %} rounded-pill">
+                                    {{ m.sender|title }}
+                                </span>
+                                <small class="text-muted fs-8">{{ m.timestamp|date:"d M Y, h:i A" }}</small>
+                            </div>
+                            <p class="fs-7 text-dark mb-0 mt-1">{{ m.message_text }}</p>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4 text-muted">No WhatsApp messages exchanged yet.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

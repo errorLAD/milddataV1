@@ -1,0 +1,1732 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} — {{ product.category }} | Milda Data{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="{{ product.short_description|default:product.description|striptags|truncatewords:30 }}">
+<meta property="og:title" content="{{ product.name }} — {{ product.category }} | Milda Data">
+<meta property="og:description" content="{{ product.short_description|default:product.description }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ canonical_url|default:request.build_absolute_uri }}">
+
+<!-- JSON-LD Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "{{ product.name|escapejs }}",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "description": "{{ product.description|escapejs }}",
+  "offers": {
+    "@type": "Offer",
+    "price": "{{ price_amount }}",
+    "priceCurrency": "{{ active_currency }}",
+    "availability": "https://schema.org/InStock"
+  }
+}
+</script>
+
+<style>
+/* Modern SaaS PDP CSS Variables & Reset */
+:root {
+    --brand-blue: #2563eb;
+    --brand-blue-hover: #1d4ed8;
+    --brand-blue-light: #eff6ff;
+    --brand-blue-border: #bfdbfe;
+    --brand-purple: #7c3aed;
+    --brand-pink: #dc2626;
+    --ink-dark: #0f172a;
+    --ink-medium: #334155;
+    --ink-muted: #64748b;
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+    --shadow-lg: 0 20px 30px -10px rgba(15, 23, 42, 0.08);
+}
+
+.milda-pdp-wrapper {
+    background-color: var(--bg-page);
+    color: var(--ink-dark);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    padding-bottom: 5rem;
+}
+
+.milda-pdp-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.25rem;
+}
+
+/* 1. TOP NAV / BREADCRUMB & UTILITY BAR */
+.pdp-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 0;
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.pdp-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.pdp-breadcrumb a {
+    color: var(--ink-muted);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.15s ease;
+}
+.pdp-breadcrumb a:hover { color: var(--brand-blue); }
+.pdp-breadcrumb-active {
+    color: var(--ink-dark);
+    font-weight: 700;
+}
+.pdp-utility-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+.btn-subtle-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--ink-medium);
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+}
+.btn-subtle-action:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    color: var(--ink-dark);
+}
+
+/* 2. HERO CARD CONTAINER */
+.pdp-hero-container {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2.25rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
+}
+.pdp-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: center;
+}
+
+.pdp-hero-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.hero-badges-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+.badge-saas-tool {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+}
+.badge-region-tag {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+}
+
+.pdp-hero-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: clamp(2.4rem, 4.5vw, 3.4rem);
+    font-weight: 800;
+    color: var(--ink-dark);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+.pdp-hero-subtitle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--brand-blue);
+    margin-top: -0.5rem;
+}
+.pdp-hero-desc {
+    font-size: 1.05rem;
+    color: var(--ink-medium);
+    line-height: 1.6;
+    margin: 0;
+}
+
+.hero-price-display-box {
+    margin: 0.2rem 0;
+}
+.hero-price-amount {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: var(--ink-dark);
+    line-height: 1;
+}
+.hero-billing-note {
+    font-size: 0.88rem;
+    color: var(--ink-muted);
+    margin-top: 0.4rem;
+}
+
+.hero-cta-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+}
+.btn-primary-pill {
+    background: var(--brand-blue);
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.85rem 1.75rem;
+    border-radius: 10px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transition: all 0.15s ease;
+    border: none;
+    cursor: pointer;
+}
+.btn-primary-pill:hover {
+    background: var(--brand-blue-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
+}
+
+.btn-secondary-pill {
+    background: #ffffff;
+    color: var(--ink-dark) !important;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.85rem 1.4rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+    cursor: pointer;
+}
+.btn-secondary-pill:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.hero-trust-chips {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-medium);
+    margin-top: 0.3rem;
+}
+.trust-chip {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+}
+
+/* RIGHT HERO DASHBOARD PREVIEW CARD */
+.pdp-hero-visual-box {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e0eeff 100%);
+    border: 1px solid #d0e3ff;
+    border-radius: 20px;
+    padding: 1.75rem;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.hero-visual-card-inner {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: 0 10px 25px rgba(15,23,42,0.06);
+}
+.visual-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+.visual-card-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--ink-dark);
+}
+
+.visual-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.visual-stat-item {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    border-radius: 10px;
+    padding: 0.65rem 0.5rem;
+    text-align: center;
+}
+.stat-lbl {
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    font-weight: 600;
+}
+.stat-val {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--ink-dark);
+    margin-top: 0.15rem;
+}
+
+/* Visual Sparkline Chart */
+.sparkline-svg {
+    width: 100%;
+    height: 44px;
+    margin: 0.25rem 0 0.75rem;
+}
+
+/* Upcoming Rent / Recent Activity List */
+.visual-list-box {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 0.85rem;
+}
+.visual-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--ink-muted);
+    margin-bottom: 0.6rem;
+}
+.visual-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0;
+    font-size: 0.82rem;
+    border-bottom: 1px dashed #f1f5f9;
+}
+.visual-list-item:last-child { border-bottom: none; }
+.item-meta { display: flex; align-items: center; gap: 0.6rem; }
+.avatar-purple {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #f3e8ff; color: #7e22ce;
+    font-weight: 800; font-size: 0.75rem;
+    display: flex; align-items: center; justify-content: center;
+}
+.avatar-pink {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #fce7f3; color: #be185d;
+    font-weight: 800; font-size: 0.75rem;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* 4. STICKY TABS BAR */
+.pdp-sticky-tabs-wrap {
+    position: sticky;
+    top: 60px;
+    z-index: 90;
+    background: #ffffff;
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 2.5rem;
+    box-shadow: var(--shadow-sm);
+}
+.pdp-tabs-flex {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+}
+.pdp-tabs-flex::-webkit-scrollbar { display: none; }
+
+.tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.95rem 0.5rem;
+    color: var(--ink-medium);
+    font-weight: 600;
+    font-size: 0.94rem;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s ease;
+}
+.tab-btn:hover { color: var(--brand-blue); }
+.tab-btn.active {
+    color: var(--brand-blue);
+    border-bottom-color: var(--brand-blue);
+    font-weight: 700;
+}
+
+/* 3 & MAIN LAYOUT GRID (Left 72% + Right 28% Sticky Sidebar) */
+.pdp-main-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2.25rem;
+    align-items: start;
+}
+
+.pdp-content-column {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+.pdp-section-card {
+    scroll-margin-top: 120px;
+}
+
+.section-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.7rem;
+    font-weight: 800;
+    color: var(--ink-dark);
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.01em;
+}
+.section-subtitle {
+    font-size: 1rem;
+    color: var(--ink-medium);
+    margin: 0 0 1.75rem;
+    line-height: 1.55;
+}
+
+/* OVERVIEW 3-COLUMN FEATURE GRID */
+.features-grid-3col {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+.feature-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.feature-card:hover {
+    transform: translateY(-2px);
+    border-color: #bfdbfe;
+}
+
+.icon-box-blue { background: #eff6ff; color: #2563eb; }
+.icon-box-purple { background: #f3e8ff; color: #7e22ce; }
+.icon-box-green { background: #dcfce7; color: #15803d; }
+.icon-box-pink { background: #fce7f3; color: #be185d; }
+.icon-box-orange { background: #ffedd5; color: #c2410c; }
+.icon-box-indigo { background: #e0e7ff; color: #4338ca; }
+
+.feature-icon-wrap {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+.feature-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink-dark);
+    margin: 0 0 0.4rem;
+}
+.feature-card-desc {
+    font-size: 0.86rem;
+    color: var(--ink-medium);
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* SCREENSHOTS / ACTION SECTION */
+.screenshots-preview-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.screenshots-header-grid {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 1.75rem;
+    align-items: center;
+}
+.demo-left-box {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Simulated SaaS Application UI Frame */
+.app-dashboard-frame {
+    background: #0f172a;
+    border-radius: 14px;
+    padding: 1.1rem;
+    color: #ffffff;
+    display: grid;
+    grid-template-columns: 150px 1fr;
+    gap: 1.1rem;
+    box-shadow: 0 20px 30px rgba(15,23,42,0.2);
+    min-height: 300px;
+}
+.frame-sidebar {
+    border-right: 1px solid #1e293b;
+    padding-right: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.frame-brand {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: #3b82f6;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.frame-nav-item {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+}
+.frame-nav-item.active {
+    background: #2563eb;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.frame-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+.frame-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #1e293b;
+    padding-bottom: 0.5rem;
+}
+.frame-title { font-weight: 700; font-size: 0.88rem; color: #ffffff; }
+.frame-user { font-size: 0.72rem; color: #94a3b8; }
+
+.frame-kpis-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+}
+.frame-kpi-card {
+    background: #1e293b;
+    border-radius: 6px;
+    padding: 0.5rem;
+    text-align: center;
+}
+.frame-kpi-lbl { font-size: 0.64rem; color: #94a3b8; }
+.frame-kpi-val { font-size: 0.88rem; font-weight: 800; color: #ffffff; margin-top: 0.15rem; }
+
+.frame-content-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    flex: 1;
+}
+.frame-box-dark {
+    background: #1e293b;
+    border-radius: 8px;
+    padding: 0.75rem;
+}
+
+/* 4 Trust Highlights Below Screenshots Frame */
+.highlights-chips-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+}
+.highlight-chip-box {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.82rem;
+}
+.highlight-icon-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #eff6ff;
+    color: #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+.highlight-title { font-weight: 700; color: var(--ink-dark); }
+.highlight-desc { font-size: 0.74rem; color: var(--ink-muted); margin-top: 0.1rem; }
+
+/* WHY CHOOSE SECTION */
+.why-choose-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 2rem;
+    box-shadow: var(--shadow-sm);
+}
+.benefits-grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 1.75rem;
+    margin-top: 1.25rem;
+}
+.benefit-item-row {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ink-dark);
+}
+.check-circle-green {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #15803d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* PRICING CARDS GRID */
+.pricing-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+}
+.pricing-tier-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.pricing-tier-card.popular {
+    border-color: var(--brand-blue);
+    box-shadow: var(--shadow-md);
+}
+.popular-tag-top {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    background: var(--brand-blue);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+}
+.tier-title { font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 800; color: var(--ink-dark); }
+.tier-subtitle { font-size: 0.82rem; color: var(--ink-muted); margin: 0.3rem 0 1rem; line-height: 1.45; }
+.tier-price-val { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: var(--ink-dark); }
+
+/* FAQ ACCORDION */
+.faq-accordion-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.faq-accordion-item {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: border-color 0.15s ease;
+}
+.faq-accordion-item:hover { border-color: #cbd5e1; }
+.faq-header-btn {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 1.1rem 1.25rem;
+    text-align: left;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--ink-dark);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.faq-content-body {
+    padding: 0 1.25rem 1.1rem;
+    font-size: 0.92rem;
+    color: var(--ink-medium);
+    line-height: 1.6;
+    display: none;
+}
+.faq-accordion-item.active .faq-content-body { display: block; }
+
+/* RIGHT STICKY SIDEBAR */
+.pdp-sidebar-column {
+    position: sticky;
+    top: 110px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.sidebar-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.4rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.sidebar-card-heading {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--ink-dark);
+    margin: 0 0 0.4rem;
+}
+.sidebar-card-subtext {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    margin: 0 0 1rem;
+}
+
+.btn-primary-full {
+    display: block;
+    width: 100%;
+    background: var(--brand-blue);
+    color: #ffffff !important;
+    font-weight: 700;
+    font-size: 0.94rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    transition: background 0.15s ease;
+    border: none;
+    cursor: pointer;
+}
+.btn-primary-full:hover { background: var(--brand-blue-hover); }
+
+.btn-secondary-full {
+    display: block;
+    width: 100%;
+    background: #ffffff;
+    color: var(--ink-dark) !important;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    border: 1px solid var(--border-color);
+    transition: background 0.15s ease;
+    cursor: pointer;
+}
+.btn-secondary-full:hover { background: #f8fafc; }
+
+/* Metadata Rows */
+.sidebar-meta-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    font-size: 0.84rem;
+}
+.meta-item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed #f1f5f9;
+}
+.meta-item-row:last-child { border-bottom: none; }
+.meta-key { color: var(--ink-muted); font-weight: 500; }
+.meta-val { color: var(--ink-dark); font-weight: 700; text-align: right; }
+.active-pill {
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.55rem;
+    border-radius: 9999px;
+}
+
+/* Custom Solution Card */
+.sidebar-custom-solution-card {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex;
+    gap: 0.85rem;
+}
+.custom-icon { font-size: 1.5rem; color: #2563eb; }
+.custom-body h4 { font-size: 0.92rem; font-weight: 700; margin: 0 0 0.3rem; color: var(--ink-dark); }
+.custom-body p { font-size: 0.8rem; color: var(--ink-medium); margin: 0 0 0.5rem; line-height: 1.45; }
+.link-contact-sales { font-size: 0.82rem; font-weight: 700; color: #2563eb; text-decoration: none; }
+
+/* Why Choose Sidebar Card */
+.sidebar-why-choose-card {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.25rem;
+}
+.sidebar-why-choose-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--ink-dark);
+    margin: 0 0 0.85rem;
+}
+.sidebar-benefit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--ink-dark);
+}
+
+/* 10. BOTTOM CTA BANNER */
+.pdp-bottom-cta-banner {
+    background: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    margin-top: 3rem;
+}
+.bottom-cta-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: var(--ink-dark);
+    margin: 0 0 0.5rem;
+}
+.bottom-cta-lead {
+    font-size: 1rem;
+    color: var(--ink-medium);
+    margin: 0 0 1.5rem;
+}
+
+/* DEMO BOOKING MODAL */
+.modal-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+}
+.modal-backdrop.open { display: flex; }
+.modal-card {
+    background: #ffffff;
+    border-radius: 18px;
+    max-width: 480px;
+    width: 100%;
+    padding: 2rem;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    position: relative;
+}
+.modal-close-x {
+    position: absolute;
+    top: 1.2rem; right: 1.2rem;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 50%;
+    width: 32px; height: 32px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* RESPONSIVE DESIGN BREAKPOINTS */
+@media (max-width: 1024px) {
+    .pdp-hero-grid { grid-template-columns: 1fr; }
+    .pdp-main-grid { grid-template-columns: 1fr; }
+    .pdp-sidebar-column { position: static; margin-top: 2rem; }
+    .features-grid-3col { grid-template-columns: repeat(2, 1fr); }
+    .pricing-cards-grid { grid-template-columns: 1fr; }
+    .screenshots-header-grid { grid-template-columns: 1fr; }
+    .highlights-chips-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+    .features-grid-3col { grid-template-columns: 1fr; }
+    .benefits-grid-2col { grid-template-columns: 1fr; }
+    .visual-stats-row { grid-template-columns: 1fr; }
+    .hero-cta-buttons { flex-direction: column; width: 100%; }
+    .btn-primary-pill, .btn-secondary-pill { width: 100%; text-align: center; }
+    .highlights-chips-row { grid-template-columns: 1fr; }
+    .pdp-hero-container { padding: 1.25rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="milda-pdp-wrapper">
+    <div class="milda-pdp-container">
+
+        <!-- 1. TOP NAV / BREADCRUMB & UTILITY BAR -->
+        <div class="pdp-top-bar">
+            <nav class="pdp-breadcrumb" aria-label="Breadcrumb">
+                <a href="{% url 'home' %}">Home</a>
+                <span>›</span>
+                <a href="{% url 'products:catalog' %}">Products</a>
+                <span>›</span>
+                <span class="pdp-breadcrumb-active">{{ product.name }} — {{ product.category }}</span>
+            </nav>
+            <div class="pdp-utility-actions">
+                <button type="button" class="btn-subtle-action" onclick="window.copyShareLink()">
+                    🔗 Share
+                </button>
+                <button type="button" class="btn-subtle-action" onclick="window.toggleCompare('{{ product.slug }}')">
+                    ⚖️ Add to compare
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. PRODUCT HERO SECTION -->
+        <div class="pdp-hero-container">
+            <div class="pdp-hero-grid">
+                
+                <!-- Left Hero Column -->
+                <div class="pdp-hero-left">
+                    <div class="hero-badges-row">
+                        <span class="badge-saas-tool">{{ product.category_code|default:"SAAS TOOL"|upper }}</span>
+                        <span class="badge-region-tag">Region: {{ active_region }} ({{ active_currency }})</span>
+                    </div>
+
+                    <h1 class="pdp-hero-title">{{ product.name }}</h1>
+                    <div class="pdp-hero-subtitle">{{ product.category }}</div>
+                    <p class="pdp-hero-desc">{{ product.short_description|default:product.description }}</p>
+
+                    <div class="hero-price-display-box">
+                        <div class="hero-price-amount">{{ display_price }}</div>
+                        <div class="hero-billing-note">
+                            {% if billing_cycle == 'yearly' %}Billed annually · Save 17%{% else %}Billed monthly. Cancel anytime.{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="hero-cta-buttons">
+                        <a href="{% url 'products:saas_launch' product.slug %}" class="btn-primary-pill" style="background: #2563eb; color: #ffffff; text-decoration: none;" target="_blank">
+                            🚀 Launch Live App (Guest Mode)
+                        </a>
+                        {% if db_product %}
+                        <a href="{% url 'products:detail' db_product.pk %}?billing={{ billing_cycle }}" class="btn-secondary-pill" style="text-decoration: none;">
+                            Checkout / Purchase →
+                        </a>
+                        {% endif %}
+                        <button type="button" onclick="window.openDemoModal()" class="btn-secondary-pill">
+                            Book a Demo 📅
+                        </button>
+                    </div>
+
+                    <div class="hero-trust-chips">
+                        <span class="trust-chip">✓ No credit card required</span>
+                        <span class="trust-chip">📅 7-day free trial</span>
+                        <span class="trust-chip">⚡ Setup in 5 minutes</span>
+                    </div>
+                </div>
+
+                <!-- Right Hero Preview Card (Matches reference mockup visual graphic) -->
+                <div class="pdp-hero-visual-box">
+                    {% if product.slug == 'property-management' %}
+                    <div class="hero-visual-card-inner p-0 overflow-hidden" style="padding: 0; overflow: hidden; border-radius: 16px;">
+                        <div class="visual-card-top p-3 mb-0" style="padding: 0.85rem 1rem; margin-bottom: 0; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
+                            <span class="visual-card-title">PropFlow Executive Dashboard</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 0.2rem 0.6rem; border-radius: 9999px;">Live Application</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch PropFlow live demo">
+                            <img src="{% static 'images/propflow_dashboard_preview.png' %}" alt="PropFlow Portfolio Executive Dashboard" style="width: 100%; height: auto; display: block; border-radius: 0 0 16px 16px; transition: transform 0.2s ease;">
+                        </a>
+                    </div>
+                    {% elif product.slug == 'machine-os' or product.slug == 'job-card' %}
+                    <div class="hero-visual-card-inner p-0 overflow-hidden" style="padding: 0; overflow: hidden; border-radius: 16px;">
+                        <div class="visual-card-top p-3 mb-0" style="padding: 0.85rem 1rem; margin-bottom: 0; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
+                            <span class="visual-card-title">MachineOS Operations &amp; Telemetry</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 0.2rem 0.6rem; border-radius: 9999px;">Live Application</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch Machine OS live demo">
+                            <img src="{% static 'images/machineos_dashboard_preview.png' %}" alt="MachineOS Executive Operations & Telemetry Dashboard" style="width: 100%; height: auto; display: block; border-radius: 0 0 16px 16px; transition: transform 0.2s ease;">
+                        </a>
+                    </div>
+                    {% elif product.slug == 'stockflow' %}
+                    <div class="hero-visual-card-inner p-0 overflow-hidden" style="padding: 0; overflow: hidden; border-radius: 16px;">
+                        <div class="visual-card-top p-3 mb-0" style="padding: 0.85rem 1rem; margin-bottom: 0; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
+                            <span class="visual-card-title">StockFlow Inventory &amp; Purchasing Dashboard</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 0.2rem 0.6rem; border-radius: 9999px;">Live Application</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch StockFlow live demo">
+                            <img src="{% static 'images/stockflow_dashboard_preview.png' %}" alt="StockFlow Overview Dashboard" style="width: 100%; height: auto; display: block; border-radius: 0 0 16px 16px; transition: transform 0.2s ease;">
+                        </a>
+                    </div>
+                    {% elif product.slug == 'fleet-management' or product.slug == 'fleet' %}
+                    <div class="hero-visual-card-inner p-0 overflow-hidden" style="padding: 0; overflow: hidden; border-radius: 16px;">
+                        <div class="visual-card-top p-3 mb-0" style="padding: 0.85rem 1rem; margin-bottom: 0; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
+                            <span class="visual-card-title">Fleet Command Dashboard</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 0.2rem 0.6rem; border-radius: 9999px;">Live Application</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch Fleet OS live demo">
+                            <img src="{% static 'images/fleet_dashboard_preview.png' %}" alt="Fleet Command Dashboard" style="width: 100%; height: auto; display: block; border-radius: 0 0 16px 16px; transition: transform 0.2s ease;">
+                        </a>
+                    </div>
+                    {% elif product.slug == 'business-saas' or product.slug == 'businesslite' %}
+                    <div class="hero-visual-card-inner p-0 overflow-hidden" style="padding: 0; overflow: hidden; border-radius: 16px;">
+                        <div class="visual-card-top p-3 mb-0" style="padding: 0.85rem 1rem; margin-bottom: 0; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
+                            <span class="visual-card-title">MildData BusinessLite Dashboard</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 0.2rem 0.6rem; border-radius: 9999px;">Live Application</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch Business SaaS Lite live demo">
+                            <img src="{% static 'images/businesslite_dashboard_preview.png' %}" alt="MildData BusinessLite Dashboard" style="width: 100%; height: auto; display: block; border-radius: 0 0 16px 16px; transition: transform 0.2s ease;">
+                        </a>
+                    </div>
+                    {% elif product.slug == 'supplier-onboarding' %}
+                    <div class="hero-visual-card-inner p-0 overflow-hidden" style="padding: 0; overflow: hidden; border-radius: 16px;">
+                        <div class="visual-card-top p-3 mb-0" style="padding: 0.85rem 1rem; margin-bottom: 0; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
+                            <span class="visual-card-title">SupplierOS Overview Dashboard</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 0.2rem 0.6rem; border-radius: 9999px;">Live Application</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch Supplier Onboarding OS live demo">
+                            <img src="{% static 'images/supplier_dashboard_preview.png' %}" alt="SupplierOS Overview Dashboard" style="width: 100%; height: auto; display: block; border-radius: 0 0 16px 16px; transition: transform 0.2s ease;">
+                        </a>
+                    </div>
+                    {% elif product.slug == 'b2b-payment' or product.slug == 'payment-reminder' or product.slug == 'udhaar' %}
+                    <div class="hero-visual-card-inner p-0 overflow-hidden" style="padding: 0; overflow: hidden; border-radius: 16px;">
+                        <div class="visual-card-top p-3 mb-0" style="padding: 0.85rem 1rem; margin-bottom: 0; background: #ffffff; border-bottom: 1px solid #e2e8f0;">
+                            <span class="visual-card-title">Collections Executive Dashboard</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 0.2rem 0.6rem; border-radius: 9999px;">Live Application</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch B2B Payment live demo">
+                            <img src="{% static 'images/b2bpayment_dashboard_preview.png' %}" alt="B2B Payment Collections Executive Dashboard" style="width: 100%; height: auto; display: block; border-radius: 0 0 16px 16px; transition: transform 0.2s ease;">
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="hero-visual-card-inner">
+                        <div class="visual-card-top">
+                            <span class="visual-card-title">Dashboard Preview</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; color: #2563eb; background: #eff6ff; padding: 0.2rem 0.6rem; border-radius: 9999px;">Live SaaS</span>
+                        </div>
+
+                        <div class="visual-stats-row">
+                            <div class="visual-stat-item">
+                                <div class="stat-lbl">{{ dashboard_stats.stat1_label }}</div>
+                                <div class="stat-val">{{ dashboard_stats.stat1_val }}</div>
+                            </div>
+                            <div class="visual-stat-item">
+                                <div class="stat-lbl">{{ dashboard_stats.stat2_label }}</div>
+                                <div class="stat-val">{{ dashboard_stats.stat2_val }}</div>
+                            </div>
+                            <div class="visual-stat-item">
+                                <div class="stat-lbl">{{ dashboard_stats.stat3_label }}</div>
+                                <div class="stat-val">{{ dashboard_stats.stat3_val }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Sparkline Chart Curve SVG -->
+                        <svg class="sparkline-svg" viewBox="0 0 300 50" fill="none">
+                            <path d="M0 40 Q 60 10, 120 30 T 240 15 T 300 25" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+                        </svg>
+                    {% endif %}
+
+                        <!-- Upcoming Rent / Recent Operations Activity List -->
+                        <div class="visual-list-box">
+                            <div class="visual-list-header">
+                                <span>Upcoming Rent</span>
+                                <span style="color: #2563eb; cursor: pointer;">View all</span>
+                            </div>
+                            <div class="visual-list-item">
+                                <div class="item-meta">
+                                    <div class="avatar-purple">A</div>
+                                    <div>
+                                        <div style="font-weight: 700; color: #0f172a;">A-101</div>
+                                        <div style="font-size: 0.72rem; color: #64748b;">Sunset Apartments</div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 800; color: #0f172a;">{{ currency_symbol }}18,000</div>
+                                    <div style="font-size: 0.7rem; color: #dc2626; font-weight: 700;">Due in 3 days</div>
+                                </div>
+                            </div>
+                            <div class="visual-list-item">
+                                <div class="item-meta">
+                                    <div class="avatar-pink">B</div>
+                                    <div>
+                                        <div style="font-weight: 700; color: #0f172a;">B-204</div>
+                                        <div style="font-size: 0.72rem; color: #64748b;">Green Residency</div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 800; color: #0f172a;">{{ currency_symbol }}22,000</div>
+                                    <div style="font-size: 0.7rem; color: #dc2626; font-weight: 700;">Due in 5 days</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 4. STICKY TAB NAVIGATION BAR -->
+    <nav class="pdp-sticky-tabs-wrap" aria-label="Product Navigation">
+        <div class="milda-pdp-container">
+            <div class="pdp-tabs-flex">
+                <a href="#overview" class="tab-btn active"><span>📊</span> Overview</a>
+                <a href="#features" class="tab-btn"><span>⚙️</span> Features</a>
+                <a href="#screenshots" class="tab-btn"><span>📷</span> Screenshots</a>
+                <a href="#pricing" class="tab-btn"><span>🏷️</span> Pricing</a>
+                <a href="#faq" class="tab-btn"><span>❓</span> FAQ</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="milda-pdp-container">
+        <!-- 3 & MAIN LAYOUT GRID (Left 72% + Right 28% Sticky Sidebar) -->
+        <div class="pdp-main-grid">
+            
+            <!-- LEFT MAIN CONTENT AREA -->
+            <div class="pdp-content-column">
+                
+                <!-- 5. OVERVIEW SECTION -->
+                <section id="overview" class="pdp-section-card">
+                    <h2 class="section-title">Everything you need to manage properties</h2>
+                    <p class="section-subtitle">{{ product.short_description|default:product.description }}</p>
+
+                    <div class="features-grid-3col">
+                        {% for feat in features_list %}
+                        <div class="feature-card">
+                            <div class="feature-icon-wrap {% cycle 'icon-box-blue' 'icon-box-purple' 'icon-box-green' 'icon-box-pink' 'icon-box-orange' 'icon-box-indigo' %}">
+                                {% cycle '🏢' '👥' '💳' '🔧' '📋' '📊' %}
+                            </div>
+                            <h3 class="feature-card-title">{{ feat.title }}</h3>
+                            <p class="feature-card-desc">{{ feat.desc }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+                <!-- 6. SCREENSHOT / PRODUCT PREVIEW SECTION -->
+                <section id="screenshots" class="pdp-section-card">
+                    <div class="screenshots-preview-card">
+                        <div class="screenshots-header-grid">
+                            <div class="demo-left-box">
+                                <div>
+                                    <h2 class="section-title" style="font-size: 1.45rem;">See {{ product.name }} in action</h2>
+                                    <p style="font-size: 0.92rem; color: #475569; line-height: 1.5; margin-top: 0.4rem;">
+                                        A powerful yet simple dashboard that gives you complete control over your properties.
+                                    </p>
+                                </div>
+                                {% if target_url %}
+                                <a href="{% url 'products:saas_launch' product.slug %}" class="btn-primary-pill" style="font-size: 0.88rem; padding: 0.7rem 1.2rem;" target="_blank">
+                                    View Live Demo ↗
+                                </a>
+                                {% endif %}
+                            </div>
+
+                            <!-- Detailed SaaS Application Dashboard Frame -->
+                            {% if product.slug == 'property-management' %}
+                            <div class="app-dashboard-frame p-0 overflow-hidden" style="padding: 0; overflow: hidden; background: #0f172a; border-radius: 16px; border: 1fr solid #1e293b;">
+                                <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch PropFlow live application">
+                                    <img src="{% static 'images/propflow_dashboard_preview.png' %}" alt="PropFlow Dashboard Interactive UI" style="width: 100%; height: auto; display: block; border-radius: 16px;">
+                                </a>
+                            </div>
+                            {% elif product.slug == 'machine-os' or product.slug == 'job-card' %}
+                            <div class="app-dashboard-frame p-0 overflow-hidden" style="padding: 0; overflow: hidden; background: #0f172a; border-radius: 16px; border: 1fr solid #1e293b;">
+                                <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch Machine OS live application">
+                                    <img src="{% static 'images/machineos_dashboard_preview.png' %}" alt="MachineOS Operations & Telemetry Interactive UI" style="width: 100%; height: auto; display: block; border-radius: 16px;">
+                                </a>
+                            </div>
+                            {% elif product.slug == 'stockflow' %}
+                            <div class="app-dashboard-frame p-0 overflow-hidden" style="padding: 0; overflow: hidden; background: #0f172a; border-radius: 16px; border: 1fr solid #1e293b;">
+                                <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch StockFlow live application">
+                                    <img src="{% static 'images/stockflow_dashboard_preview.png' %}" alt="StockFlow Inventory & Purchasing Interactive UI" style="width: 100%; height: auto; display: block; border-radius: 16px;">
+                                </a>
+                            </div>
+                            {% elif product.slug == 'fleet-management' or product.slug == 'fleet' %}
+                            <div class="app-dashboard-frame p-0 overflow-hidden" style="padding: 0; overflow: hidden; background: #0f172a; border-radius: 16px; border: 1fr solid #1e293b;">
+                                <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch Fleet OS live application">
+                                    <img src="{% static 'images/fleet_dashboard_preview.png' %}" alt="Fleet Management OS Interactive UI" style="width: 100%; height: auto; display: block; border-radius: 16px;">
+                                </a>
+                            </div>
+                            {% elif product.slug == 'business-saas' or product.slug == 'businesslite' %}
+                            <div class="app-dashboard-frame p-0 overflow-hidden" style="padding: 0; overflow: hidden; background: #0f172a; border-radius: 16px; border: 1fr solid #1e293b;">
+                                <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch Business SaaS Lite live application">
+                                    <img src="{% static 'images/businesslite_dashboard_preview.png' %}" alt="MildData BusinessLite Interactive UI" style="width: 100%; height: auto; display: block; border-radius: 16px;">
+                                </a>
+                            </div>
+                            {% elif product.slug == 'supplier-onboarding' %}
+                            <div class="app-dashboard-frame p-0 overflow-hidden" style="padding: 0; overflow: hidden; background: #0f172a; border-radius: 16px; border: 1fr solid #1e293b;">
+                                <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch Supplier Onboarding OS live application">
+                                    <img src="{% static 'images/supplier_dashboard_preview.png' %}" alt="SupplierOS Interactive UI" style="width: 100%; height: auto; display: block; border-radius: 16px;">
+                                </a>
+                            </div>
+                            {% elif product.slug == 'b2b-payment' or product.slug == 'payment-reminder' or product.slug == 'udhaar' %}
+                            <div class="app-dashboard-frame p-0 overflow-hidden" style="padding: 0; overflow: hidden; background: #0f172a; border-radius: 16px; border: 1fr solid #1e293b;">
+                                <a href="{% url 'products:saas_launch' product.slug %}" target="_blank" title="Click to launch B2B Payment live application">
+                                    <img src="{% static 'images/b2bpayment_dashboard_preview.png' %}" alt="B2B Payment Collections Interactive UI" style="width: 100%; height: auto; display: block; border-radius: 16px;">
+                                </a>
+                            </div>
+                            {% else %}
+                            <div class="app-dashboard-frame">
+                                <div class="frame-sidebar">
+                                    <div class="frame-brand">🏢 {{ product.name|truncatewords:2 }}</div>
+                                    <div class="frame-nav-item active">📊 Dashboard</div>
+                                    <div class="frame-nav-item">🏢 Properties</div>
+                                    <div class="frame-nav-item">👥 Tenants</div>
+                                    <div class="frame-nav-item">📄 Leases</div>
+                                    <div class="frame-nav-item">💰 Rent Collection</div>
+                                    <div class="frame-nav-item">🔧 Maintenance</div>
+                                    <div class="frame-nav-item">📈 Reports</div>
+                                    <div class="frame-nav-item">⚙️ Settings</div>
+                                </div>
+                                <div class="frame-main">
+                                    <div class="frame-topbar">
+                                        <span class="frame-title">Dashboard</span>
+                                        <span class="frame-user">👤 John Doe (Owner)</span>
+                                    </div>
+                                    <div class="frame-kpis-grid">
+                                        <div class="frame-kpi-card">
+                                            <div class="frame-kpi-lbl">Total Properties</div>
+                                            <div class="frame-kpi-val">{{ dashboard_stats.stat1_val }}</div>
+                                        </div>
+                                        <div class="frame-kpi-card">
+                                            <div class="frame-kpi-lbl">Total Tenants</div>
+                                            <div class="frame-kpi-val">{{ dashboard_stats.stat2_val }}</div>
+                                        </div>
+                                        <div class="frame-kpi-card">
+                                            <div class="frame-kpi-lbl">Monthly Rent</div>
+                                            <div class="frame-kpi-val">{{ dashboard_stats.stat3_val }}</div>
+                                        </div>
+                                        <div class="frame-kpi-card">
+                                            <div class="frame-kpi-lbl">Occupancy Rate</div>
+                                            <div class="frame-kpi-val">{{ dashboard_stats.stat4_val }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="frame-content-split">
+                                        <div class="frame-box-dark">
+                                            <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.4rem;">Rent Overview</div>
+                                            <div style="font-size: 0.95rem; font-weight: 800; color: #ffffff;">{{ currency_symbol }}2,45,000</div>
+                                            <div style="font-size: 0.68rem; color: #22c55e;">75% Collected</div>
+                                        </div>
+                                        <div class="frame-box-dark">
+                                            <div style="font-size: 0.7rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.4rem;">Recent Rent</div>
+                                            <div style="font-size: 0.72rem; color: #cbd5e1;">A-101 Sunset — {{ currency_symbol }}18,000</div>
+                                            <div style="font-size: 0.72rem; color: #cbd5e1;">B-204 Green — {{ currency_symbol }}22,000</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- 4 Highlights Chips Below Screenshots -->
+                        <div class="highlights-chips-row">
+                            <div class="highlight-chip-box">
+                                <div class="highlight-icon-circle">🛡️</div>
+                                <div>
+                                    <div class="highlight-title">Secure &amp; Reliable</div>
+                                    <div class="highlight-desc">Your data is safe with enterprise grade security.</div>
+                                </div>
+                            </div>
+                            <div class="highlight-chip-box">
+                                <div class="highlight-icon-circle">☁️</div>
+                                <div>
+                                    <div class="highlight-title">Cloud Based</div>
+                                    <div class="highlight-desc">Access your data anytime, anywhere.</div>
+                                </div>
+                            </div>
+                            <div class="highlight-chip-box">
+                                <div class="highlight-icon-circle">🔄</div>
+                                <div>
+                                    <div class="highlight-title">Regular Updates</div>
+                                    <div class="highlight-desc">We continuously add new features and improvements.</div>
+                                </div>
+                            </div>
+                            <div class="highlight-chip-box">
+                                <div class="highlight-icon-circle">🎧</div>
+                                <div>
+                                    <div class="highlight-title">Dedicated Support</div>
+                                    <div class="highlight-desc">Our team is here to help you succeed.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 7. WHY CHOOSE THIS PRODUCT -->
+                <section id="features" class="pdp-section-card">
+                    <div class="why-choose-card">
+                        <h2 class="section-title" style="font-size: 1.45rem;">Why choose {{ product.name }}?</h2>
+                        <div class="benefits-grid-2col">
+                            {% for benefit in benefits %}
+                            <div class="benefit-item-row">
+                                <div class="check-circle-green">✓</div>
+                                <span>{{ benefit }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 8. PRICING SECTION -->
+                <section id="pricing" class="pdp-section-card">
+                    <h2 class="section-title">Simple, transparent pricing</h2>
+                    <p class="section-subtitle">Choose the plan that best fits your business requirement.</p>
+
+                    <div class="pricing-cards-grid">
+                        
+                        <!-- Starter Tier -->
+                        <div class="pricing-tier-card">
+                            <div>
+                                <div class="tier-title">Starter</div>
+                                <div class="tier-subtitle">Ideal for small teams and single operators getting started.</div>
+                                <div class="tier-price-val">{{ monthly_price_str }}</div>
+                            </div>
+                            <div style="margin-top: 1.5rem;">
+                                {% if db_product %}
+                                <a href="{% url 'products:detail' db_product.pk %}?billing=monthly" class="btn-secondary-full">
+                                    Start Free Trial
+                                </a>
+                                {% else %}
+                                <a href="{% url 'products:saas_launch' product.slug %}" class="btn-secondary-full">
+                                    Start Free Trial
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Professional Tier (Featured) -->
+                        <div class="pricing-tier-card popular">
+                            <span class="popular-tag-top">Most Popular</span>
+                            <div>
+                                <div class="tier-title">Professional</div>
+                                <div class="tier-subtitle">Full feature access with priority email, chat, and ticket support.</div>
+                                <div class="tier-price-val">{{ display_price }}</div>
+                            </div>
+                            <div style="margin-top: 1.5rem;">
+                                {% if db_product %}
+                                <a href="{% url 'products:detail' db_product.pk %}?billing={{ billing_cycle }}" class="btn-primary-full">
+                                    Start Free Trial →
+                                </a>
+                                {% else %}
+                                <a href="{% url 'products:saas_launch' product.slug %}" class="btn-primary-full">
+                                    Start Free Trial →
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Enterprise Tier -->
+                        <div class="pricing-tier-card">
+                            <div>
+                                <div class="tier-title">Enterprise</div>
+                                <div class="tier-subtitle">Custom deployment, dedicated account manager, and SLA guarantees.</div>
+                                <div class="tier-price-val">Custom</div>
+                            </div>
+                            <div style="margin-top: 1.5rem;">
+                                <a href="mailto:support@mildadata.com" class="btn-secondary-full">
+                                    Contact Sales
+                                </a>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- 9. FAQ SECTION -->
+                <section id="faq" class="pdp-section-card">
+                    <h2 class="section-title">Frequently Asked Questions</h2>
+                    <div class="faq-accordion-container">
+                        {% for item in faqs %}
+                        <div class="faq-accordion-item">
+                            <button type="button" class="faq-header-btn" onclick="window.toggleFaq(this)">
+                                <span>{{ item.q }}</span>
+                                <span style="font-weight: 800; font-size: 1.1rem; color: #2563eb;">+</span>
+                            </button>
+                            <div class="faq-content-body">
+                                {{ item.a }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- RIGHT STICKY SIDEBAR -->
+            <aside class="pdp-sidebar-column">
+                
+                <!-- Card 1: Ready to get started? -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-card-heading">Ready to get started?</h3>
+                    <p class="sidebar-card-subtext">Start your free trial. No credit card required.</p>
+                    
+                    {% if db_product %}
+                    <a href="{% url 'products:detail' db_product.pk %}?billing={{ billing_cycle }}" class="btn-primary-full">
+                        Start Free Trial →
+                    </a>
+                    {% else %}
+                    <a href="{% url 'products:saas_launch' product.slug %}" class="btn-primary-full">
+                        Start Free Trial →
+                    </a>
+                    {% endif %}
+                    
+                    <button type="button" onclick="window.openDemoModal()" class="btn-secondary-full">
+                        Book a Demo 📅
+                    </button>
+                </div>
+
+                <!-- Card 2: Product Details -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-card-heading">Product Details</h3>
+                    <div class="sidebar-meta-list">
+                        <div class="meta-item-row">
+                            <span class="meta-key">Category</span>
+                            <span class="meta-val">{{ product.category }}</span>
+                        </div>
+                        <div class="meta-item-row">
+                            <span class="meta-key">Project</span>
+                            <span class="meta-val">{{ product.project_name }}</span>
+                        </div>
+                        <div class="meta-item-row">
+                            <span class="meta-key">Status</span>
+                            <span class="active-pill">Active</span>
+                        </div>
+                        <div class="meta-item-row">
+                            <span class="meta-key">Region</span>
+                            <span class="meta-val">{{ active_region }} ({{ active_currency }})</span>
+                        </div>
+                        <div class="meta-item-row">
+                            <span class="meta-key">Developer</span>
+                            <span class="meta-val">{{ product.developer|default:"Milda Data" }}</span>
+                        </div>
+                        <div class="meta-item-row">
+                            <span class="meta-key">Launch Date</span>
+                            <span class="meta-val">{{ product.launch_date|default:"May 2025" }}</span>
+                        </div>
+                        <div class="meta-item-row">
+                            <span class="meta-key">Support</span>
+                            <span class="meta-val">{{ product.support_info|default:"Email, Chat, Ticket" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Need a custom solution? -->
+                <div class="sidebar-custom-solution-card">
+                    <div class="custom-icon">🎧</div>
+                    <div class="custom-body">
+                        <h4>Need a custom solution?</h4>
+                        <p>We build custom solutions for your business needs.</p>
+                        <a href="mailto:support@mildadata.com" class="link-contact-sales">Contact Sales →</a>
+                    </div>
+                </div>
+
+                <!-- Card 4: Why choose PropFlow? (Sidebar Widget matching mockup image) -->
+                <div class="sidebar-why-choose-card">
+                    <h3>Why choose {{ product.name }}?</h3>
+                    <div class="sidebar-benefit-list">
+                        {% for benefit in benefits %}
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: #15803d; font-weight: 800;">✓</span>
+                            <span>{{ benefit }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </aside>
+
+        </div>
+
+        <!-- 10. BOTTOM CTA BANNER -->
+        <section class="pdp-bottom-cta-banner">
+            <h2 class="bottom-cta-title">Ready to get started with {{ product.name }}?</h2>
+            <p class="bottom-cta-lead">Start using {{ product.name }} today and streamline your operations.</p>
+            <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+                {% if db_product %}
+                <a href="{% url 'products:detail' db_product.pk %}?billing={{ billing_cycle }}" class="btn-primary-pill" style="padding: 0.9rem 2rem;">
+                    Start Free Trial →
+                </a>
+                {% else %}
+                <a href="{% url 'products:saas_launch' product.slug %}" class="btn-primary-pill" style="padding: 0.9rem 2rem;">
+                    Start Free Trial →
+                </a>
+                {% endif %}
+                <button type="button" onclick="window.openDemoModal()" class="btn-secondary-pill" style="padding: 0.9rem 1.8rem;">
+                    Book a Demo 📅
+                </button>
+            </div>
+        </section>
+
+    </div>
+</div>
+
+<!-- DEMO BOOKING MODAL -->
+<div id="demo-modal" class="modal-backdrop" onclick="if(event.target===this) window.closeDemoModal()">
+    <div class="modal-card" style="max-width: 520px; max-height: 90vh; overflow-y: auto;">
+        <button type="button" class="modal-close-x" onclick="window.closeDemoModal()">✕</button>
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 800; margin: 0 0 0.3rem; color: #0f172a;">Book a Live Demo</h3>
+        <p style="font-size: 0.86rem; color: #475569; margin: 0 0 1.25rem;">Schedule a 1-on-1 walkthrough of <strong>{{ product.name }}</strong> with our team. Admin notification will be sent to <strong>ab.mishra@yahoo.com</strong>.</p>
+        
+        <div id="demo-form-alert" style="display: none; padding: 0.8rem 1rem; border-radius: 8px; font-size: 0.88rem; font-weight: 600; margin-bottom: 1rem;"></div>
+
+        <form id="demo-booking-form" onsubmit="window.submitDemoForm(event)">
+            {% csrf_token %}
+            <input type="hidden" name="product_name" value="{{ product.name }}">
+            
+            <div style="margin-bottom: 0.85rem;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 0.25rem;">Full Name *</label>
+                <input type="text" name="full_name" required placeholder="e.g. Abhinav Mishra" style="width: 100%; padding: 0.7rem 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                <div>
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 0.25rem;">Work Email *</label>
+                    <input type="email" name="email" required placeholder="name@company.com" style="width: 100%; padding: 0.7rem 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 0.25rem;">Phone / WhatsApp *</label>
+                    <input type="tel" name="phone" required placeholder="+91 9876543210" style="width: 100%; padding: 0.7rem 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem;">
+                </div>
+            </div>
+
+            <div style="margin-bottom: 0.85rem;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 0.25rem;">Location / Place *</label>
+                <input type="text" name="place" required placeholder="e.g. Patna, Bihar / New Delhi / Tokyo" style="width: 100%; padding: 0.7rem 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem;">
+            </div>
+
+            <div style="margin-bottom: 1.1rem;">
+                <label style="display: block; font-size: 0.82rem; font-weight: 700; color: #334155; margin-bottom: 0.25rem;">Business Needs &amp; Specific Requirements</label>
+                <textarea name="notes" rows="3" placeholder="Tell us about your team size, current workflow, or custom integration needs..." style="width: 100%; padding: 0.7rem 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; font-family: inherit;"></textarea>
+            </div>
+
+            <button type="submit" id="demo-submit-btn" class="btn-primary-full" style="padding: 0.85rem; font-size: 0.95rem; width: 100%;">
+                Submit Demo Request 📅
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- TOAST NOTIFICATION -->
+<div id="toast-notification" style="position: fixed; bottom: 24px; right: 24px; background: #0f172a; color: #ffffff; padding: 12px 20px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 9999; display: none;">
+    Link copied to clipboard!
+</div>
+
+<script>
+window.copyShareLink = function() {
+    var url = window.location.href;
+    if (navigator.share) {
+        navigator.share({ title: "{{ product.name|escapejs }}", url: url }).catch(function(){});
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(function() {
+            var toast = document.getElementById('toast-notification');
+            if (toast) {
+                toast.style.display = 'block';
+                setTimeout(function(){ toast.style.display = 'none'; }, 3000);
+            }
+        });
+    }
+};
+
+window.toggleCompare = function(slug) {
+    var key = 'milda_compare_products';
+    var items = JSON.parse(localStorage.getItem(key) || '[]');
+    var idx = items.indexOf(slug);
+    if (idx >= 0) {
+        items.splice(idx, 1);
+        alert('Removed from comparison list.');
+    } else {
+        items.push(slug);
+        alert('Added to comparison list!');
+    }
+    localStorage.setItem(key, JSON.stringify(items));
+};
+
+window.toggleFaq = function(btn) {
+    var item = btn.closest('.faq-accordion-item');
+    if (!item) return;
+    var isOpen = item.classList.contains('active');
+    document.querySelectorAll('.faq-accordion-item').forEach(function(el){ el.classList.remove('active'); });
+    if (!isOpen) { item.classList.add('active'); }
+};
+
+window.openDemoModal = function() {
+    var m = document.getElementById('demo-modal');
+    if (m) m.classList.add('open');
+};
+
+window.closeDemoModal = function() {
+    var m = document.getElementById('demo-modal');
+    if (m) m.classList.remove('open');
+};
+
+window.submitDemoForm = function(e) {
+    e.preventDefault();
+    var form = document.getElementById('demo-booking-form');
+    var btn = document.getElementById('demo-submit-btn');
+    var alertBox = document.getElementById('demo-form-alert');
+    
+    if (!form || !btn || !alertBox) return;
+
+    btn.disabled = true;
+    btn.innerHTML = 'Submitting Request...';
+
+    var formData = new FormData(form);
+    var searchParams = new URLSearchParams(formData);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', "{% url 'products:book_demo' %}", true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+    xhr.onload = function() {
+        btn.disabled = false;
+        btn.innerHTML = 'Submit Demo Request 📅';
+        try {
+            var data = JSON.parse(xhr.responseText);
+            if (xhr.status >= 200 && xhr.status < 300 && data.success) {
+                alertBox.style.display = 'block';
+                alertBox.style.background = '#dcfce7';
+                alertBox.style.color = '#15803d';
+                alertBox.style.border = '1px solid #86efac';
+                alertBox.innerHTML = '✓ ' + data.message;
+                form.reset();
+                setTimeout(function() {
+                    alertBox.style.display = 'none';
+                    window.closeDemoModal();
+                }, 4000);
+            } else {
+                alertBox.style.display = 'block';
+                alertBox.style.background = '#fee2e2';
+                alertBox.style.color = '#b91c1c';
+                alertBox.style.border = '1px solid #fca5a5';
+                alertBox.innerHTML = '❌ ' + (data.error || 'Submission failed. Please check inputs.');
+            }
+        } catch (err) {
+            alertBox.style.display = 'block';
+            alertBox.style.background = '#fee2e2';
+            alertBox.style.color = '#b91c1c';
+            alertBox.style.border = '1px solid #fca5a5';
+            alertBox.innerHTML = '❌ Server response error. Please try again.';
+        }
+    };
+
+    xhr.onerror = function() {
+        btn.disabled = false;
+        btn.innerHTML = 'Submit Demo Request 📅';
+        alertBox.style.display = 'block';
+        alertBox.style.background = '#fee2e2';
+        alertBox.style.color = '#b91c1c';
+        alertBox.style.border = '1px solid #fca5a5';
+        alertBox.innerHTML = '❌ Network connection error. Please try again.';
+    };
+
+    xhr.send(searchParams.toString());
+};
+
+// Smooth Tab Link Highlighting & Scroll
+document.addEventListener('DOMContentLoaded', function() {
+    var tabs = document.querySelectorAll('.tab-btn');
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function(e) {
+            tabs.forEach(function(t){ t.classList.remove('active'); });
+            this.classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}

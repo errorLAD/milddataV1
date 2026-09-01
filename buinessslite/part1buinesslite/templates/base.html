@@ -1,0 +1,303 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MildData BusinessLite{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/karobar.css' %}">
+    <link rel="manifest" href="{% url 'pwa_manifest' %}">
+    <meta name="theme-color" content="#2451FF">
+</head>
+<body>
+
+<div class="app-wrapper">
+    <!-- Desktop Sidebar -->
+    <aside class="app-sidebar">
+        <div class="sidebar-brand">
+            <span>MildData</span>
+            <span class="brand-badge">LITE</span>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <span>🏠</span> Dashboard
+            </a>
+
+            <div class="nav-section-title">People</div>
+            <a href="{% url 'employee_list' %}" class="nav-item {% if 'people/employees' in request.path %}active{% endif %}">👥 Employees</a>
+            <a href="{% url 'attendance_list' %}" class="nav-item {% if 'attendance' in request.path %}active{% endif %}">📅 Attendance</a>
+            <a href="{% url 'leave_list' %}" class="nav-item {% if 'leave' in request.path %}active{% endif %}">🌴 Leave</a>
+            <a href="{% url 'salary_payment_list' %}" class="nav-item {% if 'salaries' in request.path %}active{% endif %}">💳 Salary Payouts</a>
+
+            <div class="nav-section-title">Sales</div>
+            <a href="{% url 'customer_list' %}" class="nav-item {% if 'sales/customers' in request.path %}active{% endif %}">👤 Customers</a>
+            <a href="{% url 'quote_list' %}" class="nav-item {% if 'quotes' in request.path %}active{% endif %}">📝 Quotes</a>
+            <a href="{% url 'sales_order_list' %}" class="nav-item {% if 'sales/orders' in request.path %}active{% endif %}">🛒 Orders</a>
+            <a href="{% url 'invoice_list' %}" class="nav-item {% if 'invoices' in request.path %}active{% endif %}">📄 Invoices</a>
+
+            <div class="nav-section-title">Inventory</div>
+            <a href="{% url 'product_list' %}" class="nav-item {% if 'products' in request.path %}active{% endif %}">📦 Products</a>
+            <a href="{% url 'movement_list' %}" class="nav-item {% if 'movements' in request.path %}active{% endif %}">🔄 Movements</a>
+            <a href="{% url 'barcode_scanner' %}" class="nav-item {% if 'barcode' in request.path %}active{% endif %}">📷 Barcode Scan</a>
+
+            <div class="nav-section-title">Purchasing</div>
+            <a href="{% url 'supplier_list' %}" class="nav-item {% if 'suppliers' in request.path %}active{% endif %}">🛍 Suppliers</a>
+            <a href="{% url 'po_list' %}" class="nav-item {% if 'purchasing/orders' in request.path %}active{% endif %}">📑 POs</a>
+
+            <div class="nav-section-title">Finance</div>
+            <a href="{% url 'expense_list' %}" class="nav-item {% if 'expenses' in request.path %}active{% endif %}">💸 Expenses</a>
+            <a href="{% url 'receivables' %}" class="nav-item {% if 'receivables' in request.path %}active{% endif %}">💰 Receivables</a>
+            <a href="{% url 'payables' %}" class="nav-item {% if 'payables' in request.path %}active{% endif %}">💳 Payables</a>
+            <a href="{% url 'profit' %}" class="nav-item {% if 'profit' in request.path %}active{% endif %}">📈 Profit</a>
+
+            <div class="nav-section-title">Operations</div>
+            <a href="{% url 'task_list' %}" class="nav-item {% if 'tasks' in request.path %}active{% endif %}">📋 Tasks</a>
+            <a href="{% url 'calendar' %}" class="nav-item {% if 'calendar' in request.path %}active{% endif %}">📆 Calendar</a>
+            <a href="{% url 'business_document_list' %}" class="nav-item {% if 'operations/documents' in request.path %}active{% endif %}">📁 Documents</a>
+
+            <div class="nav-section-title">System</div>
+            <a href="{% url 'reports_dashboard' %}" class="nav-item {% if 'reports' in request.path %}active{% endif %}">📊 Reports</a>
+            <a href="{% url 'settings' %}" class="nav-item {% if 'settings' in request.path %}active{% endif %}">⚙ Settings</a>
+            <a href="{% url 'audit_log' %}" class="nav-item {% if 'audit' in request.path %}active{% endif %}">📜 Audit Log</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-main">
+        <!-- Top Header -->
+        <header class="app-header">
+            <!-- Global Search -->
+            <div class="header-search">
+                <span class="header-search-icon">🔍</span>
+                <input type="text" id="globalSearchInput" placeholder="Search anything (products, customers, invoices)..." autocomplete="off">
+                <div class="search-results-dropdown" id="searchResultsDropdown"></div>
+            </div>
+
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <a href="{% url 'settings' %}" class="btn-saas btn-secondary" title="Click to change Country and Currency Symbol">
+                    🌐 {{ organization.country }} ({{ currency_symbol }} {{ currency_code }})
+                </a>
+
+                <button class="btn-saas btn-ai" onclick="toggleAiModal()">
+                    ✨ Ask Business AI
+                </button>
+
+                <button class="btn-saas btn-primary" onclick="toggleQuickCreateModal()">
+                    + Create
+                </button>
+
+                <a href="{% url 'notifications' %}" class="btn-saas btn-secondary" style="position: relative;">
+                    🔔
+                    {% if unread_notifications_count > 0 %}
+                    <span style="position: absolute; top: -4px; right: -4px; background: var(--danger); color: #fff; border-radius: 50%; font-size: 0.55rem; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center; font-weight: 700;">{{ unread_notifications_count }}</span>
+                    {% endif %}
+                </a>
+
+                <div style="font-size: 0.72rem; font-weight: 600; color: var(--text-secondary); display: flex; align-items: center; gap: 0.4rem;">
+                    <div style="width: 26px; height: 26px; border-radius: 50%; background: var(--brand-soft); color: var(--brand); display: flex; align-items: center; justify-content: center; font-weight: 700; border: 1px solid var(--brand-soft-border);">
+                        {{ request.user.username|slice:":1"|upper }}
+                    </div>
+                    <a href="{% url 'logout' %}" style="color: var(--text-tertiary); text-decoration: none; font-size: 0.68rem;">Logout</a>
+                </div>
+        </header>
+
+        {% if request.session.is_guest %}
+        <div style="background: var(--warning-soft); border-bottom: 1px solid var(--warning-border); color: var(--warning); padding: 0.4rem 1.25rem; font-size: 0.68rem; font-weight: 600; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.4rem;">
+            <span>👁️ <strong>Guest Mode Active:</strong> You are exploring MildData BusinessLite in temporary read-only demo mode.</span>
+            <a href="{% url 'logout' %}" class="btn-saas btn-primary" style="padding: 0.2rem 0.55rem; font-size: 0.62rem; min-height: 24px;">Upgrade / Login</a>
+        </div>
+        {% endif %}
+
+        <!-- Main Body -->
+        <main class="content-wrapper">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<!-- Mobile Bottom Navigation Bar -->
+<div class="mobile-bottom-bar">
+    <a href="{% url 'dashboard' %}" class="mobile-nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+        <span>🏠</span>
+        <span>Home</span>
+    </a>
+    <a href="{% url 'product_list' %}" class="mobile-nav-link">
+        <span>📦</span>
+        <span>Stock</span>
+    </a>
+    <button onclick="toggleAiModal()" class="mobile-nav-link" style="background: none; border: none; cursor: pointer;">
+        <span>✨</span>
+        <span>AI</span>
+    </button>
+    <a href="{% url 'invoice_list' %}" class="mobile-nav-link">
+        <span>📄</span>
+        <span>Invoices</span>
+    </a>
+    <a href="{% url 'settings' %}" class="mobile-nav-link">
+        <span>⚙</span>
+        <span>Settings</span>
+    </a>
+</div>
+
+<!-- ✨ Business AI Modal -->
+<div class="ai-modal-overlay" id="aiModalOverlay">
+    <div class="ai-modal-box">
+        <div class="ai-modal-header">
+            <div style="font-weight: 650; font-size: 0.85rem; color: var(--brand-dark); display: flex; align-items: center; gap: 0.4rem;">
+                ✨ Business AI Assistant
+            </div>
+            <button onclick="toggleAiModal()" style="background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-tertiary);">&times;</button>
+        </div>
+        <div class="ai-modal-body">
+            <div class="ai-chat-messages" id="aiChatMessages">
+                <div class="ai-msg assistant">
+                    Hello! I'm your Business AI. Ask me anything about sales, low stock, overdue invoices, expenses, or top customers.
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.75rem;" id="aiSuggestions">
+                <button class="btn-saas btn-secondary" onclick="sendAiPrompt('How are sales performing?')">How are sales performing?</button>
+                <button class="btn-saas btn-secondary" onclick="sendAiPrompt('Which products need reordering?')">What needs reordering?</button>
+                <button class="btn-saas btn-secondary" onclick="sendAiPrompt('Who owes me money?')">Who owes me money?</button>
+                <button class="btn-saas btn-secondary" onclick="sendAiPrompt('What were my biggest expenses?')">Biggest expenses?</button>
+            </div>
+
+            <form onsubmit="handleAiSubmit(event)" style="display: flex; gap: 0.4rem;">
+                <input type="text" id="aiInput" class="form-input" placeholder="Ask anything about your business..." required>
+                <button type="submit" class="btn-saas btn-primary">Send</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Create Modal -->
+<div class="ai-modal-overlay" id="quickCreateOverlay">
+    <div class="ai-modal-box" style="max-width: 400px;">
+        <div class="ai-modal-header">
+            <div style="font-weight: 650; font-size: 0.85rem;">+ Quick Create</div>
+            <button onclick="toggleQuickCreateModal()" style="background: none; border: none; font-size: 1.1rem; cursor: pointer;">&times;</button>
+        </div>
+        <div class="ai-modal-body">
+            <div class="quick-action-grid">
+                <a href="{% url 'invoice_create' %}" class="quick-action-btn">📄 Invoice</a>
+                <a href="{% url 'quote_create' %}" class="quick-action-btn">📝 Quote</a>
+                <a href="{% url 'po_create' %}" class="quick-action-btn">🛒 Purchase</a>
+                <a href="{% url 'expense_create' %}" class="quick-action-btn">💸 Expense</a>
+                <a href="{% url 'product_create' %}" class="quick-action-btn">📦 Product</a>
+                <a href="{% url 'customer_create' %}" class="quick-action-btn">👤 Customer</a>
+                <a href="{% url 'supplier_create' %}" class="quick-action-btn">🛍 Supplier</a>
+                <a href="{% url 'employee_create' %}" class="quick-action-btn">👥 Employee</a>
+                <a href="{% url 'salary_payment_create' %}" class="quick-action-btn">💳 Pay Salary</a>
+                <a href="{% url 'task_create' %}" class="quick-action-btn">📋 Task</a>
+                <a href="{% url 'document_upload' %}" class="quick-action-btn">📁 Document</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleAiModal() {
+        const modal = document.getElementById('aiModalOverlay');
+        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function toggleQuickCreateModal() {
+        const modal = document.getElementById('quickCreateOverlay');
+        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    }
+
+    function sendAiPrompt(promptText) {
+        document.getElementById('aiInput').value = promptText;
+        handleAiSubmit(new Event('submit'));
+    }
+
+    async function handleAiSubmit(e) {
+        e.preventDefault();
+        const input = document.getElementById('aiInput');
+        const query = input.value.strip ? input.value.strip() : input.value.trim();
+        if (!query) return;
+
+        const chatBox = document.getElementById('aiChatMessages');
+        
+        // Append user message
+        const userDiv = document.createElement('div');
+        userDiv.className = 'ai-msg user';
+        userDiv.innerText = query;
+        chatBox.appendChild(userDiv);
+        input.value = '';
+
+        // Fetch AI Response
+        try {
+            const res = await fetch('{% url "ai_assistant_api" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ query: query })
+            });
+            const data = await res.json();
+            
+            const aiDiv = document.createElement('div');
+            aiDiv.className = 'ai-msg assistant';
+            
+            let htmlContent = data.text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            if (data.link) {
+                htmlContent += `<br><br><a href="${data.link.url}" class="btn-saas btn-primary" style="text-decoration:none;">${data.link.label}</a>`;
+            }
+            aiDiv.innerHTML = htmlContent;
+            chatBox.appendChild(aiDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Global Search Auto-complete
+    let searchTimeout;
+    const searchInput = document.getElementById('globalSearchInput');
+    const dropdown = document.getElementById('searchResultsDropdown');
+
+    searchInput.addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        const q = this.value.trim();
+        if (q.length < 2) {
+            dropdown.style.display = 'none';
+            return;
+        }
+        searchTimeout = setTimeout(async () => {
+            const res = await fetch(`/api/global-search/?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            dropdown.innerHTML = '';
+            if (data.results.length === 0) {
+                dropdown.innerHTML = '<div style="padding: 0.5rem 0.75rem; color: var(--text-tertiary);">No matching records found</div>';
+            } else {
+                data.results.forEach(r => {
+                    const item = document.createElement('a');
+                    item.className = 'search-result-item';
+                    item.href = r.url;
+                    item.innerHTML = `<div style="font-weight: 650; font-size: 0.7rem;"><span class="badge-pill badge-info">${r.category}</span> ${r.title}</div><div style="font-size: 0.65rem; color: var(--text-tertiary);">${r.sub}</div>`;
+                    dropdown.appendChild(item);
+                });
+            }
+            dropdown.style.display = 'block';
+        }, 200);
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('{% url "pwa_sw" %}');
+    }
+</script>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

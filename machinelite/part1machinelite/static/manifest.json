@@ -1,0 +1,15 @@
+{
+  "name": "Machine OS Heavy Equipment SaaS",
+  "short_name": "Machine OS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F7F8FA",
+  "theme_color": "#2451FF",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2990/2990159.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

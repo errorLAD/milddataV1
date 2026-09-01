@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Overview Dashboard — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Overview</h1>
+    <p class="page-subtitle">Monitor sales, inventory, purchasing, and cash flow across your organization.</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'invoice_create' %}" class="btn btn-primary">+ Create Invoice</a>
+    <a href="{% url 'po_create' %}" class="btn btn-secondary">+ Purchase Order</a>
+    <a href="{% url 'product_list' %}" class="btn btn-secondary">+ Add Product</a>
+  </div>
+</div>
+
+<!-- 5 Summary Metric Cards -->
+<div class="metrics-grid">
+  <div class="metric-card hero-card">
+    <div class="metric-label">Total Sales</div>
+    <div class="metric-value">{{ total_sales|money:org }}</div>
+    <div class="metric-sub">Issued Invoices Total</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Purchases</div>
+    <div class="metric-value">{{ total_purchases|money:org }}</div>
+    <div class="metric-sub">Active PO Total</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Inventory Value</div>
+    <div class="metric-value">{{ total_inventory_value|money:org }}</div>
+    <div class="metric-sub">{{ total_units_count }} Units • {{ total_products_count }} Items</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Receivables</div>
+    <div class="metric-value" style="color: var(--brand);">{{ outstanding_receivables|money:org }}</div>
+    <div class="metric-sub"><a href="{% url 'receivables' %}" style="color: var(--brand); text-decoration: none;">Outstanding Invoices →</a></div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.2rem;">
+  <!-- Primary Content Column -->
+  <div>
+    <!-- Low Stock Alert Panel -->
+    {% if low_stock_products %}
+    <div class="panel" style="border-left: 4px solid var(--warning);">
+      <div class="panel-header" style="background: var(--warning-soft);">
+        <span class="panel-title" style="color: var(--warning);">⚠️ Low Stock Alerts ({{ low_stock_products|length }})</span>
+        <a href="{% url 'po_create' %}" class="btn btn-secondary btn-sm">Reorder Items</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>SKU</th>
+              <th>Current Stock</th>
+              <th>Reorder Level</th>
+              <th>Status</th>
+              <th style="text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for prod in low_stock_products %}
+            <tr>
+              <td style="font-weight: 600;">
+                <a href="{% url 'product_detail' prod.id %}" style="color: var(--text-primary); text-decoration: none;">{{ prod.name }}</a>
+              </td>
+              <td class="tabular-nums">{{ prod.sku }}</td>
+              <td class="tabular-nums" style="font-weight: 700; color: {% if prod.total_stock <= 0 %}var(--danger){% else %}var(--warning){% endif %};">
+                {{ prod.total_stock }} {{ prod.unit.abbreviation|default:'pcs' }}
+              </td>
+              <td class="tabular-nums">{{ prod.reorder_level }}</td>
+              <td>
+                {% if prod.total_stock <= 0 %}
+                  <span class="badge badge-danger"><span class="badge-dot-mark"></span> Out of Stock</span>
+                {% else %}
+                  <span class="badge badge-warning"><span class="badge-dot-mark"></span> Low Stock</span>
+                {% endif %}
+              </td>
+              <td style="text-align: right;">
+                <a href="{% url 'po_create' %}?product_id={{ prod.id }}" class="btn btn-secondary btn-sm">Reorder</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Sales Invoices Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Recent Invoices</span>
+        <a href="{% url 'invoice_list' %}" style="font-size: 0.68rem; color: var(--brand); text-decoration: none; font-weight: 600;">View All →</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inv in recent_invoices %}
+            <tr>
+              <td><a href="{% url 'invoice_detail' inv.id %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">{{ inv.invoice_number }}</a></td>
+              <td>{{ inv.customer.company_name }}</td>
+              <td>{{ inv.invoice_date|date_fmt:org }}</td>
+              <td class="money" style="font-weight: 650;">{{ inv.total_amount|money:org }}</td>
+              <td>
+                {% if inv.status == 'PAID' %}
+                  <span class="badge badge-success"><span class="badge-dot-mark"></span> Paid</span>
+                {% elif inv.status == 'OVERDUE' %}
+                  <span class="badge badge-danger"><span class="badge-dot-mark"></span> Overdue</span>
+                {% else %}
+                  <span class="badge badge-warning"><span class="badge-dot-mark"></span> {{ inv.get_status_display }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No invoices created yet. <a href="{% url 'invoice_create' %}">Create your first invoice</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Secondary Sidebar Column -->
+  <div>
+    <!-- Quick Actions Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Quick Actions</span>
+      </div>
+      <div class="panel-body" style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <a href="{% url 'invoice_create' %}" class="btn btn-primary" style="justify-content: flex-start;">+ Create Invoice</a>
+        <a href="{% url 'product_list' %}" class="btn btn-secondary" style="justify-content: flex-start;">+ Add Product</a>
+        <a href="{% url 'po_create' %}" class="btn btn-secondary" style="justify-content: flex-start;">+ Create Purchase Order</a>
+        <a href="{% url 'customer_create' %}" class="btn btn-secondary" style="justify-content: flex-start;">+ Add Customer</a>
+        <a href="{% url 'supplier_create' %}" class="btn btn-secondary" style="justify-content: flex-start;">+ Add Supplier</a>
+      </div>
+    </div>
+
+    <!-- Category Value Breakdown Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Inventory Stock by Category</span>
+      </div>
+      <div class="panel-body">
+        {% for cat in categories_data %}
+        <div style="margin-bottom: 0.75rem;">
+          <div style="display: flex; justify-content: space-between; font-size: 0.68rem; margin-bottom: 0.2rem;">
+            <span style="font-weight: 600;">{{ cat.name }}</span>
+            <span class="money" style="font-weight: 700;">{{ cat.val|money:org }}</span>
+          </div>
+          <div style="height: 6px; background: var(--surface-alt); border-radius: 3px; overflow: hidden;">
+            <div style="height: 100%; width: 65%; background: var(--brand); border-radius: 3px;"></div>
+          </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; color: var(--text-tertiary); font-size: 0.68rem;">No categories set up yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Recent Stock Movements Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Recent Stock Activity</span>
+      </div>
+      <div class="panel-body" style="padding: 0.6rem 0.9rem;">
+        {% for m in recent_movements %}
+        <div style="padding: 0.4rem 0; border-bottom: 1px solid var(--border); font-size: 0.66rem;">
+          <div style="display: flex; justify-content: space-between;">
+            <span style="font-weight: 650; color: var(--text-primary);">{{ m.product.sku }}</span>
+            <span style="font-weight: 700; color: {% if m.quantity > 0 %}var(--success){% else %}var(--danger){% endif %};">
+              {% if m.quantity > 0 %}+{% endif %}{{ m.quantity }}
+            </span>
+          </div>
+          <div style="color: var(--text-secondary); margin-top: 0.1rem;">
+            {{ m.get_movement_type_display }} • {{ m.warehouse.code }}
+          </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; color: var(--text-tertiary); font-size: 0.68rem; padding: 1rem;">No activity recorded yet.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

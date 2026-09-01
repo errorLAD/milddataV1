@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}PropFlow AI Assistant | SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title"><i class="bi bi-stars text-primary me-2"></i>PropFlow AI Assistant</h1>
+    <p class="kp-page-subtitle">Ask questions about outstanding rent, expiring leases, maintenance spend, and portfolio metrics in natural language.</p>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Chat Window -->
+  <div class="col-lg-8">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Interactive AI Query Assistant</h3>
+        <span class="kp-status-badge kp-status-brand"><i class="bi bi-shield-check"></i> Role Scoped</span>
+      </div>
+      <div class="p-3 bg-white" id="chatWindow" style="height: 420px; overflow-y: auto;">
+        
+        <!-- Welcome Message -->
+        <div class="d-flex gap-2 mb-3">
+          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem; background-color: var(--brand) !important;">
+            <i class="bi bi-robot"></i>
+          </div>
+          <div class="bg-light rounded p-3 text-dark border" style="font-size: 0.78rem; max-width: 85%;">
+            Hello! I'm **PropFlow AI**. I can answer instant questions about your organization's properties, rent collection, expiring leases, and maintenance costs.<br><br>
+            Try asking one of the suggested prompts on the right!
+          </div>
+        </div>
+
+      </div>
+      
+      <!-- Input Box -->
+      <div class="kp-panel-header bg-light">
+        <form id="aiChatForm" class="w-100 d-flex gap-2">
+          {% csrf_token %}
+          <input type="text" id="aiQueryInput" class="form-control form-control-sm border shadow-none" placeholder="Ask e.g. 'How much rent is outstanding?' or 'Which leases expire this month?'" required>
+          <button type="submit" class="kp-btn kp-btn-primary px-3 py-1.5"><i class="bi bi-send"></i> Send</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Suggested Prompts Column -->
+  <div class="col-lg-4">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Suggested AI Prompts</h3>
+      </div>
+      <div class="p-3 d-grid gap-2">
+        <button onclick="askPrompt('How much rent is outstanding?')" class="kp-btn kp-btn-secondary text-start w-100 py-2 fs-7">
+          <i class="bi bi-chat-left-text me-1 text-primary"></i> "How much rent is outstanding?"
+        </button>
+        <button onclick="askPrompt('Which tenants haven\'t paid rent?')" class="kp-btn kp-btn-secondary text-start w-100 py-2 fs-7">
+          <i class="bi bi-chat-left-text me-1 text-danger"></i> "Which tenants haven't paid?"
+        </button>
+        <button onclick="askPrompt('Which leases expire in the next 30 days?')" class="kp-btn kp-btn-secondary text-start w-100 py-2 fs-7">
+          <i class="bi bi-chat-left-text me-1 text-warning"></i> "Which leases expire this month?"
+        </button>
+        <button onclick="askPrompt('Which property has the highest maintenance cost?')" class="kp-btn kp-btn-secondary text-start w-100 py-2 fs-7">
+          <i class="bi bi-chat-left-text me-1 text-info"></i> "Show maintenance spending"
+        </button>
+        <button onclick="askPrompt('Show portfolio income overview')" class="kp-btn kp-btn-secondary text-start w-100 py-2 fs-7">
+          <i class="bi bi-chat-left-text me-1 text-success"></i> "Show net profit overview"
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const chatWindow = document.getElementById('chatWindow');
+  const chatForm = document.getElementById('aiChatForm');
+  const queryInput = document.getElementById('aiQueryInput');
+
+  function appendMessage(sender, text) {
+    const isUser = sender === 'user';
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `d-flex gap-2 mb-3 ${isUser ? 'justify-content-end' : ''}`;
+
+    const formattedText = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+    msgDiv.innerHTML = `
+      ${!isUser ? `
+        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem; background-color: var(--brand) !important;">
+          <i class="bi bi-robot"></i>
+        </div>
+      ` : ''}
+      <div class="${isUser ? 'bg-primary text-white' : 'bg-light text-dark border'} rounded p-3" style="font-size: 0.78rem; max-width: 85%; ${isUser ? 'background-color: var(--brand) !important;' : ''}">
+        ${formattedText}
+      </div>
+    `;
+
+    chatWindow.appendChild(msgDiv);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
+  function askPrompt(qText) {
+    queryInput.value = qText;
+    chatForm.dispatchEvent(new Event('submit'));
+  }
+
+  chatForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const query = queryInput.value.trim();
+    if (!query) return;
+
+    appendMessage('user', query);
+    queryInput.value = '';
+
+    fetch('/ai/api/query/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify({ query: query })
+    })
+    .then(res => res.json())
+    .then(data => {
+      appendMessage('ai', data.answer);
+    })
+    .catch(err => {
+      appendMessage('ai', 'Error contacting PropFlow AI engine. Please try again.');
+    });
+  });
+</script>
+{% endblock %}

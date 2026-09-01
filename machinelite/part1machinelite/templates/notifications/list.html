@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Notification Center — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Notification Center & Critical Alerts</h1>
+    <p class="kp-page-subtitle">Real-time breakdown alerts, document expiry notices, and abnormal fuel consumption warnings.</p>
+  </div>
+  <div>
+    <a href="{% url 'notification_mark_all_read' %}" class="kp-btn kp-btn-secondary">
+      <i class="fa-solid fa-check-double"></i> Mark All as Read
+    </a>
+  </div>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title">Notifications ({{ unread_count }} Unread)</div>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Alert Level</th>
+          <th>Title</th>
+          <th>Message Details</th>
+          <th>Timestamp</th>
+          <th>Status</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for n in notifications %}
+          <tr {% if not n.is_read %}style="background-color: #F8FAFC;"{% endif %}>
+            <td>
+              {% if n.level == 'danger' %}
+                <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Critical</span>
+              {% elif n.level == 'warning' %}
+                <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> Warning</span>
+              {% elif n.level == 'success' %}
+                <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Success</span>
+              {% else %}
+                <span class="kp-badge kp-badge-info"><span class="kp-dot"></span> Info</span>
+              {% endif %}
+            </td>
+            <td style="font-weight: 650;">{{ n.title }}</td>
+            <td style="color: var(--text-secondary);">{{ n.message }}</td>
+            <td class="num-tabular" style="font-size: 0.68rem;">{{ n.created_at }}</td>
+            <td>
+              {% if n.is_read %}
+                <span style="color: var(--text-tertiary); font-size: 0.65rem;">Read</span>
+              {% else %}
+                <span class="kp-badge kp-badge-brand"><span class="kp-dot"></span> New</span>
+              {% endif %}
+            </td>
+            <td style="text-align: right;">
+              {% if not n.is_read %}
+                <a href="{% url 'notification_mark_read' n.pk %}" class="kp-btn kp-btn-secondary" style="font-size: 0.62rem; padding: 0.15rem 0.4rem;">Mark Read</a>
+              {% endif %}
+              {% if n.link_url %}
+                <a href="{{ n.link_url }}" class="kp-btn kp-btn-primary" style="font-size: 0.62rem; padding: 0.15rem 0.4rem;">View <i class="fa-solid fa-arrow-right"></i></a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="6" style="text-align: center; color: var(--text-tertiary); padding: 2rem;">No notifications found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

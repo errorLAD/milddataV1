@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Message Templates & AI Replies | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-chat-quote-fill text-primary me-2"></i> Message Templates & AI Replies System</h3>
+        <p class="text-muted mb-0 fs-7">Manage predefined AI response templates. When active, templates take precedence and substitute real CRM data; otherwise dynamic AI replies are generated.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary-custom btn-sm" data-bs-toggle="collapse" data-bs-target="#createTemplateCard">
+            <i class="bi bi-plus-circle me-1"></i> Add New Template
+        </button>
+        <a href="{% url 'sales_agent:dashboard' %}" class="btn btn-light border btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Helper Placeholder Card -->
+<div class="card card-custom p-3 mb-4 bg-light border">
+    <div class="d-flex align-items-center gap-2 mb-2">
+        <i class="bi bi-code-slash text-primary fs-5"></i>
+        <h6 class="fw-bold text-dark mb-0">Supported Dynamic Variables / Placeholders:</h6>
+    </div>
+    <div class="d-flex flex-wrap gap-2 fs-8">
+        <span class="badge bg-white text-dark border"><code>{{customer_name}}</code> Customer Name</span>
+        <span class="badge bg-white text-dark border"><code>{{product_name}}</code> Product Title</span>
+        <span class="badge bg-white text-dark border"><code>{{price}}</code> Unit Price (₹)</span>
+        <span class="badge bg-white text-dark border"><code>{{stock}}</code> Available Stock</span>
+        <span class="badge bg-white text-dark border"><code>{{quantity}}</code> Order Quantity</span>
+        <span class="badge bg-white text-dark border"><code>{{total_amount}}</code> Total Price (₹)</span>
+        <span class="badge bg-white text-dark border"><code>{{recommendations}}</code> Top Product Options</span>
+    </div>
+</div>
+
+<!-- Collapsible Add/Edit Template Form -->
+<div class="collapse mb-4" id="createTemplateCard">
+    <div class="card card-custom p-4 border border-primary shadow-sm">
+        <h5 class="fw-bold text-dark mb-3" id="formHeading"><i class="bi bi-pencil-square text-primary me-2"></i> Create / Edit Response Template</h5>
+        <form method="post" action="{% url 'sales_agent:template_save' %}" id="templateForm">
+            {% csrf_token %}
+            <input type="hidden" name="template_id" id="tpl_id" value="">
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold fs-7">Template Title *</label>
+                    <input type="text" name="name" id="tpl_name" class="form-control fs-7" placeholder="e.g. Standard Price Response" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold fs-7">Message Type / Intent *</label>
+                    <select name="message_type" id="tpl_message_type" class="form-select fs-7" required>
+                        {% for code, label in choices %}
+                        <option value="{{ code }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold fs-7">Template Content *</label>
+                    <textarea name="content" id="tpl_content" class="form-control fs-7" rows="3" placeholder="Namaste {{customer_name}}! {{product_name}} ki price ₹{{price}} per unit hai." required></textarea>
+                </div>
+                <div class="col-12">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="is_active" id="tpl_is_active" checked>
+                        <label class="form-check-label fw-semibold fs-7" for="tpl_is_active">
+                            Set Template Active (AI will use this template when intent matches)
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2">
+                <button type="button" class="btn btn-light btn-sm border" data-bs-toggle="collapse" data-bs-target="#createTemplateCard" id="cancelTplBtn">Cancel</button>
+                <button type="submit" class="btn btn-success btn-sm"><i class="bi bi-check-circle me-1"></i> Save Template</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Templates List -->
+<div class="row g-3">
+    {% for tpl in templates %}
+    <div class="col-12 col-md-6">
+        <div class="card card-custom h-100 p-3 {% if not tpl.is_active %}opacity-75 bg-light{% endif %}">
+            <div class="d-flex align-items-start justify-content-between mb-2">
+                <div>
+                    <h6 class="fw-bold text-dark mb-1">{{ tpl.name }}</h6>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle fs-8">
+                        {{ tpl.get_message_type_display }}
+                    </span>
+                </div>
+                <div class="d-flex align-items-center gap-1">
+                    <form method="post" action="{% url 'sales_agent:template_toggle' tpl.pk %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm {% if tpl.is_active %}btn-success{% else %}btn-secondary{% endif %} py-0 px-2 fs-8" title="Toggle Active/Inactive">
+                            {% if tpl.is_active %}ACTIVE{% else %}INACTIVE{% endif %}
+                        </button>
+                    </form>
+                    <button class="btn btn-sm btn-outline-primary py-0 px-2 fs-8 edit-tpl-btn" 
+                            data-id="{{ tpl.id }}" 
+                            data-name="{{ tpl.name }}" 
+                            data-type="{{ tpl.message_type }}" 
+                            data-content="{{ tpl.content }}"
+                            data-active="{% if tpl.is_active %}true{% else %}false{% endif %}">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <form method="post" action="{% url 'sales_agent:template_delete' tpl.pk %}" class="d-inline" onsubmit="return confirm('Delete this template?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-1.5 fs-8" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="bg-white p-2.5 rounded border fs-7 text-secondary" style="white-space: pre-wrap;">{{ tpl.content }}</div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5 text-muted">
+        <i class="bi bi-chat-quote fs-1 d-block mb-2 opacity-50"></i>
+        <p class="mb-0 fs-6">No message templates configured yet.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const card = document.getElementById('createTemplateCard');
+    const formHeading = document.getElementById('formHeading');
+    const tplId = document.getElementById('tpl_id');
+    const tplName = document.getElementById('tpl_name');
+    const tplType = document.getElementById('tpl_message_type');
+    const tplContent = document.getElementById('tpl_content');
+    const tplActive = document.getElementById('tpl_is_active');
+    const cancelBtn = document.getElementById('cancelTplBtn');
+
+    document.querySelectorAll('.edit-tpl-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            tplId.value = this.getAttribute('data-id');
+            tplName.value = this.getAttribute('data-name');
+            tplType.value = this.getAttribute('data-type');
+            tplContent.value = this.getAttribute('data-content');
+            tplActive.checked = (this.getAttribute('data-active') === 'true');
+            formHeading.innerHTML = '<i class="bi bi-pencil-square text-primary me-2"></i> Edit Template: ' + tplName.value;
+
+            var bsCollapse = new bootstrap.Collapse(card, { show: true });
+            card.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            tplId.value = '';
+            tplName.value = '';
+            tplContent.value = '';
+            tplActive.checked = true;
+            formHeading.innerHTML = '<i class="bi bi-pencil-square text-primary me-2"></i> Create / Edit Response Template';
+        });
+    }
+});
+</script>
+{% endblock %}

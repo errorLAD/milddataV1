@@ -1,0 +1,551 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}Dashboard | KarobarPlus{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Mukta:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+    :root {
+        --paper: #f7f2e6;
+        --surface: #ffffff;
+        --ink: #23281f;
+        --ink-soft: #565f4d;
+        --ink-faint: #8a8f7c;
+        --line: #e7dfc9;
+
+        --get: #1b7a4a;
+        --get-tint: #e6f4ec;
+        --get-deep: #145c38;
+
+        --give: #b4232c;
+        --give-tint: #fbeaea;
+        --give-deep: #8c1a21;
+
+        --gold: #c77d0a;
+        --gold-deep: #9c6108;
+        --gold-tint: #fbeed7;
+
+        --radius-lg: 22px;
+        --radius-md: 16px;
+        --radius-sm: 12px;
+        --shadow-card: 0 2px 10px rgba(35, 40, 31, 0.06), 0 1px 2px rgba(35, 40, 31, 0.05);
+        --shadow-pop: 0 10px 24px rgba(35, 40, 31, 0.14);
+    }
+
+    .page-shell {
+        background: var(--paper);
+        margin: -1.5rem;
+        padding: 1.25rem 1rem 6.5rem;
+        min-height: 100%;
+        font-family: 'Mukta', -apple-system, sans-serif;
+        color: var(--ink);
+        font-size: 1.02rem;
+    }
+
+    .page-shell h1, .page-shell h2, .page-shell h3, .display-face {
+        font-family: 'Baloo 2', 'Mukta', sans-serif;
+    }
+
+    .tnum { font-variant-numeric: tabular-nums; }
+
+    .shell-inner { max-width: 760px; margin: 0 auto; }
+
+    /* Switch banner */
+    .switch-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        padding: 0.55rem 0.9rem;
+        margin-bottom: 1rem;
+        font-size: 0.83rem;
+        font-family: 'Mukta', sans-serif;
+    }
+    .switch-banner span { color: var(--ink-faint); font-weight: 500; }
+    .switch-banner a {
+        font-weight: 700;
+        color: var(--gold-deep);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .switch-banner a:hover { color: var(--gold); }
+
+    /* ---------- Header ---------- */
+    .greet-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.1rem;
+    }
+    .greet-row h1 {
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin: 0;
+        color: var(--ink);
+    }
+    .greet-row .date-pill {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--ink-soft);
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 0.35rem 0.8rem;
+    }
+
+    /* ---------- Khata card ---------- */
+    .khata-card {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+        overflow: hidden;
+        margin-bottom: 1.1rem;
+        border: 1px solid var(--line);
+    }
+    .khata-headline {
+        padding: 1.5rem 1.4rem 1.2rem;
+        text-align: center;
+    }
+    .khata-headline .label {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--ink-faint);
+        margin-bottom: 0.3rem;
+    }
+    .khata-headline .amount {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 800;
+        font-size: 2.6rem;
+        line-height: 1;
+        letter-spacing: -0.01em;
+    }
+    .khata-headline .amount.up { color: var(--get); }
+    .khata-headline .amount.down { color: var(--give); }
+    .khata-headline .plain-sentence {
+        margin-top: 0.5rem;
+        font-size: 0.95rem;
+        color: var(--ink-soft);
+        font-weight: 500;
+    }
+    .khata-headline .plain-sentence strong { color: var(--ink); }
+
+    .khata-split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-top: 1px solid var(--line);
+    }
+    .khata-half {
+        padding: 1rem 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+    }
+    .khata-half.get { background: var(--get-tint); }
+    .khata-half.give { background: var(--give-tint); border-left: 1px solid var(--line); }
+    .khata-icon {
+        width: 40px; height: 40px;
+        border-radius: 11px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+        color: #fff;
+    }
+    .khata-half.get .khata-icon { background: var(--get); }
+    .khata-half.give .khata-icon { background: var(--give); }
+    .khata-half .khata-text .k-label {
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+    .khata-half.get .k-label { color: var(--get-deep); }
+    .khata-half.give .k-label { color: var(--give-deep); }
+    .khata-half .khata-text .k-value {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 700;
+        font-size: 1.18rem;
+        color: var(--ink);
+    }
+
+    /* ---------- Sticky bottom action bar ---------- */
+    .action-bar {
+        position: fixed;
+        left: 0; right: 0; bottom: 0;
+        z-index: 40;
+        background: var(--surface);
+        border-top: 1px solid var(--line);
+        box-shadow: 0 -6px 18px rgba(35,40,31,0.08);
+        padding: 0.6rem 0.7rem calc(0.6rem + env(safe-area-inset-bottom));
+    }
+    .action-bar-inner {
+        max-width: 760px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.55rem;
+    }
+    .action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.2rem;
+        border-radius: var(--radius-sm);
+        padding: 0.6rem 0.3rem;
+        font-family: 'Mukta', sans-serif;
+        font-weight: 700;
+        font-size: 0.82rem;
+        text-decoration: none;
+        border: none;
+        line-height: 1.15;
+        min-height: 58px;
+        transition: transform .1s ease;
+    }
+    .action-btn:active { transform: scale(0.96); }
+    .action-btn i { font-size: 1.35rem; }
+    .action-btn.primary { background: var(--gold); color: #fff; box-shadow: var(--shadow-pop); }
+    .action-btn.primary:hover { color: #fff; background: var(--gold-deep); }
+    .action-btn.get { background: var(--get); color: #fff; }
+    .action-btn.get:hover { color: #fff; background: var(--get-deep); }
+    .action-btn.outline { background: var(--surface); color: var(--ink); border: 1.5px solid var(--line); }
+    .action-btn.outline:hover { color: var(--ink); border-color: var(--gold); }
+
+    @media (min-width: 900px) {
+        .action-bar { position: static; box-shadow: none; border-top: none; padding: 0 0 1.1rem; background: transparent; }
+        .action-bar-inner { grid-template-columns: repeat(3, 220px); justify-content: flex-start; }
+        .page-shell { padding-bottom: 2.5rem; }
+    }
+
+    /* ---------- Today's To-Do card ---------- */
+    .todo-card {
+        background: var(--surface);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-card);
+        border: 1px solid var(--line);
+        margin-bottom: 1.1rem;
+        overflow: hidden;
+    }
+    .todo-card h2 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        padding: 1.1rem 1.2rem 0.2rem;
+        margin: 0;
+    }
+    .todo-sub {
+        padding: 0 1.2rem 0.9rem;
+        font-size: 0.83rem;
+        color: var(--ink-faint);
+    }
+    .todo-section-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        padding: 0.7rem 1.2rem 0.5rem;
+    }
+    .todo-section-label.get-label { color: var(--get-deep); }
+    .todo-section-label.give-label { color: var(--give-deep); }
+    .todo-section-label .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .get-label .dot { background: var(--get); }
+    .give-label .dot { background: var(--give); }
+
+    .todo-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+        padding: 0.75rem 1.2rem;
+        border-top: 1px solid var(--line);
+    }
+    .todo-row .who .name {
+        font-weight: 700;
+        color: var(--ink);
+        font-size: 0.98rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .todo-row .who .when {
+        font-size: 0.78rem;
+        color: var(--ink-faint);
+    }
+    .todo-row .amt {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 700;
+        font-size: 1.05rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .todo-row .amt.get { color: var(--get); }
+    .todo-row .amt.give { color: var(--give); }
+
+    .todo-empty {
+        padding: 1.4rem 1.2rem 1.6rem;
+        text-align: center;
+        color: var(--ink-faint);
+        font-size: 0.9rem;
+    }
+    .todo-viewall {
+        display: block;
+        text-align: center;
+        padding: 0.8rem;
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: var(--gold-deep);
+        text-decoration: none;
+        border-top: 1px solid var(--line);
+        background: var(--gold-tint);
+    }
+    .todo-viewall:hover { color: var(--gold-deep); background: #f6e2b6; }
+
+    /* ---------- Snapshot strip ---------- */
+    .snap-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.8rem;
+        margin-bottom: 1.1rem;
+    }
+    .snap-tile {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 1rem 1.1rem;
+        box-shadow: var(--shadow-card);
+    }
+    .snap-tile .s-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--ink-faint);
+        margin-bottom: 0.25rem;
+    }
+    .snap-tile .s-value {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 700;
+        font-size: 1.35rem;
+        color: var(--ink);
+    }
+
+    /* ---------- Recovery bar ---------- */
+    .recovery-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 1.1rem 1.2rem 1.2rem;
+        box-shadow: var(--shadow-card);
+        margin-bottom: 1.1rem;
+    }
+    .recovery-card .r-top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 0.6rem;
+    }
+    .recovery-card h3 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .recovery-card .r-pct {
+        font-family: 'Baloo 2', sans-serif;
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: var(--get-deep);
+    }
+    .recovery-track {
+        height: 14px;
+        border-radius: 999px;
+        background: var(--give-tint);
+        overflow: hidden;
+    }
+    .recovery-fill {
+        height: 100%;
+        background: var(--get);
+        border-radius: 999px;
+    }
+    .recovery-legend {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 0.5rem;
+        font-size: 0.78rem;
+        color: var(--ink-soft);
+    }
+
+    /* ---------- Alert banner ---------- */
+    .alert-banner {
+        display: flex;
+        align-items: center;
+        gap: 0.7rem;
+        background: var(--give-tint);
+        border: 1px solid #f0c8c8;
+        color: var(--give-deep);
+        border-radius: var(--radius-md);
+        padding: 0.85rem 1.1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 1.1rem;
+    }
+    .alert-banner i { font-size: 1.3rem; flex-shrink: 0; }
+
+    @media (max-width: 380px) {
+        .khata-headline .amount { font-size: 2.1rem; }
+        .action-btn { font-size: 0.74rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+<div class="shell-inner">
+
+    <!-- Switch to Full Version banner -->
+    <div class="switch-banner">
+        <span>Simple View</span>
+        <a href="{% url 'dashboard:index' %}">
+            <i class="bi bi-grid-3x3-gap-fill"></i> Full Dashboard →
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="greet-row">
+        <h1>Namaste 👋</h1>
+        <span class="date-pill">{% now "d M Y" %}</span>
+    </div>
+
+    <!-- Khata Card -->
+    <div class="khata-card">
+        <div class="khata-headline">
+            <div class="label">Aaj ki Sthiti (Today's Position)</div>
+            <div class="amount {% if net_receivable_position >= 0 %}up{% else %}down{% endif %} tnum">
+                ₹{{ net_receivable_position|inr }}
+            </div>
+            {% if net_receivable_position >= 0 %}
+            <div class="plain-sentence">Sab milaake, log aapse <strong>₹{{ net_receivable_position|inr }} zyada</strong> lene wale hain</div>
+            {% else %}
+            <div class="plain-sentence">Sab milaake, aapko suppliers ko <strong>₹{{ net_receivable_position|inr }} zyada</strong> dena hai</div>
+            {% endif %}
+        </div>
+        <div class="khata-split">
+            <div class="khata-half get">
+                <span class="khata-icon"><i class="bi bi-arrow-down-left"></i></span>
+                <div class="khata-text">
+                    <div class="k-label">Aapko Milna Hai</div>
+                    <div class="k-value tnum">₹{{ customer_receivable|inr }}</div>
+                </div>
+            </div>
+            <div class="khata-half give">
+                <span class="khata-icon"><i class="bi bi-arrow-up-right"></i></span>
+                <div class="khata-text">
+                    <div class="k-label">Aapko Dena Hai</div>
+                    <div class="k-value tnum">₹{{ supplier_payable|inr }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if out_of_stock_count > 0 or low_stock_count > 0 %}
+    <div class="alert-banner">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <span>
+            {% if out_of_stock_count > 0 %}{{ out_of_stock_count }} item khatam ho gaya hai.{% endif %}
+            {% if low_stock_count > 0 %} {{ low_stock_count }} item kam bacha hai.{% endif %}
+        </span>
+    </div>
+    {% endif %}
+
+    <!-- Today's To-Do -->
+    <div class="todo-card">
+        <h2>Aaj Kya Karna Hai</h2>
+        <div class="todo-sub">{{ due_today_count }} customer{{ due_today_count|pluralize }} se paisa lena hai aaj</div>
+
+        <div class="todo-section-label get-label"><span class="dot"></span> Paisa Lena Hai</div>
+        {% for u in upcoming_customer_receivables %}
+        <a href="{% url 'customers:detail' u.customer.pk %}" class="todo-row" style="text-decoration:none;">
+            <div class="who">
+                <div class="name">{{ u.customer.name }}</div>
+                <div class="when">{% if u.due_date %}{{ u.due_date|date:"d M" }} ko due{% endif %}</div>
+            </div>
+            <div class="amt get tnum">₹{{ u.remaining_amount|inr }}</div>
+        </a>
+        {% empty %}
+        <div class="todo-empty">Koi udhaar due nahi hai. Sab theek hai 👍</div>
+        {% endfor %}
+
+        <div class="todo-section-label give-label"><span class="dot"></span> Paisa Dena Hai</div>
+        {% for sp in upcoming_supplier_payments %}
+        <div class="todo-row">
+            <div class="who">
+                <div class="name">{{ sp.supplier.supplier_name }}</div>
+                <div class="when">{{ sp.due_date|date:"d M" }} ko due hai</div>
+            </div>
+            <div class="amt give tnum">₹{{ sp.remaining_payable|inr }}</div>
+        </div>
+        {% empty %}
+        <div class="todo-empty">Koi supplier payment due nahi hai 👍</div>
+        {% endfor %}
+
+        <a href="{% url 'udhaar:list' %}" class="todo-viewall">Poora Khata Dekhein →</a>
+    </div>
+
+    <!-- Snapshot -->
+    <div class="snap-grid">
+        <div class="snap-tile">
+            <div class="s-label">Aaj ki Bikri</div>
+            <div class="s-value tnum">₹{{ todays_sales|inr }}</div>
+        </div>
+        <div class="snap-tile">
+            <div class="s-label">Is Mahine ki Bikri</div>
+            <div class="s-value tnum">₹{{ months_sales|inr }}</div>
+        </div>
+    </div>
+
+    <!-- Recovery bar -->
+    <div class="recovery-card">
+        <div class="r-top">
+            <h3>Udhaar Wasooli (Recovery)</h3>
+            {% with total_base=amount_recovered|add:total_outstanding %}
+            {% if total_base > 0 %}
+            {% widthratio amount_recovered total_base 100 as recovery_pct %}
+            {% else %}
+            {% with recovery_pct=0 %}{% endwith %}
+            {% endif %}
+            <span class="r-pct">{{ recovery_pct|default:0 }}%</span>
+            </div>
+            <div class="recovery-track">
+                <div class="recovery-fill" style="width: {{ recovery_pct|default:0 }}%;"></div>
+            </div>
+            <div class="recovery-legend">
+                <span>Recover: ₹{{ amount_recovered|inr }}</span>
+                <span>Baaki: ₹{{ total_outstanding|inr }}</span>
+            </div>
+            {% endwith %}
+    </div>
+
+</div>
+</div>
+
+<!-- Sticky Action Bar -->
+<div class="action-bar">
+    <div class="action-bar-inner">
+        <a href="{% url 'sales:create' %}" class="action-btn primary">
+            <i class="bi bi-cart-plus-fill"></i> Bikri Karein
+        </a>
+        <a href="{% url 'udhaar:create' %}" class="action-btn get">
+            <i class="bi bi-cash-stack"></i> Udhaar Jodein
+        </a>
+        <a href="{% url 'suppliers:purchase_create' %}" class="action-btn outline">
+            <i class="bi bi-box-seam"></i> Kharid Karein
+        </a>
+    </div>
+</div>
+{% endblock %}

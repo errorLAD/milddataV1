@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load localization_tags %}
+
+{% block title %}Suppliers Directory | NextSlot{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2.5">
+
+    <!-- Page Header Row -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+        <div>
+            <div class="kp-eyebrow mb-1">
+                <i class="bi bi-truck"></i> Vendor &amp; Supplier Management
+            </div>
+            <h1 class="kp-page-title mb-0">Suppliers Directory</h1>
+            <p class="kp-page-sub mb-0">Track vendor profiles, purchase ledger history, and accounts payable balances.</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{% url 'suppliers:export_suppliers' %}" class="btn-kp-secondary">
+                <i class="bi bi-download"></i> Export CSV
+            </a>
+            <a href="{% url 'suppliers:purchase_create' %}" class="btn-kp-secondary">
+                <i class="bi bi-cart-plus"></i> Record Purchase
+            </a>
+            <a href="{% url 'suppliers:create' %}" class="btn-kp-primary">
+                <i class="bi bi-plus-lg"></i> Add Supplier
+            </a>
+        </div>
+    </div>
+
+    <!-- 3-Column Metric Grid -->
+    <div class="kp-metric-grid mb-3" style="grid-template-columns: repeat(3, 1fr);">
+        <!-- Hero Card: Outstanding Supplier Payable -->
+        <div class="kp-card kp-hero-card">
+            <div class="kp-metric-top">
+                <span class="hero-label">Outstanding Payable</span>
+                <span class="kp-icon-action"><i class="bi bi-wallet2"></i></span>
+            </div>
+            <div class="hero-value text-danger">{{ tot_payable|money:business_currency_symbol }}</div>
+            <div class="hero-sub">Active vendor payables balance</div>
+        </div>
+
+        <!-- Total Purchases -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label">Total Purchases</span>
+                <span class="kp-pill neutral"><span class="kp-dot"></span>Purchased</span>
+            </div>
+            <div class="kp-metric-number">{{ tot_purchases|money:business_currency_symbol }}</div>
+            <div class="kp-metric-sub">Cumulative vendor purchases</div>
+        </div>
+
+        <!-- Total Paid to Suppliers -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label text-success">Total Paid</span>
+                <span class="kp-pill success"><span class="kp-dot"></span>Settled</span>
+            </div>
+            <div class="kp-metric-number text-success">{{ tot_paid|money:business_currency_symbol }}</div>
+            <div class="kp-metric-sub text-success"><i class="bi bi-check-circle-fill"></i> Vendor payments settled</div>
+        </div>
+    </div>
+
+    <!-- Search Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title">Supplier Search &amp; Filter</h2>
+                <p class="kp-panel-desc">Search by supplier name, phone, or company title.</p>
+            </div>
+        </div>
+        <div class="p-3">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-12 col-md-9">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-light border-secondary-subtle text-muted fs-8"><i class="bi bi-search"></i></span>
+                        <input type="text" name="q" value="{{ q }}" class="form-control fs-8 border-secondary-subtle" placeholder="Search by supplier name, phone, or company name...">
+                    </div>
+                </div>
+                <div class="col-12 col-md-3">
+                    <button type="submit" class="btn-kp-primary w-100 justify-content-center">Search Suppliers</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Suppliers Table Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title">Suppliers Register</h2>
+                <p class="kp-panel-desc">Complete vendor directory with purchase ledger and payable status.</p>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="kp-table">
+                <thead>
+                    <tr>
+                        <th class="ps-3" style="min-width: 170px;">Supplier Name</th>
+                        <th style="min-width: 120px;">Phone</th>
+                        <th style="min-width: 140px;">Business / Firm</th>
+                        <th style="min-width: 120px;" class="text-end">Total Purchases</th>
+                        <th style="min-width: 120px;" class="text-end">Total Paid</th>
+                        <th style="min-width: 130px;" class="text-end">Outstanding Payable</th>
+                        <th class="text-end pe-3" style="min-width: 110px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in suppliers %}
+                    <tr>
+                        <td class="ps-3">
+                            <a href="{% url 'suppliers:detail' s.pk %}" class="fw-bold text-dark text-decoration-none">
+                                {{ s.supplier_name }}
+                            </a>
+                        </td>
+                        <td class="font-monospace fs-8 text-secondary">{{ s.phone }}</td>
+                        <td class="text-secondary fs-8">{{ s.business_name|default:"—" }}</td>
+                        <td class="text-end fw-bold text-dark font-monospace fs-7">
+                            {{ s.total_purchases|money:business_currency_symbol }}
+                        </td>
+                        <td class="text-end fw-bold text-success font-monospace fs-7">
+                            {{ s.total_paid|money:business_currency_symbol }}
+                        </td>
+                        <td class="text-end font-monospace fs-7">
+                            {% if s.outstanding_payable > 0 %}
+                                <span class="kp-pill urgent"><span class="kp-dot"></span>{{ s.outstanding_payable|money:business_currency_symbol }} due</span>
+                            {% else %}
+                                <span class="kp-pill success"><span class="kp-dot"></span>Settled</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-3">
+                            <div class="d-flex align-items-center justify-content-end gap-1">
+                                <a href="{% url 'suppliers:detail' s.pk %}" class="kp-icon-action" title="View Profile">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'suppliers:edit' s.pk %}" class="kp-icon-action" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{% url 'suppliers:delete' s.pk %}" class="kp-icon-action text-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">
+                            <i class="bi bi-truck text-muted fs-4 d-block mb-1 opacity-50"></i>
+                            <div class="fw-bold text-dark fs-8">No suppliers registered yet</div>
+                            <div class="fs-9 mb-2">Suppliers you add will show up here with their purchase history and payable balance.</div>
+                            <a href="{% url 'suppliers:create' %}" class="btn-kp-primary">
+                                <i class="bi bi-plus-lg"></i> Add Supplier Now
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

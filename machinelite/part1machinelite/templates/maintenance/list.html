@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Maintenance & Repair History — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Service Schedules & Breakdown Maintenance</h1>
+    <p class="kp-page-subtitle">Track periodic servicing, breakdown history, spare parts, and mechanic costs.</p>
+  </div>
+  <div>
+    <button class="kp-btn kp-btn-primary" data-modal-target="modal-add-maint">
+      <i class="fa-solid fa-plus"></i> Record Service / Breakdown
+    </button>
+  </div>
+</div>
+
+<!-- Metrics Bar -->
+<div class="kp-metrics-grid">
+  <div class="kp-metric-card kp-metric-card-hero">
+    <div>
+      <div class="kp-metric-label">Total Maintenance Expense</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ total_cost|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub">Cumulative fleet repair cost</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Total Breakdown Events</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--danger);">{{ breakdown_count }} Breakdowns</div>
+    </div>
+    <div class="kp-metric-sub">Downtime: {{ downtime_total }} Hours</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Scheduled Services</div>
+      <div class="kp-metric-val num-tabular">{{ maint_logs.count }} Completed</div>
+    </div>
+    <div class="kp-metric-sub">Preventive maintenance log</div>
+  </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="kp-panel" style="margin-bottom: 0.875rem;">
+  <div class="kp-panel-body" style="padding: 0.65rem 0.9rem;">
+    <form method="GET" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+      <div style="width: 220px;">
+        <select name="machine" class="kp-select" onchange="this.form.submit()">
+          <option value="">All Equipment</option>
+          {% for m in machines %}
+            <option value="{{ m.pk }}" {% if selected_machine == m.pk|stringformat:"s" %}selected{% endif %}>{{ m.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="width: 200px;">
+        <select name="type" class="kp-select" onchange="this.form.submit()">
+          <option value="">All Service Types</option>
+          <option value="preventive" {% if service_type == 'preventive' %}selected{% endif %}>Preventive Service</option>
+          <option value="breakdown" {% if service_type == 'breakdown' %}selected{% endif %}>Breakdown Repair</option>
+          <option value="hydraulic" {% if service_type == 'hydraulic' %}selected{% endif %}>Hydraulic System</option>
+          <option value="engine" {% if service_type == 'engine' %}selected{% endif %}>Engine Overhaul</option>
+          <option value="inspection" {% if service_type == 'inspection' %}selected{% endif %}>Inspection</option>
+        </select>
+      </div>
+      <button type="submit" class="kp-btn kp-btn-secondary">Filter</button>
+      {% if selected_machine or service_type %}
+        <a href="{% url 'maintenance_list' %}" class="kp-btn kp-btn-secondary">Reset</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Maintenance Table -->
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title">Maintenance Records</div>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Equipment</th>
+          <th>Service Category</th>
+          <th>Meter Reading</th>
+          <th>Cost</th>
+          <th>Vendor / Workshop</th>
+          <th>Parts Replaced</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ml in maint_logs %}
+          <tr>
+            <td class="num-tabular">{{ ml.date }}</td>
+            <td>
+              <a href="{% url 'machine_detail' ml.machine.pk %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">
+                {{ ml.machine.name }}
+              </a>
+            </td>
+            <td><span class="kp-badge kp-badge-brand">{{ ml.get_service_type_display }}</span></td>
+            <td class="num-tabular">{{ ml.meter_reading|floatformat:1 }} {{ ml.machine.unit_label }}</td>
+            <td class="num-tabular" style="font-weight: 700;">{{ currency_symbol }}{{ ml.cost|floatformat:2|intcomma }}</td>
+            <td>{{ ml.vendor_mechanic|default:"In-House" }}</td>
+            <td style="font-size: 0.68rem; color: var(--text-secondary);">{{ ml.parts_replaced|default:"--" }}</td>
+            <td>
+              {% if ml.is_breakdown %}
+                <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Breakdown</span>
+              {% else %}
+                <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Service Done</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No maintenance logs recorded.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Add Maintenance -->
+<div class="kp-modal-backdrop" id="modal-add-maint">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Record Service / Repair</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_maintenance' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Select Equipment</label>
+          <select name="machine" class="kp-select" required>
+            {% for m in machines %}
+              <option value="{{ m.pk }}">{{ m.name }} ({{ m.reg_number }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Date</label>
+            <input type="date" name="date" class="kp-input" value="{% now 'Y-m-d' %}" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Service Type</label>
+            <select name="service_type" class="kp-select">
+              <option value="preventive">Preventive Service</option>
+              <option value="breakdown">Breakdown Repair</option>
+              <option value="hydraulic">Hydraulic Service</option>
+              <option value="engine">Engine Overhaul</option>
+              <option value="inspection">General Inspection</option>
+            </select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Service Cost ({{ currency_symbol }})</label>
+            <input type="number" step="100" name="cost" class="kp-input" placeholder="e.g. 15000" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Meter Reading at Service</label>
+            <input type="number" step="0.1" name="meter_reading" class="kp-input" placeholder="e.g. 3450" required>
+          </div>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Parts Replaced</label>
+          <input type="text" name="parts_replaced" class="kp-input" placeholder="e.g. Engine oil, fuel filter, hydraulic hose">
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Vendor / Mechanic Name</label>
+          <input type="text" name="vendor_mechanic" class="kp-input" placeholder="e.g. JCB Authorized Service Center">
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.4rem; margin-top: 0.5rem;">
+          <input type="checkbox" name="is_breakdown" id="breakdownCheck">
+          <label for="breakdownCheck" class="kp-label" style="margin: 0; cursor: pointer;">Flag as Emergency Breakdown Event</label>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Save Maintenance Entry</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

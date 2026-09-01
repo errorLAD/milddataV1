@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Reports & Analytics — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Reports & Analytics</h1>
+    <p class="page-subtitle">Export operational reports to CSV or print for executive review.</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'export_report_csv' %}?type={{ report_type }}" class="btn btn-primary">📥 Export CSV</a>
+  </div>
+</div>
+
+<!-- Report Navigation Tabs -->
+<div class="panel" style="margin-bottom: 1rem;">
+  <div class="panel-body" style="padding: 0.6rem 0.9rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="?type=sales" class="btn {% if report_type == 'sales' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Sales Report</a>
+    <a href="?type=purchases" class="btn {% if report_type == 'purchases' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Purchase Report</a>
+    <a href="?type=inventory" class="btn {% if report_type == 'inventory' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Inventory Valuation</a>
+    <a href="?type=movements" class="btn {% if report_type == 'movements' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Stock Movements</a>
+    <a href="?type=customers" class="btn {% if report_type == 'customers' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Customer Balances</a>
+    <a href="?type=suppliers" class="btn {% if report_type == 'suppliers' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Supplier Balances</a>
+  </div>
+</div>
+
+<!-- Data Table Panel -->
+<div class="panel">
+  <div class="panel-header">
+    <span class="panel-title">{{ report_type|title }} Data</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      {% if report_type == 'sales' %}
+        <thead>
+          <tr>
+            <th>Invoice #</th>
+            <th>Customer</th>
+            <th>Date</th>
+            <th>Subtotal</th>
+            <th>Tax</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in data %}
+          <tr>
+            <td><a href="{% url 'invoice_detail' inv.id %}" style="font-weight: 650; color: var(--brand);">{{ inv.invoice_number }}</a></td>
+            <td>{{ inv.customer.company_name }}</td>
+            <td>{{ inv.invoice_date|date_fmt:org }}</td>
+            <td class="money">{{ inv.subtotal|money:org }}</td>
+            <td class="money">{{ inv.tax_amount|money:org }}</td>
+            <td class="money" style="font-weight: 700;">{{ inv.total_amount|money:org }}</td>
+            <td><span class="badge badge-neutral">{{ inv.get_status_display }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      {% elif report_type == 'inventory' %}
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>SKU</th>
+            <th>Category</th>
+            <th>Cost Price</th>
+            <th>Selling Price</th>
+            <th>Total Stock</th>
+            <th>Valuation</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in data %}
+          <tr>
+            <td style="font-weight: 650;">{{ p.name }}</td>
+            <td class="tabular-nums">{{ p.sku }}</td>
+            <td>{{ p.category.name|default:'—' }}</td>
+            <td class="money">{{ p.purchase_price|money:org }}</td>
+            <td class="money">{{ p.selling_price|money:org }}</td>
+            <td class="tabular-nums" style="font-weight: 700;">{{ p.total_stock }}</td>
+            <td class="money" style="font-weight: 700;">{{ p.inventory_value|money:org }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      {% else %}
+        <thead>
+          <tr>
+            <th>Record</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in data %}
+          <tr>
+            <td>{{ item }}</td>
+            <td>Registered Entity</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      {% endif %}
+    </table>
+  </div>
+</div>
+{% endblock %}

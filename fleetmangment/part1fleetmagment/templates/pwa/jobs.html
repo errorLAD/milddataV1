@@ -1,0 +1,50 @@
+{% extends 'pwa/base_pwa.html' %}
+
+{% block title %}Assigned Dispatch Jobs{% endblock %}
+
+{% block content %}
+<h2 class="fw-bold mb-3" style="font-size: 1rem;">Assigned Dispatch Tasks</h2>
+
+{% for j in jobs %}
+<div class="card kp-panel mb-3">
+  <div class="card-header kp-panel-header">
+    <span class="fw-bold text-primary">{{ j.job_code }}</span>
+    <span class="status-pill brand"><span class="status-dot"></span> {{ j.get_status_display }}</span>
+  </div>
+  <div class="card-body p-3">
+    <h3 class="fw-bold mb-1" style="font-size: 0.95rem;">{{ j.title }}</h3>
+    <p class="text-secondary mb-2" style="font-size: 0.75rem;">
+      <i class="fa-solid fa-location-dot text-danger me-1"></i> {{ j.destination_address }}
+    </p>
+    <p class="text-muted mb-3" style="font-size: 0.7rem;">
+      <i class="fa-regular fa-clock me-1"></i> Scheduled: {{ j.scheduled_time|date:"M d, H:i" }}
+    </p>
+
+    {% if j.status != 'DELIVERED' %}
+    <form method="POST" action="{% url 'pwa_jobs' %}">
+      {% csrf_token %}
+      <input type="hidden" name="job_id" value="{{ j.id }}">
+      {% if j.status == 'ASSIGNED' %}
+      <button type="submit" name="status" value="ACCEPTED" class="btn btn-primary w-100 py-2 fw-bold" style="font-size: 0.8rem;">
+        ACCEPT JOB TASK
+      </button>
+      {% elif j.status == 'ACCEPTED' %}
+      <button type="submit" name="status" value="IN_TRANSIT" class="btn btn-warning w-100 py-2 fw-bold" style="font-size: 0.8rem;">
+        START TRANSIT TO DESTINATION
+      </button>
+      {% elif j.status == 'IN_TRANSIT' %}
+      <button type="submit" name="status" value="DELIVERED" class="btn btn-success w-100 py-2 fw-bold" style="font-size: 0.8rem;">
+        MARK DELIVERED & COMPLETE
+      </button>
+      {% endif %}
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% empty %}
+<div class="text-center py-5 text-muted">
+  <i class="fa-solid fa-circle-check text-success fa-3x mb-3"></i>
+  <p class="mb-0">No active dispatch tasks assigned.</p>
+</div>
+{% endfor %}
+{% endblock %}

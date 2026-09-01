@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}Customer Payment Risk Analysis | AI Business Advisor{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-shield-exclamation text-danger me-2"></i> Customer Payment Risk Analysis</h3>
+        <p class="text-muted mb-0 fs-7">AI-generated credit risk classification based on payment history, days overdue, and broken promises.</p>
+    </div>
+    <a href="{% url 'ai_advisor:dashboard' %}" class="btn btn-light border btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> AI Advisor Dashboard
+    </a>
+</div>
+
+<div class="card card-custom p-0 border-0">
+    <div class="table-responsive">
+        <table class="table table-custom align-middle mb-0 fs-7">
+            <thead>
+                <tr>
+                    <th>Customer</th>
+                    <th>Risk Tier</th>
+                    <th>Outstanding</th>
+                    <th>Days Overdue</th>
+                    <th>Broken Promises</th>
+                    <th>Reasoning & Evidence</th>
+                    <th>Recommended Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in customer_risks %}
+                <tr>
+                    <td>
+                        <strong class="text-dark d-block">{{ r.customer_name }}</strong>
+                        <small class="text-muted fs-8">{{ r.customer_phone }}</small>
+                    </td>
+                    <td>
+                        <span class="badge bg-{{ r.tier_badge }} fs-8">{{ r.risk_tier }}</span>
+                    </td>
+                    <td class="fw-bold text-danger">₹{{ r.outstanding|floatformat:2 }}</td>
+                    <td class="fw-semibold text-dark">{{ r.days_overdue }} days</td>
+                    <td class="fw-bold text-warning">{{ r.broken_promises }}</td>
+                    <td class="text-secondary">{{ r.reason }}</td>
+                    <td>
+                        <span class="text-dark fw-medium">{{ r.action }}</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">No customer risk data evaluated yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

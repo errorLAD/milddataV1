@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Drivers & Operators Roster — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Drivers & Operators Management</h1>
+    <p class="kp-page-subtitle">Track operator rosters, license expirations, assigned heavy machinery, daily salaries, and performance ratings (0–100).</p>
+  </div>
+  <div>
+    <button class="kp-btn kp-btn-primary" data-modal-target="modal-add-operator">
+      <i class="fa-solid fa-user-plus"></i> Add New Driver / Operator
+    </button>
+  </div>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title">Operator Roster ({{ operators.count }} Drivers)</div>
+    <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> {{ active_count }} Active on Duty</span>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Driver Name</th>
+          <th>Contact Phone</th>
+          <th>License Number</th>
+          <th>License Expiry</th>
+          <th>Assigned Equipment</th>
+          <th>Daily Wage</th>
+          <th>Performance Score</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for op in operators %}
+          <tr>
+            <td style="font-weight: 650; color: var(--brand);">{{ op.name }}</td>
+            <td class="num-tabular">{{ op.phone }}</td>
+            <td class="num-tabular" style="font-weight: 600;">{{ op.license_number }}</td>
+            <td class="num-tabular">{{ op.license_expiry|default:"Valid" }}</td>
+            <td>
+              {% if op.assigned_machine %}
+                <a href="{% url 'machine_detail' op.assigned_machine.pk %}" style="color: var(--brand); text-decoration: none;">
+                  {{ op.assigned_machine.name }}
+                </a>
+              {% else %}
+                <span style="color: var(--text-tertiary);">Unassigned</span>
+              {% endif %}
+            </td>
+            <td class="num-tabular">{{ currency_symbol }}{{ op.daily_salary|floatformat:2|intcomma }}/day</td>
+            <td class="num-tabular" style="font-weight: 700;">
+              <span class="kp-badge kp-badge-success">{{ op.performance_score }}/100</span>
+            </td>
+            <td>
+              {% if op.status == 'active' %}
+                <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Active</span>
+              {% elif op.status == 'on_leave' %}
+                <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> On Leave</span>
+              {% else %}
+                <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Inactive</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No operators registered.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Add Operator -->
+<div class="kp-modal-backdrop" id="modal-add-operator">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Register Driver / Operator</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_operator' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Operator Full Name</label>
+          <input type="text" name="name" class="kp-input" placeholder="e.g. Ramesh Kumar" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Phone Number</label>
+            <input type="text" name="phone" class="kp-input" placeholder="e.g. 9811223344" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Daily Wage ({{ currency_symbol }})</label>
+            <input type="number" step="50" name="daily_salary" class="kp-input" value="900" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">License Number</label>
+            <input type="text" name="license_number" class="kp-input" placeholder="e.g. DL-KA04-2018-991" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">License Expiry Date</label>
+            <input type="date" name="license_expiry" class="kp-input">
+          </div>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Assign Heavy Equipment</label>
+          <select name="assigned_machine" class="kp-select">
+            <option value="">Unassigned</option>
+            {% for m in machines %}
+              <option value="{{ m.pk }}">{{ m.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Save Operator</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

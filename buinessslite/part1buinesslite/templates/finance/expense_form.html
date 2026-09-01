@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Expense - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Add Expense</h1>
+        <div class="page-subtitle">Record business expenditure</div>
+    </div>
+</div>
+
+<div class="card-panel" style="max-width: 500px;">
+    <div class="panel-header">
+        <div class="panel-title">Expense Form</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Expense Title</label>
+                <input type="text" name="title" class="form-input" placeholder="e.g. Office Rent August" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Amount</label>
+                    <input type="number" step="0.01" name="amount" class="form-input" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-input" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="category_id" class="form-select">
+                        <option value="">General</option>
+                        {% for c in categories %}
+                        <option value="{{ c.id }}">{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Payment Method</label>
+                    <select name="payment_method" class="form-select">
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Card">Card</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Check">Check</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Vendor / Supplier</label>
+                <input type="text" name="vendor" class="form-input" placeholder="e.g. Metro Property Management">
+            </div>
+
+            <button type="submit" class="btn-saas btn-primary">Save Expense</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

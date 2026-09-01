@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}{{ business.name }} | Platform Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h3 class="fw-bold text-dark mb-0">{{ business.name }}</h3>
+            {% if business.is_active %}
+            <span class="badge bg-success-subtle text-success border border-success-subtle">Active</span>
+            {% else %}
+            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Blocked / Suspended</span>
+            {% endif %}
+        </div>
+        <p class="text-muted mb-0 fs-7">Owner: <strong>{{ business.owner_name }}</strong> | Phone: {{ business.phone }} | Joined: {{ business.created_at|date:"d M Y" }}</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        {% if business.is_active %}
+        <form method="post" action="{% url 'platform_admin:business_block' business.pk %}" class="d-inline" onsubmit="return confirm('Block this business account?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning btn-sm fw-semibold">
+                <i class="bi bi-slash-circle me-1"></i> Block Business
+            </button>
+        </form>
+        {% else %}
+        <form method="post" action="{% url 'platform_admin:business_unblock' business.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-sm fw-semibold">
+                <i class="bi bi-check-circle me-1"></i> Restore Business
+            </button>
+        </form>
+        {% endif %}
+        
+        <form method="post" action="{% url 'platform_admin:business_delete' business.pk %}" class="d-inline" onsubmit="return confirm('PERMANENTLY DELETE business?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm">
+                <i class="bi bi-trash"></i> Delete
+            </button>
+        </form>
+
+        <a href="{% url 'platform_admin:business_list' %}" class="btn btn-light border btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Businesses List
+        </a>
+    </div>
+</div>
+
+<!-- Business Summary Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card border-start border-4 border-success">
+            <div class="stat-icon success mb-2"><i class="bi bi-currency-rupee"></i></div>
+            <div class="stat-label">Total Revenue</div>
+            <div class="stat-value text-success">{{ revenue|inr }}</div>
+            <small class="text-muted fs-8">{{ sales_count }} Completed Sales</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card border-start border-4 border-warning">
+            <div class="stat-icon warning mb-2"><i class="bi bi-journal-bookmark-fill"></i></div>
+            <div class="stat-label">Outstanding Udhaar</div>
+            <div class="stat-value text-warning">{{ udhaar_amount|inr }}</div>
+            <small class="text-muted fs-8">{{ customers_count }} Total Customers</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card border-start border-4 border-info">
+            <div class="stat-icon info mb-2"><i class="bi bi-robot"></i></div>
+            <div class="stat-label">AI Converted Sales</div>
+            <div class="stat-value text-info">{{ ai_sales_revenue|inr }}</div>
+            <small class="text-muted fs-8">{{ ai_sales_count }} Approved Draft Orders</small>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card border-start border-4 border-primary">
+            <div class="stat-icon primary mb-2"><i class="bi bi-whatsapp"></i></div>
+            <div class="stat-label">WhatsApp Activity</div>
+            <div class="stat-value text-primary">{{ wa_messages_count }}</div>
+            <small class="text-muted fs-8">{{ wa_conversations_count }} Chats | {{ ai_replies_count }} AI Replies</small>
+        </div>
+    </div>
+</div>
+
+<!-- Info & Counts Bar -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card card-custom p-3 border-0">
+            <small class="text-muted fs-8 d-block">GSTIN Number</small>
+            <span class="fw-bold text-dark fs-7">{{ business.gstin|default:"Not Provided" }}</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-3 border-0">
+            <small class="text-muted fs-8 d-block">Business Email</small>
+            <span class="fw-bold text-dark fs-7">{{ business.email|default:"Not Provided" }}</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-3 border-0">
+            <small class="text-muted fs-8 d-block">Catalog & Transactions</small>
+            <span class="fw-bold text-dark fs-7">{{ products_count }} Products | {{ transactions_count }} Payments</span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card card-custom p-3 border-0">
+            <small class="text-muted fs-8 d-block">Orders Logged</small>
+            <span class="fw-bold text-dark fs-7">{{ sales_count }} Sales + {{ draft_orders_count }} Drafts</span>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Left Column: Sales & Draft Orders -->
+    <div class="col-12 col-lg-6">
+        <div class="card card-custom p-4 mb-4">
+            <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom"><i class="bi bi-bag-check text-success me-2"></i> Recent Sales Invoices</h6>
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0 fs-7">
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Customer</th>
+                            <th>Date</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in recent_sales %}
+                        <tr>
+                            <td class="fw-bold text-primary">{{ s.invoice_number }}</td>
+                            <td>{{ s.customer.name }}</td>
+                            <td class="text-muted fs-8">{{ s.sale_date|date:"d M Y" }}</td>
+                            <td class="text-end fw-bold text-success">{{ s.total_amount|inr }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-3 text-muted">No sales logged yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card card-custom p-4">
+            <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom"><i class="bi bi-robot text-primary me-2"></i> AI Draft Orders</h6>
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0 fs-7">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Item</th>
+                            <th>Qty</th>
+                            <th>Status</th>
+                            <th class="text-end">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in recent_drafts %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ d.customer.name }}</td>
+                            <td>{{ d.product.name|default:"Item" }}</td>
+                            <td>{{ d.quantity }}</td>
+                            <td>
+                                {% if d.status == 'Approved' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle fs-8">Approved</span>
+                                {% elif d.status == 'Rejected' %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-8">Rejected</span>
+                                {% else %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle fs-8">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end fw-bold text-dark">{{ d.total_amount|inr }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-3 text-muted">No AI draft orders yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Udhaars & Payments -->
+    <div class="col-12 col-lg-6">
+        <div class="card card-custom p-4 mb-4">
+            <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom"><i class="bi bi-journal-bookmark text-warning me-2"></i> Active Udhaar Accounts</h6>
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0 fs-7">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th class="text-end">Remaining</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in recent_udhaars %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ u.customer.name }}</td>
+                            <td class="text-muted fs-8">{{ u.due_date|date:"d M Y" }}</td>
+                            <td>
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle fs-8">{{ u.status }}</span>
+                            </td>
+                            <td class="text-end fw-bold text-danger">{{ u.remaining_amount|inr }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-3 text-muted">No active udhaars.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card card-custom p-4">
+            <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom"><i class="bi bi-credit-card text-info me-2"></i> Recent Payments & Transactions</h6>
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0 fs-7">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Method</th>
+                            <th>Date</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in recent_payments %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ p.customer.name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ p.payment_method }}</span></td>
+                            <td class="text-muted fs-8">{{ p.created_at|date:"d M Y" }}</td>
+                            <td class="text-end fw-bold text-success">{{ p.amount|inr }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-3 text-muted">No transactions recorded yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

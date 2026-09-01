@@ -1,0 +1,110 @@
+{% load indian_formatting %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Invoice #{{ sale.invoice_number }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #333; margin: 0; padding: 20px; }
+        .invoice-header { border-bottom: 2px solid #4f46e5; padding-bottom: 15px; margin-bottom: 20px; }
+        .brand-title { font-size: 22px; font-weight: bold; color: #4f46e5; }
+        .invoice-details { text-align: right; }
+        .table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .table th, .table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .table th { background-color: #f8fafc; font-weight: bold; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+        .fw-bold { font-weight: bold; }
+        .totals-table { width: 40%; float: right; margin-top: 10px; }
+        .clear { clear: both; }
+        .footer { margin-top: 50px; text-align: center; font-size: 10px; color: #777; border-top: 1px solid #ddd; padding-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="invoice-header">
+    <table width="100%">
+        <tr>
+            <td>
+                <div class="brand-title">{{ business.name }}</div>
+                <div>Phone: {{ business.phone }}</div>
+                {% if business.email %}<div>Email: {{ business.email }}</div>{% endif %}
+                {% if business.gstin %}<div>GSTIN: {{ business.gstin }}</div>{% endif %}
+            </td>
+            <td class="invoice-details">
+                <h2 style="margin:0; color:#1e293b;">INVOICE</h2>
+                <div class="fw-bold">#{{ sale.invoice_number }}</div>
+                <div>Date: {{ sale.sale_date|date:"d M Y, h:i A" }}</div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<table width="100%" style="margin-bottom: 20px;">
+    <tr>
+        <td>
+            <strong>Billed To:</strong><br>
+            <span style="font-size: 14px;" class="fw-bold">{{ sale.customer.name }}</span><br>
+            Phone: {{ sale.customer.phone }}<br>
+            {% if sale.customer.address %}{{ sale.customer.address }}{% endif %}
+        </td>
+        <td class="text-right" valign="top">
+            <strong>Payment Terms:</strong><br>
+            Method: {{ sale.payment_method }}<br>
+            {% if sale.udhaar_amount > 0 %}
+            <span style="color:#ef4444; font-weight:bold;">Udhaar Due: {{ sale.udhaar_amount|inr }}</span>
+            {% else %}
+            <span style="color:#10b981; font-weight:bold;">Status: FULLY PAID</span>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Item / Product Description</th>
+            <th class="text-center">Qty</th>
+            <th class="text-right">Unit Price</th>
+            <th class="text-right">Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in sale.items.all %}
+        <tr>
+            <td class="text-center">{{ forloop.counter }}</td>
+            <td>{{ item.product_name }}</td>
+            <td class="text-center">{{ item.quantity }}</td>
+            <td class="text-right">{{ item.unit_price|inr }}</td>
+            <td class="text-right fw-bold">{{ item.subtotal|inr }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="totals-table">
+    <table width="100%" style="border-collapse: collapse;">
+        <tr>
+            <td style="padding: 4px 0;">Gross Amount:</td>
+            <td class="text-right fw-bold">{{ sale.total_amount|inr }}</td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 0;">Paid Amount:</td>
+            <td class="text-right fw-bold" style="color:#10b981;">{{ sale.paid_amount|inr }}</td>
+        </tr>
+        <tr style="border-top: 1px solid #333;">
+            <td style="padding: 6px 0; font-size: 14px;" class="fw-bold">Udhaar Balance:</td>
+            <td class="text-right fw-bold" style="font-size: 14px; color:#ef4444;">{{ sale.udhaar_amount|inr }}</td>
+        </tr>
+    </table>
+</div>
+<div class="clear"></div>
+
+<div class="footer">
+    Thank you for doing business with {{ business.name }}!<br>
+    This is a computer-generated invoice created via KarobarPlus.
+</div>
+
+</body>
+</html>

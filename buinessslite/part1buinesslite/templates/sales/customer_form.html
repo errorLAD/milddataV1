@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Customer - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Add New Customer</h1>
+        <div class="page-subtitle">Create customer account</div>
+    </div>
+</div>
+
+<div class="card-panel" style="max-width: 550px;">
+    <div class="panel-header">
+        <div class="panel-title">Customer Information</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Customer / Company Name</label>
+                <input type="text" name="company_name" class="form-input" placeholder="e.g. ABC Construction Ltd" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Contact Person</label>
+                    <input type="text" name="contact_person" class="form-input" placeholder="e.g. Jane Smith">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Country</label>
+                    <input type="text" name="country" class="form-input" value="{{ organization.country }}" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="billing@abc.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-input" placeholder="+1 555 0199">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Address</label>
+                <textarea name="address" class="form-textarea" rows="2" placeholder="Billing address..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-saas btn-primary">Save Customer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

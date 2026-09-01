@@ -1,0 +1,282 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Fleet Command Dashboard{% endblock %} | FleetOS Enterprise</title>
+  
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Font: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Leaflet CSS for Maps -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  
+  <!-- Light Enterprise SaaS Theme -->
+  <link rel="stylesheet" href="{% static 'css/karobarplus.css' %}">
+  
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <div class="saas-layout">
+    
+    <!-- Light Sidebar Navigation -->
+    <aside class="saas-sidebar" id="saasSidebar">
+      <!-- Brand Logo -->
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-icon">
+          <i class="fa-solid fa-truck-fast"></i>
+        </div>
+        <div>
+          <h1 class="mb-0 fw-bold text-dark" style="font-size: 1.05rem; letter-spacing: -0.02em;">Fleet<span style="color: var(--brand);">OS</span></h1>
+          <span class="text-secondary" style="font-size: 0.72rem;">Light Enterprise SaaS</span>
+        </div>
+      </div>
+
+      <!-- Navigation Links Grouped into 7 Sections -->
+      <nav class="sidebar-nav">
+        
+        <div class="nav-section-title">MAIN PLATFORM</div>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+          <i class="fa-solid fa-chart-pie"></i> Dashboard
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'tracking' %}active{% endif %}" href="{% url 'tracking' %}">
+          <i class="fa-solid fa-location-dot"></i> Live Tracking
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'route_playback' %}active{% endif %}" href="{% url 'route_playback' %}">
+          <i class="fa-solid fa-play"></i> Route Playback
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'geofences' %}active{% endif %}" href="{% url 'geofences' %}">
+          <i class="fa-solid fa-draw-polygon"></i> Geofence Control
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'alerts' %}active{% endif %}" href="{% url 'alerts' %}">
+          <i class="fa-solid fa-bell"></i> Alerts & Notifications
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'ai_assistant' %}active{% endif %}" href="{% url 'ai_assistant' %}">
+          <i class="fa-solid fa-robot" style="color: var(--brand);"></i> AI Assistant
+        </a>
+
+        <div class="nav-section-title">FLEET ASSETS</div>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'vehicles_list' or request.resolver_match.url_name == 'vehicle_detail' %}active{% endif %}" href="{% url 'vehicles_list' %}">
+          <i class="fa-solid fa-truck-monster"></i> Vehicles & Machines
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'drivers_list' %}active{% endif %}" href="{% url 'drivers_list' %}">
+          <i class="fa-solid fa-id-card"></i> Drivers & Operators
+        </a>
+        <a class="sidebar-link" href="{% url 'vehicles_list' %}?type=GENERATOR">
+          <i class="fa-solid fa-plug"></i> Equipment & Attachments
+        </a>
+
+        <div class="nav-section-title">OPERATIONS</div>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'trips_list' or request.resolver_match.url_name == 'trip_detail' %}active{% endif %}" href="{% url 'trips_list' %}">
+          <i class="fa-solid fa-route"></i> Trip Records
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'dispatch' %}active{% endif %}" href="{% url 'dispatch' %}">
+          <i class="fa-solid fa-truck-ramp-box"></i> Dispatch & Jobs
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'inspections' %}active{% endif %}" href="{% url 'inspections' %}">
+          <i class="fa-solid fa-clipboard-check"></i> Digital Inspections
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'maintenance' %}active{% endif %}" href="{% url 'maintenance' %}">
+          <i class="fa-solid fa-wrench"></i> Maintenance & Garage
+        </a>
+
+        <div class="nav-section-title">FINANCIALS</div>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'fuel' %}active{% endif %}" href="{% url 'fuel' %}">
+          <i class="fa-solid fa-gas-pump"></i> Fuel Telemetry
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'expenses' %}active{% endif %}" href="{% url 'expenses' %}">
+          <i class="fa-solid fa-receipt"></i> Expenses & Costs
+        </a>
+
+        <div class="nav-section-title">COMPLIANCE & DOCUMENTS</div>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}" href="{% url 'documents' %}">
+          <i class="fa-solid fa-folder-open"></i> Documents & Expiry
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'documents' %}active{% endif %}" href="{% url 'documents' %}">
+          <i class="fa-solid fa-shield-halved"></i> Compliance Center
+        </a>
+
+        <div class="nav-section-title">ANALYTICS & REPORTS</div>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}" href="{% url 'reports' %}">
+          <i class="fa-solid fa-file-invoice"></i> Reports & Analytics
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}" href="{% url 'reports' %}">
+          <i class="fa-solid fa-heart-pulse"></i> Fleet Health Score
+        </a>
+
+        <div class="nav-section-title">ADMIN & SETTINGS</div>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'users_roles' %}active{% endif %}" href="{% url 'users_roles' %}">
+          <i class="fa-solid fa-users-gear"></i> Users & Roles
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'settings' %}">
+          <i class="fa-solid fa-building"></i> Organizations
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'billing' %}active{% endif %}" href="{% url 'billing' %}">
+          <i class="fa-solid fa-credit-card"></i> Billing & Subscription
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" href="{% url 'settings' %}">
+          <i class="fa-solid fa-sliders"></i> System Settings
+        </a>
+        <a class="sidebar-link {% if request.resolver_match.url_name == 'audit_log' %}active{% endif %}" href="{% url 'audit_log' %}">
+          <i class="fa-solid fa-list-check"></i> Audit Logs
+        </a>
+
+        <div class="mt-4 pt-3 border-top px-2">
+          <button class="btn btn-sm btn-outline-secondary w-100 py-1" text-align="left" onclick="document.getElementById('saasSidebar').classList.toggle('collapsed')">
+            <i class="fa-solid fa-arrow-left me-1"></i> Collapse Menu
+          </button>
+        </div>
+
+      </nav>
+    </aside>
+
+    <!-- Main Content Container Shell -->
+    <div class="saas-main">
+      
+      <!-- Guest Mode Banner if Active -->
+      {% if request.session.is_guest or request.user.role == 'VIEWER' %}
+      <div class="bg-warning text-dark px-4 py-2 text-center font-bold d-flex align-items-center justify-content-between" style="font-size: 0.8rem; background-color: #FEF3C7 !important; border-bottom: 1px solid #FDE68A;">
+        <div>
+          <i class="fa-solid fa-eye me-1 text-warning"></i>
+          <strong>Guest Mode (Public Demo Session)</strong> — You are viewing read-only telemetry. Financial, document, and admin settings are restricted.
+        </div>
+        <a href="{% url 'login' %}" class="btn-kp btn-kp-primary py-1 px-3" style="font-size: 0.75rem;">
+          Register / Full Account Login
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Top Header Bar -->
+      <header class="saas-topbar">
+        <div class="d-flex align-items-center gap-3">
+          <button class="icon-btn d-lg-none" type="button" onclick="document.getElementById('saasSidebar').classList.toggle('show')">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          
+          <div class="eyebrow-pill" style="background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-secondary);">
+            <span class="status-dot" style="background: var(--brand);"></span>
+            {{ request.user.organization.name|default:"Karobar Logistics Ltd" }}
+          </div>
+
+          <!-- Quick Country & Currency Switcher Badge -->
+          <button type="button" class="btn-kp btn-kp-secondary py-1 px-2 d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#currencyModal" style="font-size: 0.72rem;" title="Change Country & Currency">
+            <i class="fa-solid fa-earth-americas text-primary"></i>
+            <span class="fw-bold text-dark">{{ currency_symbol }} {{ currency_code }}</span>
+          </button>
+        </div>
+
+
+        <div class="d-flex align-items-center gap-3">
+          <form class="d-none d-md-flex align-items-center" action="{% url 'vehicles_list' %}" method="GET">
+            <div class="input-group input-group-sm" style="width: 280px;">
+              <span class="input-group-text bg-white border-end-0 text-muted" style="border-color: var(--border-strong);">
+                <i class="fa-solid fa-magnifying-glass" style="font-size: 0.75rem;"></i>
+              </span>
+              <input type="search" name="q" class="form-control form-control-kp border-start-0" placeholder="Search vehicle, driver, trip, job, document..." style="font-size: 0.8rem;">
+            </div>
+          </form>
+
+          <a href="{% url 'pwa_home' %}" class="btn-kp btn-kp-secondary d-none d-sm-inline-flex" title="Open Mobile Driver PWA">
+            <i class="fa-solid fa-mobile-screen me-1"></i> Driver PWA
+          </a>
+
+          <a href="{% url 'alerts' %}" class="icon-btn position-relative" title="Alerts">
+            <i class="fa-regular fa-bell"></i>
+            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" style="width: 8px; height: 8px;"></span>
+          </a>
+
+          <!-- User Avatar Dropdown -->
+          <div class="dropdown">
+            <button class="avatar-btn dropdown-toggle d-flex align-items-center gap-2 px-2" style="width: auto;" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="fa-regular fa-user"></i>
+              <div class="text-start d-none d-sm-block me-1">
+                <div class="fw-bold" style="font-size: 0.75rem; line-height: 1;">{{ request.user.get_full_name|default:request.user.username }}</div>
+                <div class="text-muted" style="font-size: 0.65rem; line-height: 1;">{{ request.user.get_role_display|default:request.user.role }}</div>
+              </div>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size: 0.825rem; border-color: var(--border);">
+              <li><div class="dropdown-header fw-semibold text-dark">{{ request.user.username }} ({{ request.user.get_role_display|default:request.user.role }})</div></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fa-solid fa-gear me-2 text-muted"></i> Settings</a></li>
+              <li><a class="dropdown-item" href="{% url 'billing' %}"><i class="fa-solid fa-credit-card me-2 text-muted"></i> Billing</a></li>
+              {% if request.user.is_superuser or request.user.role == 'OWNER' %}
+              <li><a class="dropdown-item" href="{% url 'superadmin_dashboard' %}"><i class="fa-solid fa-user-shield me-2 text-primary"></i> Super Admin Panel</a></li>
+              {% endif %}
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fa-solid fa-arrow-right-from-bracket me-2"></i> Log Out</a></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <!-- System Messages Alerts -->
+      {% if messages %}
+      <div class="px-4 mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show py-2 px-3 mb-2" role="alert" style="font-size: 0.825rem; border-radius: var(--radius-sm);">
+          <i class="fa-solid fa-circle-info me-1"></i> {{ message }}
+          <button type="button" class="btn-close py-2" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- View Content Workspace -->
+      <main class="p-4 flex-grow-1">
+        {% block content %}{% endblock %}
+      </main>
+
+    </div>
+  </div>
+
+  <!-- Country & Currency Selection Modal -->
+  <div class="modal fade" id="currencyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content kp-modal">
+        <div class="modal-header kp-modal-header">
+          <h5 class="modal-title" style="font-size: 0.95rem; font-weight: 650;">
+            <i class="fa-solid fa-earth-americas text-primary me-1"></i> Change Country & Currency
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="POST" action="{% url 'settings' %}">
+          {% csrf_token %}
+          <div class="modal-body p-3">
+            <p class="text-secondary mb-3" style="font-size: 0.78rem;">Select your operational country to automatically update currency formatting and symbols (₹, $, €, £, AED, SAR, etc.) across all fleet telemetry modules.</p>
+            <div class="mb-3">
+              <label class="form-label text-secondary fw-semibold" style="font-size: 0.72rem;">SELECT COUNTRY & CURRENCY</label>
+              <select name="country_code" class="form-select form-select-kp py-2">
+                <option value="IN" {% if country_code == 'IN' %}selected{% endif %}>India 🇮🇳 — Rupee (₹ INR)</option>
+                <option value="US" {% if country_code == 'US' %}selected{% endif %}>United States 🇺🇸 — US Dollar ($ USD)</option>
+                <option value="EU" {% if country_code == 'EU' %}selected{% endif %}>Eurozone 🇪🇺 — Euro (€ EUR)</option>
+                <option value="GB" {% if country_code == 'GB' %}selected{% endif %}>United Kingdom 🇬🇧 — Pound (£ GBP)</option>
+                <option value="AE" {% if country_code == 'AE' %}selected{% endif %}>United Arab Emirates 🇦🇪 — Dirham (AED)</option>
+                <option value="SA" {% if country_code == 'SA' %}selected{% endif %}>Saudi Arabia 🇸🇦 — Riyal (SAR)</option>
+                <option value="CA" {% if country_code == 'CA' %}selected{% endif %}>Canada 🇨🇦 — Canadian Dollar (C$ CAD)</option>
+                <option value="AU" {% if country_code == 'AU' %}selected{% endif %}>Australia 🇦🇺 — Australian Dollar (A$ AUD)</option>
+                <option value="JP" {% if country_code == 'JP' %}selected{% endif %}>Japan 🇯🇵 — Yen (¥ JPY)</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer kp-modal-footer">
+            <button type="button" class="btn-kp btn-kp-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn-kp btn-kp-primary">Apply Preference</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
+

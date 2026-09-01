@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Good morning 👋</h1>
+        <div class="page-subtitle">Here's your business overview for {{ organization.name }} ({{ organization.country }})</div>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <button class="btn-saas btn-ai" onclick="toggleAiModal()">✨ Ask Business AI</button>
+        <button class="btn-saas btn-primary" onclick="toggleQuickCreateModal()">+ Create</button>
+    </div>
+</div>
+
+<!-- Top Metric Cards -->
+<div class="metrics-grid">
+    <div class="metric-card hero-card">
+        <div class="metric-label">Sales (30d)</div>
+        <div class="metric-number">{{ currency_symbol }}{{ sales_total|floatformat:2 }}</div>
+        <div class="metric-subtext">30-day billing total</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Operating Expenses</div>
+        <div class="metric-number">{{ currency_symbol }}{{ expense_total|floatformat:2 }}</div>
+        <div class="metric-subtext">Expenses (30d)</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Salary Payouts</div>
+        <div class="metric-number" style="color: var(--brand);">{{ currency_symbol }}{{ salary_total_30d|floatformat:2 }}</div>
+        <div class="metric-subtext">Employee salaries paid</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Estimated Profit</div>
+        <div class="metric-number" style="color: var(--success);">{{ currency_symbol }}{{ estimated_profit|floatformat:2 }}</div>
+        <div class="metric-subtext">Net operational estimate</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Receivables</div>
+        <div class="metric-number" style="color: var(--warning);">{{ currency_symbol }}{{ outstanding_total|floatformat:2 }}</div>
+        <div class="metric-subtext">Unpaid customer invoices</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Payables</div>
+        <div class="metric-number" style="color: var(--danger);">{{ currency_symbol }}{{ payables_total|floatformat:2 }}</div>
+        <div class="metric-subtext">Pending supplier POs</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Inventory Value</div>
+        <div class="metric-number">{{ currency_symbol }}{{ inventory_value|floatformat:2 }}</div>
+        <div class="metric-subtext">{{ low_stock_count }} items low stock</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Today's Attendance</div>
+        <div class="metric-number" style="font-size: 0.95rem;">{{ present_count }} / {{ employee_count }} Present</div>
+        <div class="metric-subtext">{{ today_absent_count }} absent staff today</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+    <!-- Main Left Column -->
+    <div>
+        <!-- Needs Attention Section -->
+        <div class="card-panel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">⚠️ Needs Attention</div>
+                    <div class="panel-desc">Actionable items requiring your review</div>
+                </div>
+            </div>
+            <div class="panel-body" style="padding: 0.5rem 1rem;">
+                {% if needs_attention %}
+                    <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                        {% for item in needs_attention %}
+                        <a href="{{ item.url }}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0.75rem; background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); text-decoration: none; color: var(--text-primary); transition: background 0.15s;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.72rem;">
+                                <span class="badge-pill badge-{{ item.type }}">{{ item.type|upper }}</span>
+                                {{ item.title }}
+                            </div>
+                            <span style="font-size: 0.65rem; color: var(--brand); font-weight: 600;">View →</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="padding: 1rem; text-align: center; color: var(--text-tertiary);">🎉 Everything looks good! No urgent alerts.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Top Selling Products & Customers Insights Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <!-- Top Products -->
+            <div class="card-panel">
+                <div class="panel-header">
+                    <div class="panel-title">🏆 Top Best-Selling Products</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="saas-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Qty Sold</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pname, pdata in top_products %}
+                            <tr>
+                                <td style="font-weight: 650;">{{ pname }}</td>
+                                <td class="num">{{ pdata.qty }}</td>
+                                <td class="num" style="font-weight: 700; color: var(--success);">{{ currency_symbol }}{{ pdata.revenue|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" style="text-align: center; color: var(--text-tertiary);">No product sales recorded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Top Customers -->
+            <div class="card-panel">
+                <div class="panel-header">
+                    <div class="panel-title">👤 Top Revenue Customers</div>
+                </div>
+                <div class="table-responsive">
+                    <table class="saas-table">
+                        <thead>
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Billed Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cname, amt in top_customers %}
+                            <tr>
+                                <td style="font-weight: 650;">{{ cname }}</td>
+                                <td class="num" style="font-weight: 700; color: var(--brand);">{{ currency_symbol }}{{ amt|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" style="text-align: center; color: var(--text-tertiary);">No customer invoices recorded yet.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Panel -->
+        <div class="card-panel">
+            <div class="panel-header">
+                <div class="panel-title">⚡ Quick Actions</div>
+            </div>
+            <div class="panel-body">
+                <div class="quick-action-grid">
+                    <a href="{% url 'invoice_create' %}" class="quick-action-btn">+ Invoice</a>
+                    <a href="{% url 'quote_create' %}" class="quick-action-btn">+ Quote</a>
+                    <a href="{% url 'po_create' %}" class="quick-action-btn">+ Purchase</a>
+                    <a href="{% url 'expense_create' %}" class="quick-action-btn">+ Expense</a>
+                    <a href="{% url 'salary_payment_create' %}" class="quick-action-btn">💳 Pay Salary</a>
+                    <a href="{% url 'product_create' %}" class="quick-action-btn">+ Product</a>
+                    <a href="{% url 'customer_create' %}" class="quick-action-btn">+ Customer</a>
+                    <a href="{% url 'supplier_create' %}" class="quick-action-btn">+ Supplier</a>
+                    <a href="{% url 'employee_create' %}" class="quick-action-btn">+ Employee</a>
+                    <a href="{% url 'task_create' %}" class="quick-action-btn">+ Task</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Secondary Right Column: Recent Activity -->
+    <div>
+        <div class="card-panel">
+            <div class="panel-header">
+                <div>
+                    <div class="panel-title">📜 Recent Activity</div>
+                    <div class="panel-desc">Audit history</div>
+                </div>
+            </div>
+            <div class="panel-body" style="padding: 0.5rem 0.75rem;">
+                {% if recent_activity %}
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        {% for act in recent_activity %}
+                        <div style="border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; font-size: 0.68rem;">
+                            <div style="font-weight: 650; color: var(--text-primary);">{{ act.action }}</div>
+                            <div style="color: var(--text-secondary); margin-top: 2px;">{{ act.details }}</div>
+                            <div style="font-size: 0.58rem; color: var(--text-tertiary); margin-top: 2px;">{{ act.created_at|timesince }} ago</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div style="color: var(--text-tertiary); font-size: 0.68rem;">No recent activity.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

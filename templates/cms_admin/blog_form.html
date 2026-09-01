@@ -1,0 +1,98 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}{% if post %}Edit Article — {{ post.title }}{% else %}Write New Blog Article{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{% if post %}Edit Article: {{ post.title }}{% else %}Write New Blog Article{% endif %}</h1>
+        <p class="page-subtitle">Rich text article editor, category tagging, scheduling, and SEO meta tags.</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        {% if post %}
+        <a href="{% url 'website_cms:draft_preview' 'blog' post.slug %}" target="_blank" class="btn-cms btn-outline">👁️ Secure Preview</a>
+        {% endif %}
+        <a href="{% url 'website_cms:blog_list' %}" class="btn-cms btn-outline">&larr; Back to Blog List</a>
+    </div>
+</div>
+
+<div class="cms-form-card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Article Title</label>
+                {{ form.title }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Slug</label>
+                {{ form.slug }}
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                {{ form.category }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Author Name</label>
+                {{ form.author_name }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Status (Draft / Published / Scheduled)</label>
+                {{ form.status }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Publish Date &amp; Time</label>
+                {{ form.publish_date }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Excerpt / Summary (Shown on article cards)</label>
+            {{ form.excerpt }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Full Article Body (Rich Text / HTML Content)</label>
+            {{ form.content }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Featured Image URL</label>
+                {{ form.featured_image_url }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Reading Time (e.g. 5 min read)</label>
+                {{ form.reading_time }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tags (Comma-separated)</label>
+                {{ form.tags }}
+            </div>
+        </div>
+
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin: 1.5rem 0 1rem; color: var(--cms-primary);">SEO &amp; Social Sharing (OG Tags)</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">SEO Title Tag</label>
+                {{ form.seo_title }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Social Share OG Image URL</label>
+                {{ form.og_image_url }}
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Meta Description</label>
+            {{ form.meta_description }}
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <button type="submit" class="btn-cms btn-primary">Save &amp; Update Article</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

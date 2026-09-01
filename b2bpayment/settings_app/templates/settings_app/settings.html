@@ -1,0 +1,1090 @@
+
+
+{% extends "base.html" %}
+
+{% block title %}Settings | KarobarPlus{% endblock %}
+
+{% block content %}
+<style>
+  /* ===== Udhaar CRM — Settings Design System ===== */
+  .udhaar-settings {
+    --ink: #101828;
+    --ink-soft: #475467;
+    --muted: #667085;
+    --bg: #F6F7F9;
+    --surface: #FFFFFF;
+    --border: #E4E7EC;
+    --border-soft: #EDEFF3;
+
+    --primary: #2E4CDB;
+    --primary-dark: #1E3AA8;
+    --primary-soft: #EEF1FE;
+
+    --success: #12B76A;
+    --success-dark: #067647;
+    --success-soft: #ECFDF3;
+
+    --warning: #DC7B0C;
+    --warning-soft: #FFF7E8;
+
+    --danger: #E0362B;
+    --danger-soft: #FEF3F2;
+
+    --whatsapp: #1FA855;
+    --whatsapp-soft: #E9FBF0;
+
+    --info: #0E7C86;
+    --info-soft: #E6F7F8;
+
+    --gold: #A9760F;
+    --gold-soft: #FBF3E4;
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+
+    --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
+    --shadow-md: 0 4px 14px rgba(16, 24, 40, 0.07), 0 1px 3px rgba(16, 24, 40, 0.05);
+    --shadow-lg: 0 16px 40px rgba(16, 24, 40, 0.12);
+
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    margin: -1.5rem -1.5rem 0;
+    padding: 2rem 1.75rem 3rem;
+  }
+
+  .udhaar-settings * { box-sizing: border-box; }
+
+  .udhaar-settings h1, .udhaar-settings h2, .udhaar-settings h3,
+  .udhaar-settings h4, .udhaar-settings h5, .udhaar-settings h6 {
+    font-family: 'Manrope', 'Inter', sans-serif;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+
+  /* ---------- Page header ---------- */
+  .us-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 28px;
+  }
+  .us-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--primary);
+    margin-bottom: 2px;
+  }
+  .us-title {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0;
+  }
+  .us-subtitle {
+    font-size: 14.5px;
+    color: var(--muted);
+    max-width: 720px;
+    line-height: 1.55;
+    margin: 2px 0 0;
+  }
+
+  /* ---------- Layout ---------- */
+  .us-grid {
+    display: grid;
+    grid-template-columns: 264px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .us-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Side nav (ledger tabs) ---------- */
+  .us-nav {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 10px;
+    position: sticky;
+    top: 20px;
+  }
+  @media (max-width: 900px) {
+    .us-nav { position: static; display: flex; overflow-x: auto; gap: 6px; padding: 8px; }
+  }
+  .us-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    border-left: 3px solid transparent;
+    margin-bottom: 2px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
+  }
+  .us-nav-item:hover {
+    background: var(--bg);
+    color: var(--ink);
+  }
+  .us-nav-item .us-icon-chip {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    background: var(--border-soft);
+    color: var(--ink-soft);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .us-nav-item.active {
+    background: var(--tab-soft, var(--primary-soft));
+    color: var(--ink);
+    border-left-color: var(--tab-color, var(--primary));
+  }
+  .us-nav-item.active .us-icon-chip {
+    background: var(--tab-color, var(--primary));
+    color: #fff;
+  }
+  .us-nav-item[data-tab="business"] { --tab-color: var(--ink-soft); --tab-soft: var(--border-soft); }
+  .us-nav-item[data-tab="payment"] { --tab-color: var(--success); --tab-soft: var(--success-soft); }
+  .us-nav-item[data-tab="whatsapp"] { --tab-color: var(--whatsapp); --tab-soft: var(--whatsapp-soft); }
+  .us-nav-item[data-tab="ai"] { --tab-color: var(--primary); --tab-soft: var(--primary-soft); }
+  .us-nav-item[data-tab="recovery"] { --tab-color: var(--gold); --tab-soft: var(--gold-soft); }
+  .us-nav-item[data-tab="latefees"] { --tab-color: var(--danger); --tab-soft: var(--danger-soft); }
+  .us-nav-item[data-tab="templates"] { --tab-color: var(--info); --tab-soft: var(--info-soft); }
+
+  /* ---------- Cards ---------- */
+  .us-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    padding: 28px 28px 26px;
+  }
+  .us-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 16px;
+    margin-bottom: 22px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .us-card-head h5 {
+    font-size: 16.5px;
+    font-weight: 800;
+    margin: 0 0 4px;
+  }
+  .us-card-desc {
+    font-size: 13.5px;
+    color: var(--muted);
+    margin: 0;
+    max-width: 560px;
+    line-height: 1.55;
+  }
+
+  .us-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: var(--success-soft);
+    color: var(--success-dark);
+    border: 1px solid rgba(18, 183, 106, 0.25);
+    white-space: nowrap;
+  }
+  .us-badge .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: currentColor;
+  }
+
+  /* ---------- Form fields ---------- */
+  .us-field { margin-bottom: 18px; }
+  .us-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 640px) { .us-field-row { grid-template-columns: 1fr; } }
+
+  .us-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+    letter-spacing: -0.005em;
+  }
+  .us-hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .us-hint code {
+    background: var(--bg);
+    border: 1px solid var(--border-soft);
+    padding: 1px 5px;
+    border-radius: 4px;
+    color: var(--ink-soft);
+    font-size: 11.5px;
+  }
+
+  /* Style Django-rendered widgets generically, regardless of their own classes */
+  .udhaar-settings .us-field input[type="text"],
+  .udhaar-settings .us-field input[type="email"],
+  .udhaar-settings .us-field input[type="tel"],
+  .udhaar-settings .us-field input[type="number"],
+  .udhaar-settings .us-field input[type="url"],
+  .udhaar-settings .us-field input[type="password"],
+  .udhaar-settings .us-field input[type="file"],
+  .udhaar-settings .us-field select,
+  .udhaar-settings .us-field textarea,
+  .udhaar-settings .us-field-row input,
+  .udhaar-settings .us-field-row select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10.5px 13px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    outline: none;
+  }
+  .udhaar-settings .us-field input:focus,
+  .udhaar-settings .us-field select:focus,
+  .udhaar-settings .us-field textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3.5px rgba(46, 76, 219, 0.12);
+  }
+  .udhaar-settings .us-field input::placeholder,
+  .udhaar-settings .us-field textarea::placeholder {
+    color: #98A2B3;
+  }
+  .udhaar-settings .input-group .us-field,
+  .udhaar-settings .input-group { display: flex; align-items: stretch; }
+  .udhaar-settings .input-group input { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+  .udhaar-settings .input-group .btn {
+    border: 1.5px solid var(--border);
+    border-left: none;
+    border-top-right-radius: var(--radius-sm);
+    border-bottom-right-radius: var(--radius-sm);
+    background: var(--bg);
+    color: var(--ink-soft);
+    padding: 0 14px;
+  }
+  .udhaar-settings .input-group .btn:hover { background: var(--border-soft); }
+
+  /* Switches */
+  .us-switch-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    margin-bottom: 12px;
+  }
+  .us-switch-row label {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+    cursor: pointer;
+  }
+  .udhaar-settings .form-check.form-switch { margin: 0; padding: 0; }
+  .udhaar-settings .form-check-input {
+    width: 38px !important;
+    height: 21px !important;
+    cursor: pointer;
+    border-color: var(--border);
+  }
+  .udhaar-settings .form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+  }
+  .udhaar-settings .form-check-input:focus {
+    box-shadow: 0 0 0 3.5px rgba(46, 76, 219, 0.12);
+    border-color: var(--primary);
+  }
+
+  /* ---------- Buttons ---------- */
+  .udhaar-settings .btn-primary-custom,
+  .udhaar-settings button[type="submit"] {
+    background: var(--primary);
+    border: 1px solid var(--primary-dark);
+    color: #fff;
+    font-weight: 700;
+    font-size: 13.5px;
+    border-radius: var(--radius-sm);
+    padding: 10px 20px;
+    box-shadow: 0 1px 2px rgba(16,24,40,0.08);
+    transition: background 0.15s ease, transform 0.05s ease;
+  }
+  .udhaar-settings .btn-primary-custom:hover,
+  .udhaar-settings button[type="submit"]:hover {
+    background: var(--primary-dark);
+    color: #fff;
+  }
+  .udhaar-settings .btn-primary-custom:active,
+  .udhaar-settings button[type="submit"]:active { transform: translateY(1px); }
+
+  .udhaar-settings .btn-outline-success {
+    border: 1.5px solid var(--success);
+    color: var(--success-dark);
+    background: var(--success-soft);
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    padding: 9.5px 16px;
+  }
+  .udhaar-settings .btn-outline-success:hover {
+    background: var(--success);
+    color: #fff;
+  }
+
+  .udhaar-settings .btn-outline-secondary {
+    border: 1.5px solid var(--border);
+    color: var(--ink-soft);
+    background: var(--surface);
+    border-radius: var(--radius-sm);
+  }
+
+  .udhaar-settings .btn-light.btn-sm {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--ink-soft);
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+  }
+  .udhaar-settings .btn-success.btn-sm {
+    background: var(--success);
+    border: 1px solid var(--success-dark);
+    color: #fff;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+  }
+  .udhaar-settings .btn-sm.btn-primary-custom {
+    padding: 7px 14px;
+    font-size: 12.5px;
+  }
+
+  .us-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 20px;
+    margin-top: 4px;
+    border-top: 1px solid var(--border-soft);
+    flex-wrap: wrap;
+  }
+
+  /* ---------- AI tab specific ---------- */
+  .us-ai-note {
+    display: flex;
+    gap: 12px;
+    background: var(--primary-soft);
+    border: 1px solid rgba(46, 76, 219, 0.16);
+    border-radius: var(--radius-md);
+    padding: 14px 16px;
+    margin-bottom: 22px;
+  }
+  .us-ai-note .us-icon-chip {
+    background: var(--primary);
+    color: #fff;
+    width: 32px; height: 32px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .us-ai-note p { margin: 0; font-size: 13px; color: var(--ink-soft); line-height: 1.55; }
+
+  #testResultBox { font-size: 13.5px; font-weight: 600; }
+  #testResultBox.d-none { display: none; }
+
+  /* ---------- Recovery / toggles list ---------- */
+  .us-toggle-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    margin-bottom: 12px;
+  }
+  .us-toggle-card .us-toggle-copy { display: flex; flex-direction: column; gap: 2px; }
+  .us-toggle-card .us-toggle-title { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .us-toggle-card .us-toggle-sub { font-size: 12px; color: var(--muted); }
+
+  /* ---------- Late fee callout ---------- */
+  .us-callout-warning {
+    display: flex;
+    gap: 12px;
+    background: var(--warning-soft);
+    border: 1px solid rgba(220, 123, 12, 0.22);
+    border-radius: var(--radius-md);
+    padding: 13px 16px;
+    margin-bottom: 20px;
+  }
+  .us-callout-warning p { margin: 0; font-size: 13px; color: #7A4A08; line-height: 1.5; }
+
+  /* ---------- Templates ---------- */
+  .us-templates-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .us-template-new {
+    border: 1.5px dashed rgba(46, 76, 219, 0.35);
+    border-radius: var(--radius-lg);
+    background: var(--primary-soft);
+    padding: 20px;
+    margin: 18px 0 26px;
+  }
+  .us-template-new h6 {
+    font-size: 14px; font-weight: 800; margin: 0 0 14px;
+  }
+  .us-template-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 640px) { .us-template-grid { grid-template-columns: 1fr; } }
+
+  .us-template-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    padding: 16px 16px 14px;
+    height: 100%;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  .us-template-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-1px);
+  }
+  .us-template-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .us-template-title { font-weight: 800; font-size: 14.5px; color: var(--ink); }
+  .us-template-content { font-size: 13px; color: var(--ink-soft); line-height: 1.6; margin: 0; }
+
+  .us-tag {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--info-soft);
+    color: var(--info);
+    border: 1px solid rgba(14, 124, 134, 0.2);
+    white-space: nowrap;
+  }
+
+  .us-empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 48px 20px;
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--muted);
+  }
+  .us-empty-state .us-empty-icon {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+    font-size: 20px;
+    color: var(--muted);
+  }
+  .us-empty-state strong { display: block; color: var(--ink); font-size: 14.5px; margin-bottom: 4px; }
+  .us-empty-state span { font-size: 13px; }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+
+<div class="udhaar-settings">
+
+  <div class="us-header">
+    <span class="us-eyebrow"><i class="bi bi-gear-fill"></i> Configuration</span>
+    <h1 class="us-title">Business &amp; Recovery Settings</h1>
+    <p class="us-subtitle">Configure payment methods, WhatsApp API keys, AI provider keys, automated collection triggers, and late fee rules — everything that powers how KarobarPlus works for your business.</p>
+  </div>
+
+  <div class="us-grid">
+
+    <!-- Vertical Settings Nav -->
+    <div class="us-nav" id="settingsNav" role="tablist">
+      <a class="us-nav-item active" data-tab="business" data-bs-toggle="list" href="#tab-business">
+        <span class="us-icon-chip"><i class="bi bi-building"></i></span> Business Profile
+      </a>
+      <a class="us-nav-item" data-tab="regional" data-bs-toggle="list" href="#tab-regional">
+        <span class="us-icon-chip"><i class="bi bi-globe"></i></span> Regional &amp; Country Settings
+      </a>
+      <a class="us-nav-item" data-tab="payment" data-bs-toggle="list" href="#tab-payment">
+        <span class="us-icon-chip"><i class="bi bi-qr-code"></i></span> UPI &amp; Payment Details
+      </a>
+      <a class="us-nav-item" data-tab="whatsapp" data-bs-toggle="list" href="#tab-whatsapp">
+        <span class="us-icon-chip"><i class="bi bi-whatsapp"></i></span> WhatsApp Integration
+      </a>
+      <a class="us-nav-item" data-tab="ai" data-bs-toggle="list" href="#tab-ai">
+        <span class="us-icon-chip"><i class="bi bi-cpu"></i></span> AI API Setup
+      </a>
+      <a class="us-nav-item" data-tab="recovery" data-bs-toggle="list" href="#tab-recovery">
+        <span class="us-icon-chip"><i class="bi bi-robot"></i></span> Automated Recovery Rules
+      </a>
+      <a class="us-nav-item" data-tab="latefees" data-bs-toggle="list" href="#tab-latefees">
+        <span class="us-icon-chip"><i class="bi bi-percent"></i></span> Late Fees &amp; Interest
+      </a>
+      <a class="us-nav-item" data-tab="templates" data-bs-toggle="list" href="#tab-templates">
+        <span class="us-icon-chip"><i class="bi bi-chat-quote"></i></span> WhatsApp Templates
+      </a>
+    </div>
+
+    <div class="tab-content">
+
+      <!-- 1. Business Profile Tab -->
+      <div class="tab-pane fade show active" id="tab-business">
+        <div class="us-card">
+          <div class="us-card-head">
+            <div>
+              <h5>Business information</h5>
+              <p class="us-card-desc">Shown on receipts, reminders, and anywhere your customers see your business.</p>
+            </div>
+          </div>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="business_info">
+            <div class="us-field-row">
+              <div class="us-field">
+                <label class="us-label">Business name</label>
+                {{ b_form.name }}
+              </div>
+              <div class="us-field">
+                <label class="us-label">Owner name</label>
+                {{ b_form.owner_name }}
+              </div>
+            </div>
+            <div class="us-field-row">
+              <div class="us-field">
+                <label class="us-label">Business phone</label>
+                {{ b_form.phone }}
+              </div>
+              <div class="us-field">
+                <label class="us-label">Business email</label>
+                {{ b_form.email }}
+              </div>
+            </div>
+            <div class="us-field">
+              <label class="us-label">Address</label>
+              {{ b_form.address }}
+            </div>
+            <div class="us-field">
+              <label class="us-label">GSTIN number</label>
+              {{ b_form.gstin }}
+            </div>
+            <div class="us-form-footer">
+              <button type="submit" class="btn-primary-custom">Save business info</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Regional & Country Settings Tab -->
+      <div class="tab-pane fade" id="tab-regional">
+        <div class="us-card">
+          <div class="us-card-head">
+            <div>
+              <h5>Regional &amp; Country Localization Settings</h5>
+              <p class="us-card-desc">Configure account-level country defaults including currency symbol, date formatting, time zone, tax labels, and number grouping.</p>
+            </div>
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="regional_settings">
+
+            <div class="p-3 bg-light rounded-3 border mb-3">
+              <label class="us-label fw-bold text-dark mb-1"><i class="bi bi-globe me-1"></i> Business Country *</label>
+              {{ reg_form.country }}
+              <small class="text-muted d-block mt-1">Selecting your country automatically populates default currency, date, timezone, tax, and phone settings below.</small>
+            </div>
+
+            <div class="us-field-row">
+              <div class="us-field">
+                <label class="us-label">Currency Code *</label>
+                {{ reg_form.currency }}
+              </div>
+              <div class="us-field">
+                <label class="us-label">Currency Symbol *</label>
+                {{ reg_form.currency_symbol }}
+              </div>
+            </div>
+
+            <div class="us-field-row">
+              <div class="us-field">
+                <label class="us-label">Date Format *</label>
+                {{ reg_form.date_format }}
+              </div>
+              <div class="us-field">
+                <label class="us-label">Timezone *</label>
+                {{ reg_form.timezone }}
+              </div>
+            </div>
+
+            <div class="us-field-row">
+              <div class="us-field">
+                <label class="us-label">Phone Country Code *</label>
+                {{ reg_form.phone_code }}
+              </div>
+              <div class="us-field">
+                <label class="us-label">Tax Terminology *</label>
+                {{ reg_form.tax_label }}
+              </div>
+            </div>
+
+            <div class="us-field">
+              <label class="us-label">Number Formatting Style *</label>
+              {{ reg_form.number_format }}
+            </div>
+
+            <div class="us-form-footer">
+              <button type="submit" class="btn-primary-custom">Save Regional Settings</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 2. UPI & Payment Gateway Tab -->
+      <div class="tab-pane fade" id="tab-payment">
+        <div class="us-card">
+          <div class="us-card-head">
+            <div>
+              <h5>UPI &amp; business payment link</h5>
+              <p class="us-card-desc">Used to generate payment links and QR codes sent to customers via WhatsApp.</p>
+            </div>
+          </div>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="payment_settings">
+            <div class="us-field-row">
+              <div class="us-field">
+                <label class="us-label">UPI VPA ID *</label>
+                {{ p_form.upi_id }}
+              </div>
+              <div class="us-field">
+                <label class="us-label">Merchant / payee name</label>
+                {{ p_form.payee_name }}
+              </div>
+            </div>
+            <div class="us-field">
+              <label class="us-label">Payment gateway / payment link URL</label>
+              {{ p_form.payment_link }}
+            </div>
+            <div class="us-field">
+              <label class="us-label">Upload UPI QR code image</label>
+              {{ p_form.qr_code }}
+            </div>
+            <div class="us-form-footer">
+              <button type="submit" class="btn-primary-custom">Save payment setup</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 3. WhatsApp Integration Tab -->
+      <div class="tab-pane fade" id="tab-whatsapp">
+        <div class="us-card">
+          <div class="us-card-head">
+            <div>
+              <h5>WhatsApp Cloud API credentials</h5>
+              <p class="us-card-desc">Connects KarobarPlus to your WhatsApp Business number so reminders send automatically.</p>
+            </div>
+          </div>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="whatsapp_settings">
+            <div class="us-field">
+              <label class="us-label">Phone number ID</label>
+              {{ w_form.whatsapp_phone_number_id }}
+            </div>
+            <div class="us-field">
+              <label class="us-label">API permanent token</label>
+              {{ w_form.whatsapp_api_token }}
+            </div>
+            <div class="us-form-footer">
+              <button type="submit" class="btn-primary-custom">Save credentials</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 4. AI API Configuration Tab -->
+      <div class="tab-pane fade" id="tab-ai">
+        <div class="us-card">
+          <div class="us-card-head">
+            <div>
+              <h5>AI configuration (Google Gemini / ChatGPT)</h5>
+              <p class="us-card-desc">Connect an API key to enable AI-powered business Q&amp;A and the AI sales agent.</p>
+            </div>
+            <span class="us-badge"><span class="dot"></span> Active fallback guaranteed</span>
+          </div>
+
+          <div class="us-ai-note">
+            <span class="us-icon-chip"><i class="bi bi-info-lg"></i></span>
+            <p>If no key is set, the built-in analytics engine answers automatically — AI is an upgrade, not a requirement.</p>
+          </div>
+
+          <form method="post" id="aiSettingsForm">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="ai_settings">
+
+            <div class="us-switch-row">
+              {{ ai_form.is_ai_enabled }}
+              <label>Enable AI features</label>
+            </div>
+
+            <div class="us-field-row">
+              <div class="us-field">
+                <label class="us-label">AI provider *</label>
+                {{ ai_form.ai_provider }}
+              </div>
+              <div class="us-field">
+                <label class="us-label">Model name *</label>
+                {{ ai_form.ai_model_name }}
+                <p class="us-hint">Default: <code>gemini-1.5-flash</code> or <code>gpt-4o-mini</code></p>
+              </div>
+            </div>
+
+            <div class="us-field">
+              <label class="us-label">API key *</label>
+              <div class="input-group">
+                {{ ai_form.ai_api_key }}
+                <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('aiApiKeyInput')">
+                  <i class="bi bi-eye" id="aiApiKeyInput_icon"></i>
+                </button>
+              </div>
+              <p class="us-hint">Get a Gemini key at <code>aistudio.google.com</code> or an OpenAI key at <code>platform.openai.com</code>.</p>
+            </div>
+
+            <div class="us-field-row">
+              <div class="us-field">
+                <label class="us-label">Custom API endpoint URL (optional)</label>
+                {{ ai_form.ai_api_url }}
+              </div>
+              <div class="us-field">
+                <label class="us-label">Temperature (0.0–1.0)</label>
+                {{ ai_form.ai_temperature }}
+              </div>
+            </div>
+
+            <div class="us-form-footer">
+              <button type="submit" class="btn-primary-custom">
+                <i class="bi bi-save me-1"></i> Save AI settings
+              </button>
+              <button type="button" id="btnTestAI" class="btn-outline-success">
+                <i class="bi bi-plug-fill me-1"></i> Test connection
+              </button>
+            </div>
+
+            <div id="testResultBox" class="mt-3 d-none p-3 rounded border"></div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 5. Recovery Rules Tab -->
+      <div class="tab-pane fade" id="tab-recovery">
+        <div class="us-card">
+          <div class="us-card-head">
+            <div>
+              <h5>Automated udhaar recovery rules</h5>
+              <p class="us-card-desc">Control when and how reminders go out as balances approach and pass their due date.</p>
+            </div>
+          </div>
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="recovery_rules">
+
+            <div class="us-field">
+              <label class="us-label">Send reminder before due date (days)</label>
+              {{ r_form.reminder_before_due_days }}
+            </div>
+
+            <div class="us-toggle-card">
+              <div class="us-toggle-copy">
+                <span class="us-toggle-title">Reminder on due date</span>
+                <span class="us-toggle-sub">Sends an automated WhatsApp reminder on the exact due date.</span>
+              </div>
+              {{ r_form.reminder_on_due_date }}
+            </div>
+
+            <div class="us-field">
+              <label class="us-label">Follow-up frequency for overdue accounts (days)</label>
+              {{ r_form.followup_frequency_days }}
+            </div>
+
+            <div class="us-toggle-card">
+              <div class="us-toggle-copy">
+                <span class="us-toggle-title">Auto-send payment link</span>
+                <span class="us-toggle-sub">Replies automatically with your UPI link when a customer says "UPI bhejo".</span>
+              </div>
+              {{ r_form.auto_send_payment_link }}
+            </div>
+
+            <div class="us-toggle-card">
+              <div class="us-toggle-copy">
+                <span class="us-toggle-title">Stop reminders on payment</span>
+                <span class="us-toggle-sub">Automatically stops reminders once a payment is verified.</span>
+              </div>
+              {{ r_form.stop_reminders_on_payment }}
+            </div>
+
+            <div class="us-form-footer">
+              <button type="submit" class="btn-primary-custom">Save recovery rules</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 6. Late Fees & Interest Tab -->
+      <div class="tab-pane fade" id="tab-latefees">
+        <div class="us-card">
+          <div class="us-card-head">
+            <div>
+              <h5>Late fees &amp; overdue interest</h5>
+              <p class="us-card-desc">Automated penalty charges for overdue credit accounts, off by default.</p>
+            </div>
+          </div>
+
+          <div class="us-callout-warning">
+            <i class="bi bi-exclamation-triangle-fill" style="color:#DC7B0C;"></i>
+            <p>Late fees are disabled by default. Review your grace period and rate carefully before turning this on — customers will see the added charge.</p>
+          </div>
+
+          <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="late_fees">
+
+            <div class="us-toggle-card">
+              <div class="us-toggle-copy">
+                <span class="us-toggle-title">Enable late fees / interest charges</span>
+                <span class="us-toggle-sub">Applies charges automatically once an account passes its grace period.</span>
+              </div>
+              {{ l_form.enable_late_fees }}
+            </div>
+
+            <div class="us-field-row">
+              <div class="us-field">
+                <label class="us-label">Late fee calculation type</label>
+                {{ l_form.late_fee_type }}
+              </div>
+              <div class="us-field">
+                <label class="us-label">Late fee amount / rate</label>
+                {{ l_form.late_fee_value }}
+              </div>
+            </div>
+            <div class="us-field-row">
+              <div class="us-field">
+                <label class="us-label">Grace period (days after due date)</label>
+                {{ l_form.late_fee_grace_days }}
+              </div>
+              <div class="us-field">
+                <label class="us-label">Charge frequency</label>
+                {{ l_form.late_fee_frequency }}
+              </div>
+            </div>
+
+            <div class="us-form-footer">
+              <button type="submit" class="btn-primary-custom">Save late fee rules</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 7. WhatsApp Templates Tab -->
+      <div class="tab-pane fade" id="tab-templates">
+        <div class="us-card">
+          <div class="us-card-head" style="width:100%;">
+            <div class="us-templates-head" style="width:100%;">
+              <div>
+                <h5>WhatsApp message templates</h5>
+                <p class="us-card-desc">Reusable messages for sales blasts, reminders, and payment confirmations.</p>
+              </div>
+              <button class="btn-primary-custom btn-sm" data-bs-toggle="collapse" data-bs-target="#newTemplateBox">
+                <i class="bi bi-plus-circle me-1"></i> Add template
+              </button>
+            </div>
+          </div>
+
+          <!-- New Template Form (Collapsible) -->
+          <div class="collapse" id="newTemplateBox">
+            <div class="us-template-new">
+              <h6>Create a new template</h6>
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="save_template">
+                <div class="us-field-row">
+                  <div class="us-field">
+                    <label class="us-label">Template title *</label>
+                    <input type="text" name="title" placeholder="e.g. Sales promotion blast" required>
+                  </div>
+                  <div class="us-field">
+                    <label class="us-label">Trigger / category *</label>
+                    <select name="trigger_type" required>
+                      <option value="Sales Blast">Sales Blast</option>
+                      <option value="Due Reminder">Due Reminder</option>
+                      <option value="Overdue Reminder">Overdue Reminder</option>
+                      <option value="Promise Confirmation">Promise Confirmation</option>
+                      <option value="Payment Link">Payment Link</option>
+                      <option value="Payment Received">Payment Received</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="us-field">
+                  <label class="us-label">Template message content *</label>
+                  <textarea name="content" rows="3" placeholder="Namaste {name}! {product} is available at price ₹{price}. Reply to order!" required></textarea>
+                  <p class="us-hint">Placeholders: <code>{name}</code>, <code>{product}</code>, <code>{price}</code></p>
+                </div>
+                <div class="us-form-footer" style="border-top:none; padding-top:4px; justify-content:flex-end;">
+                  <button type="button" class="btn-light btn-sm" data-bs-toggle="collapse" data-bs-target="#newTemplateBox">Cancel</button>
+                  <button type="submit" class="btn-success btn-sm"><i class="bi bi-check-circle me-1"></i> Save template</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="us-template-grid">
+            {% for tpl in templates %}
+            <div class="us-template-card">
+              <div class="us-template-card-top">
+                <span class="us-template-title">{{ tpl.title }}</span>
+                <span class="us-tag">{{ tpl.trigger_type }}</span>
+              </div>
+              <p class="us-template-content">{{ tpl.content }}</p>
+            </div>
+            {% empty %}
+            <div class="us-empty-state">
+              <div class="us-empty-icon"><i class="bi bi-chat-quote"></i></div>
+              <strong>No templates yet</strong>
+              <span>Create your first WhatsApp template to speed up sales blasts and reminders.</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePasswordVisibility(id) {
+    const input = document.getElementById(id);
+    const icon = document.getElementById(id + '_icon');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.replace('bi-eye', 'bi-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.replace('bi-eye-slash', 'bi-eye');
+    }
+}
+
+document.getElementById('btnTestAI')?.addEventListener('click', function() {
+    const box = document.getElementById('testResultBox');
+    box.classList.remove('d-none', 'alert-success', 'alert-danger', 'bg-light');
+    box.innerHTML = '<div class="spinner-border spinner-border-sm text-primary me-2"></div> Testing AI Connection...';
+
+    const formData = new FormData(document.getElementById('aiSettingsForm'));
+    fetch("{% url 'settings_app:test_ai' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            box.style.background = 'var(--success-soft, #ECFDF3)';
+            box.style.color = 'var(--success-dark, #067647)';
+            box.style.border = '1px solid rgba(18, 183, 106, 0.3)';
+            box.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> ' + data.message;
+        } else {
+            box.style.background = 'var(--danger-soft, #FEF3F2)';
+            box.style.color = '#B42318';
+            box.style.border = '1px solid rgba(224, 54, 43, 0.3)';
+            box.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i> ' + data.message;
+        }
+    })
+    .catch(err => {
+        box.style.background = 'var(--danger-soft, #FEF3F2)';
+        box.style.color = '#B42318';
+        box.style.border = '1px solid rgba(224, 54, 43, 0.3)';
+        box.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i> Error: ' + err.message;
+    });
+});
+
+// Keep Bootstrap's list-group "active" tab-switching for the redesigned nav items
+document.querySelectorAll('#settingsNav .us-nav-item').forEach(function (item) {
+    item.addEventListener('click', function () {
+        document.querySelectorAll('#settingsNav .us-nav-item').forEach(el => el.classList.remove('active'));
+        this.classList.add('active');
+    });
+});
+
+document.getElementById('countrySelect')?.addEventListener('change', function() {
+    const profiles = {
+        'IN': { currency: 'INR', symbol: '₹', date_format: 'DD/MM/YYYY', timezone: 'Asia/Kolkata', phone_code: '+91', tax_label: 'GST', number_format: 'indian' },
+        'US': { currency: 'USD', symbol: '$', date_format: 'MM/DD/YYYY', timezone: 'America/New_York', phone_code: '+1', tax_label: 'Sales Tax', number_format: 'standard' },
+        'GB': { currency: 'GBP', symbol: '£', date_format: 'DD/MM/YYYY', timezone: 'Europe/London', phone_code: '+44', tax_label: 'VAT', number_format: 'standard' },
+        'EU': { currency: 'EUR', symbol: '€', date_format: 'DD/MM/YYYY', timezone: 'Europe/Paris', phone_code: '+33', tax_label: 'VAT', number_format: 'standard' },
+        'CA': { currency: 'CAD', symbol: '$', date_format: 'YYYY-MM-DD', timezone: 'America/Toronto', phone_code: '+1', tax_label: 'GST/HST', number_format: 'standard' },
+        'AU': { currency: 'AUD', symbol: '$', date_format: 'DD/MM/YYYY', timezone: 'Australia/Sydney', phone_code: '+61', tax_label: 'GST', number_format: 'standard' },
+        'AE': { currency: 'AED', symbol: 'AED', date_format: 'DD/MM/YYYY', timezone: 'Asia/Dubai', phone_code: '+971', tax_label: 'VAT', number_format: 'standard' },
+        'SG': { currency: 'SGD', symbol: '$', date_format: 'DD/MM/YYYY', timezone: 'Asia/Singapore', phone_code: '+65', tax_label: 'GST', number_format: 'standard' },
+        'JP': { currency: 'JPY', symbol: '¥', date_format: 'YYYY/MM/DD', timezone: 'Asia/Tokyo', phone_code: '+81', tax_label: 'Consumption Tax', number_format: 'standard' },
+        'DE': { currency: 'EUR', symbol: '€', date_format: 'DD.MM.YYYY', timezone: 'Europe/Berlin', phone_code: '+49', tax_label: 'MwSt', number_format: 'standard' },
+        'SA': { currency: 'SAR', symbol: 'SR', date_format: 'DD/MM/YYYY', timezone: 'Asia/Riyadh', phone_code: '+966', tax_label: 'VAT', number_format: 'standard' }
+    };
+    const p = profiles[this.value];
+    if (p) {
+        document.querySelector('input[name="currency"]').value = p.currency;
+        document.querySelector('input[name="currency_symbol"]').value = p.symbol;
+        document.querySelector('input[name="date_format"]').value = p.date_format;
+        document.querySelector('input[name="timezone"]').value = p.timezone;
+        document.querySelector('input[name="phone_code"]').value = p.phone_code;
+        document.querySelector('input[name="tax_label"]').value = p.tax_label;
+        document.querySelector('select[name="number_format"]').value = p.number_format;
+    }
+});
+</script>
+{% endblock %}

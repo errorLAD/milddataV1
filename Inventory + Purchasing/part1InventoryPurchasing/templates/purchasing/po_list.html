@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Purchase Orders — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Purchase Orders</h1>
+    <p class="page-subtitle">Track restock orders, supplier approvals, and receiving workflows.</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'po_create' %}" class="btn btn-primary">+ New Purchase Order</a>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>PO Number</th>
+          <th>Supplier</th>
+          <th>Order Date</th>
+          <th>Expected Delivery</th>
+          <th>Warehouse</th>
+          <th>Total Amount</th>
+          <th>Status</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for po in orders %}
+        <tr>
+          <td><a href="{% url 'po_detail' po.id %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">{{ po.po_number }}</a></td>
+          <td style="font-weight: 600;">{{ po.supplier.company_name }}</td>
+          <td>{{ po.order_date|date_fmt:org }}</td>
+          <td>{{ po.expected_delivery|date_fmt:org|default:'—' }}</td>
+          <td><span class="badge badge-neutral">{{ po.warehouse.code }}</span></td>
+          <td class="money" style="font-weight: 700;">{{ po.total_amount|money:org }}</td>
+          <td>
+            {% if po.status == 'COMPLETED' %}
+              <span class="badge badge-success"><span class="badge-dot-mark"></span> Completed</span>
+            {% elif po.status == 'PARTIALLY_RECEIVED' %}
+              <span class="badge badge-warning"><span class="badge-dot-mark"></span> Partially Received</span>
+            {% elif po.status == 'APPROVED' %}
+              <span class="badge badge-info"><span class="badge-dot-mark"></span> Approved</span>
+            {% else %}
+              <span class="badge badge-neutral">{{ po.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td style="text-align: right;">
+            <a href="{% url 'po_detail' po.id %}" class="btn btn-secondary btn-sm">View</a>
+            {% if po.status == 'APPROVED' or po.status == 'PARTIALLY_RECEIVED' %}
+              <a href="{% url 'goods_receipt' po.id %}" class="btn btn-primary btn-sm">Receive Goods</a>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 2rem;">No purchase orders found. <a href="{% url 'po_create' %}">Create first PO</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

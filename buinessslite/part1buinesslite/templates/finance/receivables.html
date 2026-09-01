@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block title %}Receivables - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Accounts Receivable</h1>
+        <div class="page-subtitle">Track customer outstanding balances and aging schedule</div>
+    </div>
+</div>
+
+<div class="metrics-grid" style="grid-template-columns: repeat(5, 1fr);">
+    <div class="metric-card">
+        <div class="metric-label">Current</div>
+        <div class="metric-number">{{ currency_symbol }}{{ current_amount|floatformat:2 }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">1–30 Days</div>
+        <div class="metric-number" style="color: var(--warning);">{{ currency_symbol }}{{ days_1_30|floatformat:2 }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">31–60 Days</div>
+        <div class="metric-number" style="color: var(--warning);">{{ currency_symbol }}{{ days_31_60|floatformat:2 }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">61–90 Days</div>
+        <div class="metric-number" style="color: var(--danger);">{{ currency_symbol }}{{ days_61_90|floatformat:2 }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">90+ Days</div>
+        <div class="metric-number" style="color: var(--danger);">{{ currency_symbol }}{{ days_90_plus|floatformat:2 }}</div>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Aging Unpaid Invoices</div>
+        <div style="font-weight: 700; font-size: 0.8rem; color: var(--danger);">Total Outstanding: {{ currency_symbol }}{{ total_outstanding|floatformat:2 }}</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Invoice Number</th>
+                    <th>Customer</th>
+                    <th>Due Date</th>
+                    <th>Aging Bucket</th>
+                    <th>Days Overdue</th>
+                    <th>Unpaid Balance</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in aging_invoices %}
+                <tr>
+                    <td style="font-weight: 650;">
+                        <a href="{% url 'invoice_detail' item.invoice.id %}" style="color: var(--text-primary); text-decoration: none;">{{ item.invoice.invoice_number }}</a>
+                    </td>
+                    <td>{{ item.invoice.customer.company_name }}</td>
+                    <td>{{ item.invoice.due_date }}</td>
+                    <td><span class="badge-pill {% if item.days_overdue > 30 %}badge-danger{% elif item.days_overdue > 0 %}badge-warning{% else %}badge-info{% endif %}">{{ item.bucket }}</span></td>
+                    <td class="num">{{ item.days_overdue }} days</td>
+                    <td class="num" style="font-weight: 700; color: var(--danger);">{{ currency_symbol }}{{ item.remaining|floatformat:2 }}</td>
+                    <td>
+                        <a href="{% url 'record_payment' item.invoice.id %}" class="btn-saas btn-primary" style="padding: 0.2rem 0.4rem; font-size: 0.65rem;">Record Payment</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-tertiary);">🎉 No outstanding receivables. All invoices paid!</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

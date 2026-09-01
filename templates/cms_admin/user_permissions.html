@@ -1,0 +1,73 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}User Permissions &amp; Roles — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">User Roles &amp; Administrative Permissions</h1>
+        <p class="page-subtitle">Assign role-based access control (Super Admin, Administrator, Content Manager, Product Manager, Support, Marketing).</p>
+    </div>
+</div>
+
+<div class="cms-table-card" style="margin-bottom: 1.5rem;">
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>User Email</th>
+                    <th>Role</th>
+                    <th>Can Publish</th>
+                    <th>Can Delete</th>
+                    <th>Manage Settings</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in roles %}
+                <tr>
+                    <td><strong>{{ r.user.email }}</strong></td>
+                    <td><span class="badge badge-info">{{ r.get_role_display }}</span></td>
+                    <td>{% if r.can_publish %}✅ Yes{% else %}❌ No{% endif %}</td>
+                    <td>{% if r.can_delete %}✅ Yes{% else %}❌ No{% endif %}</td>
+                    <td>{% if r.can_manage_settings %}✅ Yes{% else %}❌ No{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No explicit role mappings configured yet. Superusers and staff have full admin access by default.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="cms-form-card">
+    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem;">+ Assign Role to Staff User</h3>
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">User Account</label>
+                {{ form.user }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Role</label>
+                {{ form.role }}
+            </div>
+        </div>
+        <div style="display: flex; gap: 1.5rem; margin-top: 1rem;">
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.can_publish }}
+                <label class="form-label" style="margin: 0;">Can Publish Content</label>
+            </div>
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.can_delete }}
+                <label class="form-label" style="margin: 0;">Can Delete Content</label>
+            </div>
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.can_manage_settings }}
+                <label class="form-label" style="margin: 0;">Can Manage Settings</label>
+            </div>
+        </div>
+        <button type="submit" class="btn-cms btn-primary" style="margin-top: 1rem;">Save User Role</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}AI Sales Agent Dashboard | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-robot text-primary me-2"></i> AI Sales Agent Dashboard</h3>
+        <p class="text-muted mb-0 fs-7">Autonomous product inquiry handling, draft order creation, and WhatsApp blast campaigns.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'sales_agent:templates_list' %}" class="btn btn-outline-info btn-sm d-flex align-items-center gap-1 fs-7">
+            <i class="bi bi-chat-quote"></i> Message Templates
+        </a>
+        <a href="{% url 'sales_agent:import_blast' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1 fs-7">
+            <i class="bi bi-file-earmark-pdf"></i> PDF Import & Blast
+        </a>
+        <a href="{% url 'sales_agent:send_blast' %}" class="btn btn-primary-custom btn-sm d-flex align-items-center gap-1 fs-7">
+            <i class="bi bi-send-fill"></i> New Sales Blast
+        </a>
+        <a href="{% url 'sales_agent:settings' %}" class="btn btn-light border btn-sm d-flex align-items-center gap-1 fs-7">
+            <i class="bi bi-gear"></i> Agent Settings
+        </a>
+    </div>
+</div>
+
+<!-- AI Status Banner -->
+<div class="alert {% if settings.is_enabled %}alert-success{% else %}alert-secondary{% endif %} d-flex align-items-center justify-content-between border-0 shadow-sm rounded-3 mb-4">
+    <div class="d-flex align-items-center gap-2">
+        <div class="spinner-grow spinner-grow-sm {% if settings.is_enabled %}text-success{% else %}text-secondary{% endif %}" role="status"></div>
+        <div>
+            <strong class="text-dark">AI Sales Agent Status:</strong> 
+            {% if settings.is_enabled %}
+            <span class="badge bg-success">ACTIVE & RESPONDING</span>
+            <small class="text-muted ms-2">(Auto-Draft Orders: {% if settings.auto_draft_orders %}Enabled{% else %}Disabled (Q&A Only){% endif %})</small>
+            {% else %}
+            <span class="badge bg-secondary">PAUSED</span>
+            <small class="text-muted ms-2">(AI is currently disabled for this store)</small>
+            {% endif %}
+        </div>
+    </div>
+    <a href="{% url 'sales_agent:settings' %}" class="btn btn-sm btn-light border fs-8">Configure</a>
+</div>
+
+<!-- Metric Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon primary mb-2"><i class="bi bi-chat-left-dots"></i></div>
+            <div class="stat-label">Product Inquiries</div>
+            <div class="stat-value">{{ total_inquiries }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon warning mb-2"><i class="bi bi-hourglass-split"></i></div>
+            <div class="stat-label">Pending Owner Approval</div>
+            <div class="stat-value text-warning">{{ pending_drafts|length }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon success mb-2"><i class="bi bi-bag-check-fill"></i></div>
+            <div class="stat-label">Today's AI Sales ({{ today_sales_count }})</div>
+            <div class="stat-value text-success">{{ today_sales_value|inr }}</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon info mb-2"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="stat-label">Lead Conversion Rate</div>
+            <div class="stat-value text-primary">{{ conversion_percent }}%</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Pending Owner Confirmation Draft Orders -->
+    <div class="col-12 col-lg-7">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-light d-flex align-items-center justify-content-between py-3">
+                <h6 class="fw-bold text-dark mb-0">
+                    <i class="bi bi-clock-history text-warning me-1"></i> Draft Orders Awaiting Owner Approval
+                </h6>
+                <span class="badge bg-warning text-dark rounded-pill">{{ pending_drafts|length }} Pending</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Product / Items</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for draft in pending_drafts %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">{{ draft.customer.name }}</div>
+                                    <small class="text-muted fs-8"><i class="bi bi-telephone"></i> {{ draft.customer.phone }}</small>
+                                </td>
+                                <td>
+                                    <span class="fw-semibold text-primary">{{ draft.product.name|default:"Custom Item" }}</span>
+                                    <small class="d-block text-muted fs-8">Unit: ₹{{ draft.unit_price|floatformat:2 }}</small>
+                                </td>
+                                <td class="fw-bold fs-7">{{ draft.quantity }}</td>
+                                <td class="fw-bold text-success fs-7">{{ draft.total_amount|inr }}</td>
+                                <td class="text-end">
+                                    <div class="d-flex align-items-center justify-content-end gap-1">
+                                        <form method="post" action="{% url 'sales_agent:approve_draft' draft.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-success py-1 px-2.5 fs-8" title="Approve & Finalize Sale">
+                                                <i class="bi bi-check-circle me-1"></i> Approve
+                                            </button>
+                                        </form>
+                                        <form method="post" action="{% url 'sales_agent:reject_draft' draft.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2 fs-8" title="Reject Draft Order">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="bi bi-check2-all text-success fs-2 d-block mb-1"></i>
+                                    <p class="mb-0 fs-7">No pending draft orders awaiting approval.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Live AI Sales Conversations -->
+    <div class="col-12 col-lg-5">
+        <div class="card card-custom h-100">
+            <div class="card-header bg-light d-flex align-items-center justify-content-between py-3">
+                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-whatsapp text-success me-1"></i> Live Sales Conversations</h6>
+                <a href="{% url 'whatsapp:inbox' %}" class="fs-8 text-primary text-decoration-none">Open Inbox</a>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for conv in sales_conversations %}
+                {% with last_msg=conv.messages.last %}
+                <a href="{% url 'whatsapp:inbox' %}?customer_id={{ conv.customer.pk }}" class="list-group-item list-group-item-action py-3 px-3 border-bottom">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="fw-bold text-dark fs-7">{{ conv.customer.name }}</span>
+                        <small class="text-muted fs-8">{{ conv.last_message_at|timesince }} ago</small>
+                    </div>
+                    <div class="text-muted fs-8 text-truncate mb-1">
+                        {% if last_msg %}
+                            <strong>[{{ last_msg.sender|title }}]:</strong> {{ last_msg.message_text|truncatechars:45 }}
+                        {% else %}
+                            No messages yet.
+                        {% endif %}
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between">
+                        {% if conv.is_human_takeover %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-8">
+                            <i class="bi bi-person-fill me-1"></i> Awaiting Owner
+                        </span>
+                        {% else %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle fs-8">
+                            <i class="bi bi-robot me-1"></i> AI Handling
+                        </span>
+                        {% endif %}
+                        <span class="fs-8 text-primary">View Chat <i class="bi bi-arrow-right"></i></span>
+                    </div>
+                </a>
+                {% endwith %}
+                {% empty %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-chat-left-dots fs-1 d-block mb-2 opacity-50"></i>
+                    <p class="fs-7 mb-0">No active sales conversations yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

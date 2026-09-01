@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Maintenance | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Maintenance Ticketing System</h1>
+    <p class="kp-page-subtitle">Track tenant repair issues, vendor assignments, and materials + labor costs.</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <a href="?view=kanban" class="kp-btn {% if view_type == 'kanban' %}kp-btn-primary{% else %}kp-btn-secondary{% endif %}">
+      <i class="bi bi-kanban"></i> Kanban View
+    </a>
+    <a href="?view=table" class="kp-btn {% if view_type == 'table' %}kp-btn-primary{% else %}kp-btn-secondary{% endif %}">
+      <i class="bi bi-table"></i> Table View
+    </a>
+    <a href="{% url 'ticket_create' %}" class="kp-btn kp-btn-primary ms-2">
+      <i class="bi bi-plus-lg"></i> Create Ticket
+    </a>
+  </div>
+</div>
+
+{% if view_type == 'kanban' %}
+<!-- Kanban Board -->
+<div class="row g-3">
+  <!-- New / Unassigned Column -->
+  <div class="col-md-4">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header bg-light">
+        <h3 class="kp-panel-title text-primary"><i class="bi bi-asterisk me-1"></i> New Requests</h3>
+        <span class="kp-status-badge kp-status-info">{{ new_tickets.count }}</span>
+      </div>
+      <div class="p-2 d-grid gap-2" style="max-height: 600px; overflow-y: auto;">
+        {% for t in new_tickets %}
+        <div class="kp-card p-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="kp-status-badge {% if t.priority == 'EMERGENCY' or t.priority == 'HIGH' %}kp-status-danger{% else %}kp-status-info{% endif %}">
+              {{ t.get_priority_display }}
+            </span>
+            <span class="text-muted fs-8">#{{ t.id }}</span>
+          </div>
+          <h6 class="fw-bold text-dark mb-1 fs-7">
+            <a href="{% url 'ticket_detail' pk=t.id %}" class="text-dark text-decoration-none hover-underline">{{ t.title }}</a>
+          </h6>
+          <div class="text-secondary fs-8"><i class="bi bi-building me-1"></i> {{ t.property.name }} — Unit {{ t.unit.unit_number }}</div>
+          <div class="text-muted fs-8 mt-1"><i class="bi bi-person me-1"></i> {{ t.tenant.get_full_name }}</div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted fs-8">{{ t.created_at|date:"M d, H:i" }}</span>
+            <a href="{% url 'ticket_detail' pk=t.id %}" class="kp-btn kp-btn-secondary py-0.5 px-2 fs-8">Manage</a>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-muted p-4 fs-7">No new requests.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- In Progress Column -->
+  <div class="col-md-4">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header bg-light">
+        <h3 class="kp-panel-title text-warning"><i class="bi bi-gear-fill me-1"></i> In Progress / Assigned</h3>
+        <span class="kp-status-badge kp-status-warning">{{ in_progress_tickets.count }}</span>
+      </div>
+      <div class="p-2 d-grid gap-2" style="max-height: 600px; overflow-y: auto;">
+        {% for t in in_progress_tickets %}
+        <div class="kp-card p-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="kp-status-badge kp-status-warning">{{ t.get_status_display }}</span>
+            <span class="text-muted fs-8">#{{ t.id }}</span>
+          </div>
+          <h6 class="fw-bold text-dark mb-1 fs-7">
+            <a href="{% url 'ticket_detail' pk=t.id %}" class="text-dark text-decoration-none hover-underline">{{ t.title }}</a>
+          </h6>
+          <div class="text-secondary fs-8"><i class="bi bi-building me-1"></i> {{ t.property.name }} — Unit {{ t.unit.unit_number }}</div>
+          <div class="text-muted fs-8 mt-1">
+            {% if t.assigned_vendor %}
+            <i class="bi bi-truck me-1"></i> Vendor: {{ t.assigned_vendor.company }}
+            {% elif t.assigned_staff %}
+            <i class="bi bi-person-badge me-1"></i> Tech: {{ t.assigned_staff.get_full_name }}
+            {% endif %}
+          </div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="tabular-nums fw-semibold text-primary fs-8">${{ t.actual_total_cost|intcomma }}</span>
+            <a href="{% url 'ticket_detail' pk=t.id %}" class="kp-btn kp-btn-secondary py-0.5 px-2 fs-8">Manage</a>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-muted p-4 fs-7">No active work orders.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Completed Column -->
+  <div class="col-md-4">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header bg-light">
+        <h3 class="kp-panel-title text-success"><i class="bi bi-check-circle-fill me-1"></i> Completed</h3>
+        <span class="kp-status-badge kp-status-success">{{ completed_tickets.count }}</span>
+      </div>
+      <div class="p-2 d-grid gap-2" style="max-height: 600px; overflow-y: auto;">
+        {% for t in completed_tickets %}
+        <div class="kp-card p-3">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="kp-status-badge kp-status-success">Completed</span>
+            <span class="text-muted fs-8">#{{ t.id }}</span>
+          </div>
+          <h6 class="fw-bold text-dark mb-1 fs-7">
+            <a href="{% url 'ticket_detail' pk=t.id %}" class="text-dark text-decoration-none hover-underline">{{ t.title }}</a>
+          </h6>
+          <div class="text-secondary fs-8"><i class="bi bi-building me-1"></i> {{ t.property.name }} — Unit {{ t.unit.unit_number }}</div>
+          <hr class="my-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="tabular-nums fw-semibold text-success fs-8">Cost: ${{ t.actual_total_cost|intcomma }}</span>
+            <a href="{% url 'ticket_detail' pk=t.id %}" class="kp-btn kp-btn-secondary py-0.5 px-2 fs-8">View</a>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-muted p-4 fs-7">No completed tickets.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<!-- Table View -->
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">All Maintenance Work Orders</h3>
+  </div>
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Ticket ID</th>
+          <th>Title</th>
+          <th>Property & Unit</th>
+          <th>Tenant</th>
+          <th>Category</th>
+          <th>Priority</th>
+          <th>Status</th>
+          <th class="text-end">Total Cost</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in tickets %}
+        <tr>
+          <td class="fw-semibold"><a href="{% url 'ticket_detail' pk=t.id %}" class="text-dark">#{{ t.id }}</a></td>
+          <td class="fw-semibold">{{ t.title }}</td>
+          <td>Unit {{ t.unit.unit_number }} ({{ t.property.name }})</td>
+          <td>{{ t.tenant.get_full_name }}</td>
+          <td>{{ t.get_category_display }}</td>
+          <td>
+            <span class="kp-status-badge {% if t.priority == 'EMERGENCY' or t.priority == 'HIGH' %}kp-status-danger{% else %}kp-status-info{% endif %}">
+              {{ t.get_priority_display }}
+            </span>
+          </td>
+          <td><span class="kp-status-badge kp-status-brand">{{ t.get_status_display }}</span></td>
+          <td class="text-end tabular-nums fw-semibold">${{ t.actual_total_cost|intcomma }}</td>
+          <td class="text-end">
+            <a href="{% url 'ticket_detail' pk=t.id %}" class="kp-btn kp-btn-secondary py-0.5 px-2">Manage</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center py-4 text-muted">No maintenance tickets found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

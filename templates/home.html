@@ -1,0 +1,607 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Milda Data — Enterprise SaaS Applications &amp; Data Labeling Studio{% endblock %}
+
+{% block content %}
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+Devanagari:wght@500;600&display=swap');
+
+    :root {
+        --ink: #0b0f1a;
+        --ink-soft: #565d74;
+        --paper: #f7f7f3;
+        --surface: #ffffff;
+        --indigo: #3730a3;
+        --indigo-bright: #4f46e5;
+        --marigold: #d98e2b;
+        --sindoor: #b5451f;
+        --moss: #3f7a5c;
+        --line: rgba(11, 15, 26, 0.09);
+        --line-soft: rgba(11, 15, 26, 0.06);
+        --font-display: 'Fraunces', Georgia, serif;
+        --font-body: 'Manrope', -apple-system, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+        --font-dev: 'Noto Serif Devanagari', serif;
+    }
+
+    .mith * { box-sizing: border-box; }
+    .mith { font-family: var(--font-body); color: var(--ink); background: var(--paper); }
+    .mith h1, .mith h2, .mith h3, .mith h4 {
+        background: none !important; -webkit-background-clip: initial !important; background-clip: initial !important;
+        -webkit-text-fill-color: var(--ink) !important; color: var(--ink);
+        text-shadow: none; mix-blend-mode: normal; opacity: 1; margin: 0;
+    }
+    .annot-card h1, .annot-card h2, .annot-card h3, .annot-card h4,
+    .flow-panel h1, .flow-panel h2, .flow-panel h3, .flow-panel h4,
+    .cta-inner h1, .cta-inner h2, .cta-inner h3, .cta-inner h4,
+    .hero-saas-showcase h1, .hero-saas-showcase h2, .hero-saas-showcase h3, .hero-saas-showcase h4,
+    .dark-card h1, .dark-card h2, .dark-card h3, .dark-card h4 {
+        -webkit-text-fill-color: #f3f4f8 !important; color: #f3f4f8;
+    }
+    .mith a { text-decoration: none; }
+    .mith .container { max-width: 1180px; margin: 0 auto; padding: 0 1.75rem; }
+
+    .thread {
+        height: 4px;
+        width: 100%;
+        background: linear-gradient(90deg, var(--indigo-bright) 0 33.3%, var(--marigold) 33.3% 66.6%, var(--sindoor) 66.6% 100%);
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--indigo-bright);
+    }
+    .eyebrow::before {
+        content: "";
+        width: 6px; height: 6px;
+        background: var(--marigold);
+        display: inline-block;
+        border-radius: 50%;
+    }
+    .top-strip .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--ink-soft);
+        letter-spacing: 0.02em;
+    }
+    .top-strip span strong { color: var(--ink); font-weight: 700; }
+
+    .hero {
+        padding: 4.5rem 0 5rem;
+        background: var(--paper);
+        position: relative;
+    }
+
+    .hero-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 3.5rem;
+        align-items: center;
+    }
+
+    .hero-copy h1 {
+        margin: 1.2rem 0 1.15rem;
+        font-family: var(--font-display);
+        font-size: clamp(2.6rem, 4.3vw, 3.8rem);
+        line-height: 1.05;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--ink);
+    }
+
+    .hero-copy h1 .accent { color: var(--indigo-bright); -webkit-text-fill-color: var(--indigo-bright); font-style: normal; }
+
+    .hero-copy .lead {
+        max-width: 540px;
+        margin: 0;
+        font-size: 1.1rem;
+        line-height: 1.68;
+        color: var(--ink-soft);
+    }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2.2rem; align-items: center; }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.9rem 1.6rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: -0.005em;
+        font-family: var(--font-body);
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.18s ease;
+    }
+    .btn-primary { background: var(--ink); color: #fdfdfb; }
+    .btn-primary:hover { background: var(--indigo-bright); color: #ffffff; }
+    .btn-secondary { background: var(--surface); color: var(--ink); border-color: var(--line); }
+    .btn-secondary:hover { border-color: var(--ink); background: var(--paper); }
+    .btn-accent { background: var(--marigold); color: var(--ink); border-color: var(--marigold); }
+    .btn-accent:hover { background: #c27d22; color: var(--ink); }
+
+    .service-split {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 0.85rem;
+        margin-top: 2.4rem;
+        max-width: 540px;
+    }
+    .split-item {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.95rem 1.1rem;
+        background: var(--surface);
+        transition: border-color 0.15s ease;
+    }
+    .split-item.featured {
+        border-color: var(--indigo-bright);
+        background: rgba(79, 70, 229, 0.04);
+    }
+    .split-item .k { display:block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.3rem; }
+    .split-item .v { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--ink); }
+
+    .hero-saas-showcase {
+        background: var(--ink);
+        border-radius: 18px;
+        padding: 1.6rem;
+        box-shadow: 0 30px 60px rgba(11, 15, 26, 0.25);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .hss-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1rem;
+        margin-bottom: 1.2rem;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .hss-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #ffffff;
+    }
+    .hss-badge {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--marigold);
+        background: rgba(217, 142, 43, 0.15);
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+    }
+
+    .hss-list {
+        display: grid;
+        gap: 0.85rem;
+    }
+    .hss-item {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 10px;
+        padding: 0.9rem 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.8rem;
+        transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .hss-item:hover {
+        background: rgba(255,255,255,0.08);
+        border-color: rgba(99, 102, 241, 0.4);
+    }
+    .hss-item-info h4 {
+        margin: 0 0 0.2rem;
+        font-size: 0.96rem;
+        font-weight: 700;
+        color: #f3f4f8;
+    }
+    .hss-item-info span {
+        font-size: 0.78rem;
+        color: #9aa1b8;
+    }
+    .hss-launch-btn {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--ink);
+        background: var(--marigold);
+        padding: 0.45rem 0.85rem;
+        border-radius: 6px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: background 0.15s ease;
+    }
+    .hss-launch-btn:hover {
+        background: #e6a04e;
+    }
+
+    .lang-bar { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--surface); }
+    .lang-bar .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 0.8rem;
+        padding: 1.1rem 1.75rem;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+    }
+    .lang-bar span b { color: var(--ink); font-weight: 700; }
+
+    .section { padding: 5.5rem 0; }
+    .section.alt { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+
+    .section-header { max-width: 650px; margin: 0 0 3rem; }
+    .section-header .eyebrow { margin-bottom: 0.9rem; }
+    .section-header h2 {
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 2.9vw, 2.6rem);
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        font-weight: 700;
+        color: var(--ink);
+    }
+    .section-header p { margin: 1rem 0 0; color: var(--ink-soft); font-size: 1.05rem; line-height: 1.65; }
+
+    .home-saas-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .home-saas-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1.8rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+    .home-saas-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(11, 15, 26, 0.08);
+        border-color: var(--indigo-bright);
+    }
+    .home-saas-card .cat {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: var(--indigo-bright);
+        margin-bottom: 0.6rem;
+        display: block;
+    }
+    .home-saas-card h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        color: var(--ink);
+    }
+    .home-saas-card p {
+        font-size: 0.94rem;
+        color: var(--ink-soft);
+        line-height: 1.6;
+        margin: 0 0 1.5rem;
+        flex-grow: 1;
+    }
+    .home-saas-card .actions {
+        display: flex;
+        gap: 0.6rem;
+    }
+
+    .labeling-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .labeling-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1.8rem;
+        transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+    .labeling-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--marigold);
+    }
+    .labeling-card .icon-num {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--sindoor);
+        background: rgba(181, 69, 31, 0.08);
+        padding: 0.3rem 0.6rem;
+        border-radius: 6px;
+        display: inline-block;
+        margin-bottom: 0.8rem;
+    }
+    .labeling-card h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        color: var(--ink);
+    }
+    .labeling-card p {
+        font-size: 0.92rem;
+        color: var(--ink-soft);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    .path-cards { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 1.5rem; }
+    .path-card {
+        display: block;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 2.3rem;
+        color: var(--ink);
+        transition: border-color 0.18s ease, transform 0.18s ease;
+    }
+    .path-card.featured {
+        border-color: var(--indigo-bright);
+        box-shadow: 0 8px 24px rgba(79, 70, 229, 0.08);
+    }
+    .path-card:hover { transform: translateY(-3px); border-color: var(--indigo-bright); }
+    .path-card h2 {
+        font-family: var(--font-display);
+        font-size: 1.55rem;
+        font-weight: 700;
+        margin: 0 0 0.65rem;
+    }
+    .path-card p { margin: 0 0 1.4rem; color: var(--ink-soft); line-height: 1.68; font-size: 0.96rem; }
+    .path-cta { font-weight: 700; color: var(--indigo-bright); font-size: 0.9rem; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .cta-band { padding: 0 0 5.5rem; }
+    .cta-inner {
+        background: var(--ink);
+        border-radius: 16px;
+        padding: 3rem 2.8rem;
+        color: #f3f4f8;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+    }
+    .cta-inner h2 {
+        margin: 0 0 0.5rem;
+        font-family: var(--font-display);
+        font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+        font-weight: 700;
+    }
+    .cta-inner p { margin: 0; color: #9aa1b8; font-size: 1rem; }
+
+    @media (max-width: 980px) {
+        .hero-grid, .path-cards { grid-template-columns: 1fr; }
+        .cta-inner { flex-direction: column; align-items: flex-start; }
+    }
+</style>
+
+<div class="mith">
+<div class="thread"></div>
+
+<div class="top-strip">
+    <div class="container">
+        <span>Milda Data <strong>·</strong> SaaS Store &amp; B2B Data Labeling Studio</span>
+        <span><strong>7 SaaS Products</strong> &nbsp;/&nbsp; <strong>200k+</strong> Labeled Audio Hours</span>
+    </div>
+</div>
+
+<section class="hero">
+    <div class="container hero-grid">
+        <div class="hero-copy">
+            <span class="eyebrow">{{ cms_hero.badge|default:'Milda Data' }} <span class="dev">मिथिला</span></span>
+            <h1>{{ cms_hero.heading|default:'Enterprise <span class="accent">SaaS Applications</span> &amp; Data Labeling Studio'|safe }}</h1>
+            <p class="lead">{{ cms_hero.description|default:'Discover and launch ready-to-use SaaS applications for business operations, logistics, vendor onboarding, and payments — plus expert B2B Maithili, Hindi, and English data labeling for AI models.' }}</p>
+
+            <div class="hero-actions">
+                <a href="{{ cms_hero.primary_cta_url|default:'/products/' }}" class="btn btn-accent">{{ cms_hero.primary_cta|default:'Explore SaaS Store' }} →</a>
+                <a href="{{ cms_hero.secondary_cta_url|default:'/contact/' }}" class="btn btn-primary">{{ cms_hero.secondary_cta|default:'Contact Sales' }}</a>
+            </div>
+
+            <div class="service-split">
+                <div class="split-item featured">
+                    <span class="k">Service 01 · Immediate Launch</span>
+                    <span class="v">SaaS Applications Store</span>
+                </div>
+                <div class="split-item">
+                    <span class="k">Service 02 · Custom Dataset</span>
+                    <span class="v">Data Labeling Studio</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-panel">
+            <div class="hero-saas-showcase">
+                <div class="hss-header">
+                    <span class="hss-title">Featured Applications</span>
+                    <span class="hss-badge">Ready to Launch</span>
+                </div>
+
+                <div class="hss-list">
+                    <div class="hss-item">
+                        <div class="hss-item-info">
+                            <h4>Supplier Onboarding OS</h4>
+                            <span>Vendor compliance, documents &amp; approvals</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' 'supplier-onboarding' %}" class="hss-launch-btn">Launch →</a>
+                    </div>
+                    <div class="hss-item">
+                        <div class="hss-item-info">
+                            <h4>Fleet Management OS</h4>
+                            <span>GPS tracking, geofences &amp; driver PWA</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' 'fleet-management' %}" class="hss-launch-btn">Launch →</a>
+                    </div>
+                    <div class="hss-item">
+                        <div class="hss-item-info">
+                            <h4>Payment Reminder / B2B Payment</h4>
+                            <span>Payment collections &amp; invoice tracking</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' 'b2b-payment' %}" class="hss-launch-btn">Launch →</a>
+                    </div>
+                    <div class="hss-item">
+                        <div class="hss-item-info">
+                            <h4>StockFlow — Inventory</h4>
+                            <span>Purchasing, stock &amp; warehouse control</span>
+                        </div>
+                        <a href="{% url 'products:saas_launch' 'stockflow' %}" class="hss-launch-btn">Launch →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 1: SAAS PRODUCTS STORE -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow">Enterprise SaaS Products</span>
+            <h2>Production-ready SaaS tools for business operations.</h2>
+            <p>Browse our complete catalog of specialized SaaS applications. Open any product to start managing your operations immediately.</p>
+        </div>
+
+        <div class="home-saas-grid">
+            {% if saas_products %}
+                {% for product in saas_products %}
+                <article class="home-saas-card">
+                    <div>
+                        <span class="cat">{{ product.category }}</span>
+                        <h3>{{ product.name }}</h3>
+                        <p>{{ product.description }}</p>
+                    </div>
+                    <div>
+                        <div style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem;">{{ product.display_price }}</div>
+                        <div class="actions">
+                            <a href="{% url 'products:saas_detail' product.slug %}" class="btn btn-secondary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Details</a>
+                            <a href="{% url 'products:saas_launch' product.slug %}" class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Launch App →</a>
+                        </div>
+                    </div>
+                </article>
+                {% endfor %}
+            {% else %}
+                <article class="home-saas-card">
+                    <div>
+                        <span class="cat">Operations &amp; Compliance</span>
+                        <h3>Supplier Onboarding OS</h3>
+                        <p>Streamlined vendor onboarding, compliance verification, document collection, and approval workflows.</p>
+                    </div>
+                    <div>
+                        <div style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem;">{{ starting_price_display }}</div>
+                        <div class="actions">
+                            <a href="{% url 'products:saas_detail' 'supplier-onboarding' %}" class="btn btn-secondary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Details</a>
+                            <a href="{% url 'products:saas_launch' 'supplier-onboarding' %}" class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Launch App →</a>
+                        </div>
+                    </div>
+                </article>
+            {% endif %}
+        </div>
+
+        <div style="text-align: center; margin-top: 2.5rem;">
+            <a href="{% url 'products:saas_directory' %}" class="btn btn-accent" style="padding: 0.9rem 2.2rem;">View Full SaaS Directory &amp; All Products →</a>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 2: B2B DATA LABELING STUDIO -->
+<section class="section alt">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow">B2B Data Labeling Studio</span>
+            <h2>Precision Audio &amp; Multilingual Data Labeling.</h2>
+            <p>Specializing in Maithili (Mithila) audio transcription and speech datasets.</p>
+        </div>
+
+        <div class="labeling-grid">
+            <article class="labeling-card">
+                <span class="icon-num">01 · Audio &amp; Speech</span>
+                <h3>Maithili Audio Transcription</h3>
+                <p>High-precision audio transcription, speech datasets, and speaker alignment by native Mithila language experts.</p>
+            </article>
+
+            <article class="labeling-card">
+                <span class="icon-num">02 · All Languages</span>
+                <h3>Multilingual Data Annotation</h3>
+                <p>Comprehensive text tagging, audio labeling, and AI training datasets across all global languages.</p>
+            </article>
+
+            <article class="labeling-card">
+                <span class="icon-num">03 · Quality Assurance</span>
+                <h3>2-Tier QA Review</h3>
+                <p>Strict multi-stage quality review and validation ensuring 99%+ accuracy for enterprise AI model training.</p>
+            </article>
+        </div>
+
+        <div style="text-align: center; margin-top: 2.5rem;">
+            <a href="{% url 'labeling:home' %}" class="btn btn-primary" style="padding: 0.9rem 2.2rem;">Request a Custom Labeling Quote →</a>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 3: CORE PATHWAYS -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow">Two Core Offerings</span>
+            <h2>Select the service that fits your workflow.</h2>
+        </div>
+        <div class="path-cards">
+            <a href="{% url 'products:saas_directory' %}" class="path-card featured">
+                <span class="eyebrow">Service 01 · Immediate Launch</span>
+                <h2>SaaS Products Store</h2>
+                <p>Browse independent SaaS applications built for business operations, fleet tracking, inventory, payments, and property management. Open and launch applications directly.</p>
+                <span class="path-cta">Explore SaaS Store →</span>
+            </a>
+            <a href="{% url 'labeling:home' %}" class="path-card">
+                <span class="eyebrow">Service 02 · Custom B2B Service</span>
+                <h2>Data Labeling Studio</h2>
+                <p>For AI teams training custom models. Quote-based audio transcription, annotation, and trilingual dataset creation in Maithili, Hindi, and English.</p>
+                <span class="path-cta">Request a Labeling Quote →</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="cta-band">
+    <div class="container cta-inner">
+        <div>
+            <h2>Ready to launch a SaaS app or start a data labeling project?</h2>
+            <p>Explore our full directory of SaaS applications or talk to our team for a custom dataset quote.</p>
+        </div>
+        <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+            <a href="{% url 'products:saas_directory' %}" class="btn btn-accent">SaaS Store</a>
+            <a href="{% url 'labeling:home' %}" class="btn btn-secondary" style="color: #ffffff; border-color: rgba(255,255,255,0.3);">Labeling Quote</a>
+        </div>
+    </div>
+</section>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice {{ inv.invoice_number }} - {{ organization.name }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', -apple-system, sans-serif; color: #101828; background: #F7F8FA; padding: 2rem; font-size: 13px; line-height: 1.45; }
+        
+        .no-print-bar { max-width: 800px; margin: 0 auto 1.25rem auto; display: flex; justify-content: space-between; align-items: center; }
+        .btn-print { background: #2451FF; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: none; }
+        .btn-back { background: #fff; color: #101828; border: 1px solid #D0D5DD; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 600; font-size: 13px; text-decoration: none; }
+        
+        .invoice-box { background: #FFFFFF; max-width: 800px; margin: 0 auto; border: 1px solid #E4E7EC; border-radius: 12px; padding: 2.5rem; box-shadow: 0 1px 3px rgba(16,24,40,0.05); }
+        
+        .inv-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #2451FF; padding-bottom: 1.5rem; margin-bottom: 1.75rem; }
+        .company-title { font-size: 1.4rem; font-weight: 700; color: #2451FF; letter-spacing: -0.02em; }
+        .inv-badge { display: inline-block; background: #EEF2FF; color: #1939B7; font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px; text-transform: uppercase; margin-top: 4px; }
+        
+        .billing-grid { display: flex; justify-content: space-between; gap: 2rem; background: #FAFAFB; border: 1px solid #E4E7EC; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.75rem; }
+        .bill-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #98A2B3; letter-spacing: 0.05em; margin-bottom: 4px; }
+        
+        table.items-table { width: 100%; border-collapse: collapse; margin-bottom: 1.75rem; }
+        table.items-table th { background: #FAFAFB; color: #98A2B3; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 10px 12px; border-bottom: 1px solid #E4E7EC; text-align: left; }
+        table.items-table td { padding: 12px; border-bottom: 1px solid #E4E7EC; color: #101828; font-size: 13px; }
+        
+        .summary-box { display: flex; justify-content: flex-end; margin-bottom: 2rem; }
+        .summary-table { width: 300px; font-size: 13px; }
+        .summary-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #E4E7EC; color: #475467; }
+        .summary-row.total { font-size: 16px; font-weight: 700; color: #2451FF; border-top: 2px solid #2451FF; border-bottom: none; padding-top: 10px; margin-top: 4px; }
+        
+        .num { font-variant-numeric: tabular-nums; }
+        
+        @media print {
+            .no-print-bar { display: none !important; }
+            body { background: #fff; padding: 0; }
+            .invoice-box { border: none; box-shadow: none; max-width: 100%; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print-bar">
+    <a href="{% url 'invoice_detail' inv.id %}" class="btn-back">← Back to Invoice View</a>
+    <button onclick="window.print()" class="btn-print">🖨️ Print / Save as PDF</button>
+</div>
+
+<div class="invoice-box">
+    <!-- Invoice Header -->
+    <div class="inv-header">
+        <div>
+            <div class="company-title">{{ organization.name }}</div>
+            <div style="font-size: 12px; color: #475467; margin-top: 2px;">{{ organization.country }} • Tax ID: {{ organization.tax_name }} ({{ organization.tax_rate }}%)</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 18px; font-weight: 700; color: #101828;">INVOICE</div>
+            <div style="font-size: 13px; font-weight: 600; color: #2451FF; margin-top: 2px;">#{{ inv.invoice_number }}</div>
+            <div class="inv-badge">{{ inv.status }}</div>
+        </div>
+    </div>
+
+    <!-- Billing Info Grid -->
+    <div class="billing-grid">
+        <div>
+            <div class="bill-title">Billed To</div>
+            <div style="font-size: 14px; font-weight: 700; color: #101828;">{{ inv.customer.company_name }}</div>
+            <div style="color: #475467; margin-top: 2px;">Attn: {{ inv.customer.contact_person|default:"Accounts Payable" }}</div>
+            <div style="color: #475467;">Email: {{ inv.customer.email|default:"-" }}</div>
+            {% if inv.customer.address %}<div style="color: #475467; margin-top: 2px;">{{ inv.customer.address }}</div>{% endif %}
+        </div>
+        <div style="text-align: right;">
+            <div class="bill-title">Invoice Metadata</div>
+            <div style="color: #475467;">Invoice Date: <strong style="color: #101828;">{{ inv.date }}</strong></div>
+            <div style="color: #475467; margin-top: 2px;">Due Date: <strong style="color: #101828;">{{ inv.due_date }}</strong></div>
+            <div style="color: #475467; margin-top: 2px;">Payment Terms: <strong style="color: #101828;">{{ inv.customer.payment_terms|default:"Net 30" }}</strong></div>
+        </div>
+    </div>
+
+    <!-- Line Items Table -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 50%;">Item & Description</th>
+                <th style="text-align: center; width: 15%;">Quantity</th>
+                <th style="text-align: right; width: 17%;">Unit Price</th>
+                <th style="text-align: right; width: 18%;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td style="font-weight: 600;">{{ item.description }}</td>
+                <td class="num" style="text-align: center;">{{ item.quantity }}</td>
+                <td class="num" style="text-align: right;">{{ currency_symbol }}{{ item.unit_price|floatformat:2 }}</td>
+                <td class="num" style="text-align: right; font-weight: 700;">{{ currency_symbol }}{{ item.line_total|floatformat:2 }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Totals Summary -->
+    <div class="summary-box">
+        <div class="summary-table">
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span class="num">{{ currency_symbol }}{{ inv.total_amount|floatformat:2 }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Paid to Date:</span>
+                <span class="num">- {{ currency_symbol }}{{ inv.paid_amount|floatformat:2 }}</span>
+            </div>
+            <div class="summary-row total">
+                <span>Balance Due:</span>
+                <span class="num">{{ currency_symbol }}{{ inv.remaining_amount|floatformat:2 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Note -->
+    <div style="border-top: 1px solid #E4E7EC; padding-top: 1rem; display: flex; justify-content: space-between; font-size: 11px; color: #98A2B3;">
+        <div>Thank you for your business with {{ organization.name }}.</div>
+        <div>Page 1 of 1</div>
+    </div>
+</div>
+
+</body>
+</html>

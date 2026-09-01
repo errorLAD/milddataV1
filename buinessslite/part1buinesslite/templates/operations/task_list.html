@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Tasks - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Tasks</h1>
+        <div class="page-subtitle">Lightweight task management for small business ops</div>
+    </div>
+    <div>
+        <a href="{% url 'task_create' %}" class="btn-saas btn-primary">+ Create Task</a>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Tasks</div>
+        <div style="display: flex; gap: 0.4rem;">
+            <a href="{% url 'task_list' %}?view=all" class="btn-saas {% if view_type == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">All Tasks</a>
+            <a href="{% url 'task_list' %}?view=my" class="btn-saas {% if view_type == 'my' %}btn-primary{% else %}btn-secondary{% endif %}">My Tasks</a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Task Title</th>
+                    <th>Assigned To</th>
+                    <th>Due Date</th>
+                    <th>Priority</th>
+                    <th>Status</th>
+                    <th>Update Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in tasks %}
+                <tr>
+                    <td style="font-weight: 650;">{{ t.title }}</td>
+                    <td>{{ t.assigned_to.username|default:"Unassigned" }}</td>
+                    <td>{{ t.due_date|default:"-" }}</td>
+                    <td>
+                        {% if t.priority == 'HIGH' %}
+                        <span class="badge-pill badge-danger">High</span>
+                        {% elif t.priority == 'MEDIUM' %}
+                        <span class="badge-pill badge-warning">Medium</span>
+                        {% else %}
+                        <span class="badge-pill badge-info">Low</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if t.status == 'DONE' %}
+                        <span class="badge-pill badge-success">Done</span>
+                        {% elif t.status == 'IN_PROGRESS' %}
+                        <span class="badge-pill badge-warning">In Progress</span>
+                        {% else %}
+                        <span class="badge-pill badge-info">To Do</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form method="POST" action="{% url 'update_task_status' t.id %}" style="display: inline-flex; gap: 0.3rem;">
+                            {% csrf_token %}
+                            <select name="status" class="form-select" onchange="this.form.submit()" style="padding: 0.15rem 0.3rem; font-size: 0.65rem;">
+                                <option value="TO_DO" {% if t.status == 'TO_DO' %}selected{% endif %}>To Do</option>
+                                <option value="IN_PROGRESS" {% if t.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                                <option value="DONE" {% if t.status == 'DONE' %}selected{% endif %}>Done</option>
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-tertiary);">No tasks found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.seo_title|default:project.title }} — Milda Data Portfolio{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 0 3rem; background: #0f172a; color: #ffffff;">
+    <div class="container" style="max-width: 900px;">
+        <a href="{% url 'website_cms:projects_index' %}" style="color: #60a5fa; font-weight: 600; text-decoration: none; font-size: 0.9rem;">&larr; Back to Portfolio</a>
+        <div style="font-size: 0.85rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 0.5rem;">{{ project.category }} {% if project.client_name %}&bull; {{ project.client_name }}{% endif %}</div>
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; margin-bottom: 1rem;">{{ project.title }}</h1>
+        <p style="font-size: 1.15rem; color: #cbd5e1; line-height: 1.6;">{{ project.short_description }}</p>
+    </div>
+</section>
+
+<section style="padding: 4rem 0; background: #ffffff;">
+    <div class="container" style="max-width: 900px;">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+            <div style="background: #f8fafc; padding: 1.75rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 700; color: #991b1b; margin-bottom: 0.75rem;">The Challenge</h3>
+                <p style="color: #475569; font-size: 0.95rem; line-height: 1.6;">{{ project.challenge|default:project.short_description }}</p>
+            </div>
+            <div style="background: #f0fdf4; padding: 1.75rem; border-radius: 12px; border: 1px solid #bbf7d0;">
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.25rem; font-weight: 700; color: #166534; margin-bottom: 0.75rem;">Our Solution</h3>
+                <p style="color: #166534; font-size: 0.95rem; line-height: 1.6;">{{ project.solution|default:'Milda Data engineered a custom, cloud-hosted SaaS platform.' }}</p>
+            </div>
+        </div>
+
+        {% if project.results %}
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 2rem; border-radius: 12px; margin-bottom: 3rem;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 700; color: #1e40af; margin-bottom: 0.5rem;">Measurable Results &amp; ROI</h3>
+            <p style="color: #1e3a8a; font-size: 1.05rem; line-height: 1.6;">{{ project.results }}</p>
+        </div>
+        {% endif %}
+
+        {% if project.get_features_list %}
+        <div style="margin-bottom: 3rem;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem;">Key Platform Features</h3>
+            <ul style="list-style: none; padding: 0;">
+                {% for f in project.get_features_list %}
+                <li style="padding: 0.6rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; color: #334155; display: flex; align-items: center; gap: 0.5rem;">
+                    <span style="color: #2563eb; font-weight: 800;">✓</span> {{ f }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if project.website_url %}
+        <div style="text-align: center; margin-top: 3rem;">
+            <a href="{{ project.website_url }}" target="_blank" rel="noopener" class="btn btn-primary" style="padding: 0.9rem 2rem;">Visit Live Project Endpoint &rarr;</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Maintenance & Repairs{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-2">
+  <div>
+    <h1 class="page-title mb-0">Maintenance & Workshop Control</h1>
+    <p class="page-subtitle mb-0">Service schedules, preventive maintenance, repair logs, and workshop cost tracking</p>
+  </div>
+  <button class="btn-kp btn-kp-primary" data-bs-toggle="modal" data-bs-target="#newMaintModal">
+    <i class="fa-solid fa-plus"></i> Schedule Maintenance
+  </button>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Service & Repair Logs</h3>
+    <span class="fw-bold text-dark num">Total Maintenance Spend: {{ currency_symbol }}{{ total_cost|floatformat:2 }}</span>
+  </div>
+  <div class="table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Vehicle</th>
+          <th>Service Title</th>
+          <th>Type</th>
+          <th>Workshop Name</th>
+          <th>Parts Cost</th>
+          <th>Labor Cost</th>
+          <th>Total Cost ({{ currency_symbol }})</th>
+          <th>Service Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in records %}
+        <tr>
+          <td class="fw-bold">{{ r.vehicle.vehicle_code }}</td>
+          <td>{{ r.title }}</td>
+          <td><span class="badge bg-light text-secondary border">{{ r.get_maintenance_type_display }}</span></td>
+          <td>{{ r.workshop_name }}</td>
+          <td class="num">{{ currency_symbol }}{{ r.parts_cost }}</td>
+          <td class="num">{{ currency_symbol }}{{ r.labor_cost }}</td>
+          <td class="num fw-bold">{{ currency_symbol }}{{ r.total_cost }}</td>
+          <td class="num">{{ r.service_date }}</td>
+          <td>
+            {% if r.status == 'COMPLETED' %}
+            <span class="status-pill success"><span class="status-dot"></span> Completed</span>
+            {% elif r.status == 'IN_PROGRESS' %}
+            <span class="status-pill danger"><span class="status-dot"></span> In Workshop</span>
+            {% else %}
+            <span class="status-pill warning"><span class="status-dot"></span> Scheduled</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center py-3 text-muted">No maintenance records found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- Modal: New Maintenance -->
+<div class="modal fade" id="newMaintModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content kp-modal">
+      <div class="modal-header kp-modal-header">
+        <h5 class="modal-title" style="font-size: 0.95rem; font-weight: 650;">Schedule Vehicle Maintenance</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'maintenance' %}">
+        {% csrf_token %}
+        <div class="modal-body p-3">
+          <div class="mb-2">
+            <label class="form-label text-secondary" style="font-size: 0.72rem;">VEHICLE / MACHINE</label>
+            <select name="vehicle_id" class="form-select form-select-kp" required>
+              {% for v in vehicles %}
+              <option value="{{ v.id }}">{{ v.vehicle_code }} ({{ v.registration_number }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label text-secondary" style="font-size: 0.72rem;">SERVICE TITLE</label>
+            <input type="text" name="title" class="form-control form-control-kp" placeholder="e.g. Engine Oil & Filter Replacement" required>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label text-secondary" style="font-size: 0.72rem;">SERVICE TYPE</label>
+              <select name="maintenance_type" class="form-select form-select-kp">
+                <option value="OIL_CHANGE">Oil Change</option>
+                <option value="ENGINE_SERVICE">Engine Service</option>
+                <option value="BRAKE_SERVICE">Brake Service</option>
+                <option value="TYRE_REPLACEMENT">Tyre Replacement</option>
+                <option value="REPAIR">Engine Repair</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-secondary" style="font-size: 0.72rem;">TOTAL ESTIMATED COST ($)</label>
+              <input type="number" name="total_cost" class="form-control form-control-kp" value="250">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label text-secondary" style="font-size: 0.72rem;">WORKSHOP NAME</label>
+            <input type="text" name="workshop_name" class="form-control form-control-kp" value="Authorized Service Garage">
+          </div>
+        </div>
+        <div class="modal-footer kp-modal-footer">
+          <button type="button" class="btn-kp btn-kp-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-kp btn-kp-primary">Schedule Task</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

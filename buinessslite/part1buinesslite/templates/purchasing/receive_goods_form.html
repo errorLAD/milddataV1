@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Receive Goods - {{ po.po_number }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Goods Receipt: {{ po.po_number }}</h1>
+        <div class="page-subtitle">Supplier: {{ po.supplier.company_name }}</div>
+    </div>
+</div>
+
+<div class="card-panel" style="max-width: 600px;">
+    <div class="panel-header">
+        <div class="panel-title">Received Quantities</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST">
+            {% csrf_token %}
+            {% for item in po.items.all %}
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                <div>
+                    <div style="font-weight: 650; font-size: 0.75rem;">{{ item.product.name }}</div>
+                    <div style="font-size: 0.65rem; color: var(--text-tertiary);">Ordered: {{ item.quantity }} | Already Received: {{ item.received_quantity }}</div>
+                </div>
+                <div style="width: 100px;">
+                    <input type="number" name="receive_{{ item.id }}" class="form-input" value="{% widthratio item.quantity 1 1 %}" min="0">
+                </div>
+            </div>
+            {% endfor %}
+
+            <button type="submit" class="btn-saas btn-primary" style="margin-top: 1rem;">Confirm & Update Inventory</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

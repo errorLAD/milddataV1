@@ -1,0 +1,62 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Admin Search Results — "{{ query }}"{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Admin Universal Search Results</h1>
+        <p class="page-subtitle">Showing search matches for "<strong>{{ query }}</strong>"</p>
+    </div>
+</div>
+
+{% if results.products %}
+<div class="cms-form-card">
+    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.05rem; margin-bottom: 0.75rem; color: var(--cms-primary);">🚀 Products ({{ results.products|length }})</h3>
+    <ul style="list-style: none; line-height: 1.8;">
+        {% for p in results.products %}
+        <li><a href="{% url 'website_cms:product_edit' p.pk %}" style="color: #38bdf8; text-decoration: none;"><strong>{{ p.name }}</strong></a> — {{ p.description|truncatewords:10 }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if results.services %}
+<div class="cms-form-card">
+    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.05rem; margin-bottom: 0.75rem; color: #34d399;">🛠️ Services ({{ results.services|length }})</h3>
+    <ul style="list-style: none; line-height: 1.8;">
+        {% for s in results.services %}
+        <li><a href="{% url 'website_cms:service_edit' s.pk %}" style="color: #34d399; text-decoration: none;"><strong>{{ s.name }}</strong></a> — {{ s.short_description|truncatewords:10 }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if results.blog_posts %}
+<div class="cms-form-card">
+    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.05rem; margin-bottom: 0.75rem; color: #a7f3d0;">📝 Blog Articles ({{ results.blog_posts|length }})</h3>
+    <ul style="list-style: none; line-height: 1.8;">
+        {% for b in results.blog_posts %}
+        <li><a href="{% url 'website_cms:blog_edit' b.pk %}" style="color: #a7f3d0; text-decoration: none;"><strong>{{ b.title }}</strong></a> ({{ b.get_status_display }})</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if results.leads %}
+<div class="cms-form-card">
+    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.05rem; margin-bottom: 0.75rem; color: #fbbf24;">📥 Leads &amp; Inquiries ({{ results.leads|length }})</h3>
+    <ul style="list-style: none; line-height: 1.8;">
+        {% for l in results.leads %}
+        <li><a href="{% url 'website_cms:lead_detail' l.pk %}" style="color: #fbbf24; text-decoration: none;"><strong>{{ l.name }}</strong> ({{ l.email }})</a> — {{ l.get_lead_type_display }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{% if not results.products and not results.services and not results.blog_posts and not results.leads %}
+<div class="cms-form-card">
+    <p style="color: var(--cms-muted); text-align: center;">No matching CMS content records found for "{{ query }}".</p>
+</div>
+{% endif %}
+{% endblock %}

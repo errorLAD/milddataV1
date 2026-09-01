@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}PO {{ po.po_number }} - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{{ po.po_number }}</h1>
+        <div class="page-subtitle">Supplier: {{ po.supplier.company_name }} | Status: {{ po.status }}</div>
+    </div>
+    <div>
+        {% if po.status != 'COMPLETED' and po.status != 'CANCELLED' %}
+        <a href="{% url 'receive_goods' po.id %}" class="btn-saas btn-primary">Receive Goods</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Line Items</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Ordered Qty</th>
+                    <th>Received Qty</th>
+                    <th>Unit Cost</th>
+                    <th>Line Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td style="font-weight: 650;">{{ item.product.name }}</td>
+                    <td class="num">{{ item.quantity }}</td>
+                    <td class="num" style="font-weight: 700;">{{ item.received_quantity }}</td>
+                    <td class="num">{{ currency_symbol }}{{ item.unit_cost|floatformat:2 }}</td>
+                    <td class="num" style="font-weight: 700;">{{ currency_symbol }}{{ item.line_total|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

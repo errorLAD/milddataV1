@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Expenses | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Expense Management</h1>
+    <p class="kp-page-subtitle">Record operating costs, utility bills, property taxes, and vendor contracts.</p>
+  </div>
+  <div>
+    <button class="kp-btn kp-btn-primary" data-bs-toggle="modal" data-bs-target="#addExpenseModal">
+      <i class="bi bi-plus-lg"></i> Record Expense
+    </button>
+  </div>
+</div>
+
+<!-- Summary Card -->
+<div class="kp-card mb-3 p-3">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <div class="kp-metric-label">Total Portfolio Expenses</div>
+      <div class="kp-metric-number text-danger">${{ total_expenses|intcomma }}</div>
+    </div>
+    <span class="kp-status-badge kp-status-danger">{{ expenses.count }} Logged Records</span>
+  </div>
+</div>
+
+<!-- Expenses Table Panel -->
+<div class="kp-panel mb-3">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Expense Ledger</h3>
+  </div>
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Property</th>
+          <th>Category</th>
+          <th>Vendor / Payee</th>
+          <th>Description</th>
+          <th class="text-end">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for exp in expenses %}
+        <tr>
+          <td>{{ exp.date }}</td>
+          <td class="fw-semibold">{{ exp.property.name }}</td>
+          <td><span class="kp-status-badge kp-status-warning">{{ exp.get_category_display }}</span></td>
+          <td>{{ exp.vendor_name|default:"—" }}</td>
+          <td>{{ exp.description }}</td>
+          <td class="text-end tabular-nums fw-semibold text-danger">${{ exp.amount|intcomma }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-4 text-muted">No operating expenses recorded yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Expense Modal -->
+<div class="modal fade" id="addExpenseModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content kp-modal">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6 fw-bold">Record Property Expense</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'expense_create' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Select Property *</label>
+            <select name="property" class="form-select form-select-sm" required>
+              {% for p in properties %}
+              <option value="{{ p.id }}">{{ p.name }} ({{ p.city }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Expense Category *</label>
+              <select name="category" class="form-select form-select-sm" required>
+                {% for code, label in categories %}
+                <option value="{{ code }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Amount ($) *</label>
+              <input type="number" step="0.01" name="amount" class="form-control form-control-sm" required placeholder="450.00">
+            </div>
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Date *</label>
+              <input type="date" name="date" class="form-control form-control-sm" required value="2026-08-27">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Vendor / Payee</label>
+              <input type="text" name="vendor_name" class="form-control form-control-sm" placeholder="e.g. City Water Corp">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Description / Details *</label>
+            <textarea name="description" class="form-control form-control-sm" rows="2" required placeholder="Water utility bill for Q3..."></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="kp-btn kp-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="kp-btn kp-btn-primary">Save Expense Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

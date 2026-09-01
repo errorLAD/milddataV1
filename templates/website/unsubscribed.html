@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Unsubscribed — Milda Data{% endblock %}
+
+{% block content %}
+<section style="padding: 5rem 0; background: #ffffff; text-align: center;">
+    <div class="container" style="max-width: 600px;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">✉️</div>
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 800; color: #0f172a; margin-bottom: 0.75rem;">You Have Been Unsubscribed</h1>
+        <p style="color: #475569; font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem;">The email address <strong>{{ email }}</strong> has been removed from the Milda Data newsletter list.</p>
+        <a href="/" class="btn btn-primary">Return to Homepage &rarr;</a>
+    </div>
+</section>
+{% endblock %}

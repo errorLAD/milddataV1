@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Upgrade Guest Account | NextSlot B2B Collections{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center min-vh-100 py-5">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card card-custom p-4 p-md-5 shadow-lg border-0">
+            <div class="text-center mb-4">
+                <div class="badge bg-indigo-subtle text-primary border border-indigo-subtle px-3 py-1 rounded-pill mb-2 fs-8 fw-semibold">
+                    <i class="bi bi-rocket-takeoff me-1"></i> Upgrade Guest Mode
+                </div>
+                <h3 class="fw-bold text-dark mb-1">Unlock Full NextSlot Account</h3>
+                <p class="text-muted fs-7">Upgrade from Guest Session to unlock live data saving, team access, file uploads, and WhatsApp reminders.</p>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger rounded-3 fs-7">
+                    {% for error in form.non_field_errors %}{{ error }}<br>{% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'accounts:upgrade_guest' %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold fs-7">Business Name *</label>
+                        {{ form.business_name }}
+                        {% if form.business_name.errors %}<div class="text-danger fs-8 mt-1">{{ form.business_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold fs-7">Owner Full Name *</label>
+                        {{ form.owner_name }}
+                        {% if form.owner_name.errors %}<div class="text-danger fs-8 mt-1">{{ form.owner_name.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold fs-7">Country *</label>
+                        {{ form.country }}
+                        {% if form.country.errors %}<div class="text-danger fs-8 mt-1">{{ form.country.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold fs-7">Business Phone *</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<div class="text-danger fs-8 mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-semibold fs-7">Email Address *</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger fs-8 mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold fs-7">Username *</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}<div class="text-danger fs-8 mt-1">{{ form.username.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold fs-7">Password *</label>
+                        {{ form.password }}
+                        {% if form.password.errors %}<div class="text-danger fs-8 mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-semibold fs-7">Confirm Password *</label>
+                        {{ form.confirm_password }}
+                        {% if form.confirm_password.errors %}<div class="text-danger fs-8 mt-1">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary-custom w-100 py-2.5 fs-6 mb-3">
+                    Upgrade to Full Account <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </form>
+
+            <div class="text-center mt-3 pt-3 border-top">
+                <a href="{% url 'dashboard:index' %}" class="text-secondary fw-semibold text-decoration-none fs-7">
+                    <i class="bi bi-arrow-left me-1"></i> Continue in Guest Demo Mode
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

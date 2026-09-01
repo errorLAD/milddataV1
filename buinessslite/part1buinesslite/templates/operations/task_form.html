@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Task - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Create Task</h1>
+        <div class="page-subtitle">Add action item</div>
+    </div>
+</div>
+
+<div class="card-panel" style="max-width: 500px;">
+    <div class="panel-header">
+        <div class="panel-title">Task Details</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Task Title</label>
+                <input type="text" name="title" class="form-input" placeholder="e.g. Audit Q3 Inventory" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" name="due_date" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    <select name="priority" class="form-select">
+                        <option value="LOW">Low</option>
+                        <option value="MEDIUM" selected>Medium</option>
+                        <option value="HIGH">High</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                <input type="checkbox" name="assign_me" id="assignMe" checked>
+                <label for="assignMe" class="form-label" style="margin-bottom: 0;">Assign to me</label>
+            </div>
+
+            <button type="submit" class="btn-saas btn-primary" style="margin-top: 1rem;">Save Task</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

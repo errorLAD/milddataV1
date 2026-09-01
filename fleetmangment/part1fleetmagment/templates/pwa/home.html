@@ -1,0 +1,73 @@
+{% extends 'pwa/base_pwa.html' %}
+
+{% block title %}Driver Console{% endblock %}
+
+{% block content %}
+<!-- Vehicle Card -->
+<div class="card kp-panel mb-3">
+  <div class="card-body p-3">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+      <span class="eyebrow-pill" style="background: var(--brand-soft); color: var(--brand-dark);">
+        ASSIGNED VEHICLE
+      </span>
+      {% if assigned_vehicle %}
+      <span class="status-pill success"><span class="status-dot"></span> {{ assigned_vehicle.get_status_display }}</span>
+      {% else %}
+      <span class="status-pill danger"><span class="status-dot"></span> None Assigned</span>
+      {% endif %}
+    </div>
+
+    {% if assigned_vehicle %}
+    <h3 class="fw-bold mb-1 text-primary" style="font-size: 1.1rem;">{{ assigned_vehicle.vehicle_code }}</h3>
+    <p class="text-secondary mb-2" style="font-size: 0.75rem;">Reg: {{ assigned_vehicle.registration_number }} | {{ assigned_vehicle.get_vehicle_type_display }}</p>
+    <div class="d-flex align-items-center justify-content-between pt-2 border-top" style="font-size: 0.7rem;">
+      <span><i class="fa-solid fa-gauge me-1 text-muted"></i> {{ assigned_vehicle.mileage_km|floatformat:0 }} km</span>
+      <span><i class="fa-solid fa-clock me-1 text-muted"></i> {{ assigned_vehicle.engine_hours|floatformat:0 }} hrs</span>
+      <span><i class="fa-solid fa-battery-three-quarters text-success me-1"></i> {{ assigned_vehicle.battery_level }}%</span>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0" style="font-size: 0.75rem;">Please contact dispatch to get assigned to a truck or JCB machine.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Primary Trip Action CTA -->
+<div class="card kp-panel mb-3">
+  <div class="card-body p-3 text-center">
+    {% if active_trip %}
+    <div class="alert alert-primary py-2 mb-3" style="font-size: 0.75rem;">
+      <i class="fa-solid fa-satellite-dish me-1"></i> Active Trip <strong>{{ active_trip.trip_id }}</strong> is in progress!
+    </div>
+    <a href="{% url 'pwa_trip' %}" class="btn btn-kp-primary btn-pwa-action py-3">
+      <i class="fa-solid fa-location-arrow me-2"></i> OPEN LIVE TRACKING CONSOLE
+    </a>
+    {% else %}
+    <form method="POST" action="{% url 'pwa_trip' %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="start">
+      <button type="submit" class="btn btn-success btn-pwa-action py-3" {% if not assigned_vehicle %}disabled{% endif %}>
+        <i class="fa-solid fa-play me-2"></i> START NEW TRIP NOW
+      </button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Quick Actions Menu -->
+<div class="row g-2">
+  <div class="col-6">
+    <a href="{% url 'pwa_jobs' %}" class="card kp-panel text-decoration-none text-dark p-3 text-center">
+      <i class="fa-solid fa-truck-ramp-box text-primary fa-2x mb-2"></i>
+      <span class="fw-semibold d-block" style="font-size: 0.78rem;">Assigned Jobs</span>
+      <span class="badge bg-primary rounded-pill mt-1" style="font-size: 0.62rem;">{{ pending_jobs }} Pending</span>
+    </a>
+  </div>
+  <div class="col-6">
+    <a href="{% url 'pwa_inspection' %}" class="card kp-panel text-decoration-none text-dark p-3 text-center">
+      <i class="fa-solid fa-clipboard-check text-success fa-2x mb-2"></i>
+      <span class="fw-semibold d-block" style="font-size: 0.78rem;">Pre-Trip Inspection</span>
+      <span class="text-muted d-block mt-1" style="font-size: 0.62rem;">Daily Safety Check</span>
+    </a>
+  </div>
+</div>
+{% endblock %}

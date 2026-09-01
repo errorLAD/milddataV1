@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Stock Movements & Audit Log — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Stock Movements & Audit Log</h1>
+    <p class="page-subtitle">Every inventory addition, sale, transfer, and adjustment is fully traceable.</p>
+  </div>
+  <div class="page-actions">
+    <button onclick="document.getElementById('transfer-modal').style.display='flex'" class="btn btn-primary">Stock Transfer</button>
+    <button onclick="document.getElementById('adjustment-modal').style.display='flex'" class="btn btn-secondary">Stock Adjustment</button>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>Product</th>
+          <th>SKU</th>
+          <th>Warehouse</th>
+          <th>Movement Type</th>
+          <th>Quantity</th>
+          <th>Stock After</th>
+          <th>Reference</th>
+          <th>User</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in movements %}
+        <tr>
+          <td>{{ m.created_at|date:"M d, Y H:i" }}</td>
+          <td style="font-weight: 650;"><a href="{% url 'product_detail' m.product.id %}" style="color: var(--brand); text-decoration: none;">{{ m.product.name }}</a></td>
+          <td class="tabular-nums">{{ m.product.sku }}</td>
+          <td><span class="badge badge-neutral">{{ m.warehouse.code }}</span></td>
+          <td>
+            {% if m.movement_type == 'PURCHASE' %}
+              <span class="badge badge-success">Purchase Receipt</span>
+            {% elif m.movement_type == 'SALE' %}
+              <span class="badge badge-info">Sales Invoice</span>
+            {% elif m.movement_type == 'TRANSFER' %}
+              <span class="badge badge-warning">Transfer</span>
+            {% else %}
+              <span class="badge badge-neutral">{{ m.get_movement_type_display }}</span>
+            {% endif %}
+          </td>
+          <td class="tabular-nums" style="font-weight: 700; color: {% if m.quantity > 0 %}var(--success){% else %}var(--danger){% endif %};">
+            {% if m.quantity > 0 %}+{% endif %}{{ m.quantity }}
+          </td>
+          <td class="tabular-nums">{{ m.quantity_after }}</td>
+          <td>{{ m.reference|default:'—' }}</td>
+          <td>{{ m.user.username|default:'System' }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" style="text-align: center; color: var(--text-tertiary); padding: 2rem;">No stock movements recorded yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: Stock Transfer -->
+<div id="transfer-modal" class="modal-backdrop" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="panel-title">Transfer Stock Between Warehouses</span>
+      <button onclick="document.getElementById('transfer-modal').style.display='none'" class="btn-icon">×</button>
+    </div>
+    <form method="post" action="{% url 'stock_transfer' %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Product *</label>
+          <select name="product_id" class="form-select" required>
+            {% for p in products %}
+              <option value="{{ p.id }}">{{ p.name }} (SKU: {{ p.sku }}) — Available: {{ p.total_stock }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Source Warehouse *</label>
+            <select name="source_warehouse_id" class="form-select" required>
+              {% for wh in warehouses %}
+                <option value="{{ wh.id }}">{{ wh.name }} ({{ wh.code }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Warehouse *</label>
+            <select name="target_warehouse_id" class="form-select" required>
+              {% for wh in warehouses %}
+                <option value="{{ wh.id }}">{{ wh.name }} ({{ wh.code }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity to Transfer *</label>
+          <input type="number" name="quantity" class="form-control" value="1" min="1" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes / Reason</label>
+          <input type="text" name="notes" class="form-control" placeholder="e.g. Stock balancing for store launch">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="document.getElementById('transfer-modal').style.display='none'" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">Execute Transfer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Stock Adjustment -->
+<div id="adjustment-modal" class="modal-backdrop" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="panel-title">Post Stock Adjustment</span>
+      <button onclick="document.getElementById('adjustment-modal').style.display='none'" class="btn-icon">×</button>
+    </div>
+    <form method="post" action="{% url 'stock_adjustment' %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Product *</label>
+          <select name="product_id" class="form-select" required>
+            {% for p in products %}
+              <option value="{{ p.id }}">{{ p.name }} (SKU: {{ p.sku }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Warehouse *</label>
+            <select name="warehouse_id" class="form-select" required>
+              {% for wh in warehouses %}
+                <option value="{{ wh.id }}">{{ wh.name }} ({{ wh.code }})</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reason / Type</label>
+            <select name="movement_type" class="form-select">
+              <option value="ADJUSTMENT">Stock Count Adjustment</option>
+              <option value="DAMAGE">Damage / Expiry</option>
+              <option value="CORRECTION">System Correction</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Quantity Change (+ to add, - to deduct) *</label>
+          <input type="number" name="quantity_change" class="form-control" placeholder="e.g. 5 or -2" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input type="text" name="notes" class="form-control" placeholder="Reason for adjustment">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="document.getElementById('adjustment-modal').style.display='none'" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">Post Adjustment</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

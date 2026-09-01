@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Operational Profitability — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Operational Profitability</h1>
+    <p class="page-subtitle">Track revenue, cost of goods sold (COGS), gross profit, and margin percentages.</p>
+  </div>
+</div>
+
+<div class="metrics-grid">
+  <div class="metric-card hero-card">
+    <div class="metric-label">Sales Revenue</div>
+    <div class="metric-value money">{{ total_revenue|money:org }}</div>
+    <div class="metric-sub">Total Billed Revenue</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Cost of Goods Sold (COGS)</div>
+    <div class="metric-value money">{{ total_cogs|money:org }}</div>
+    <div class="metric-sub">Direct Inventory Cost</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Gross Profit</div>
+    <div class="metric-value money" style="color: var(--success);">{{ gross_profit|money:org }}</div>
+    <div class="metric-sub">Revenue - COGS</div>
+  </div>
+
+  <div class="metric-card">
+    <div class="metric-label">Gross Margin %</div>
+    <div class="metric-value" style="color: var(--brand);">{{ gross_margin_pct }}%</div>
+    <div class="metric-sub">(Gross Profit / Revenue)</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <span class="panel-title">Operational Profitability Overview</span>
+  </div>
+  <div class="panel-body">
+    <p style="font-size: 0.72rem; color: var(--text-secondary); line-height: 1.6;">
+      StockFlow provides operational profitability metrics based on physical inventory unit purchase costs vs. actual sales prices.
+      This allows SMB managers to monitor product profitability without needing a complex full general ledger.
+    </p>
+  </div>
+</div>
+{% endblock %}

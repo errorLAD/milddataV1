@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}{{ machine.name }} — Equipment Profile & Site Location{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+      <h1 class="kp-page-title">{{ machine.name }}</h1>
+      <span class="kp-badge kp-badge-brand">{{ machine.get_category_display }}</span>
+      <span class="kp-badge {{ health.badge_class }}">
+        <span class="kp-dot"></span> Health Score: {{ health.score }}/100 ({{ health.status_label }})
+      </span>
+      {% if machine.status == 'working' %}
+        <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Working</span>
+      {% elif machine.status == 'idle' %}
+        <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> Idle</span>
+      {% elif machine.status == 'breakdown' %}
+        <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Breakdown</span>
+      {% else %}
+        <span class="kp-badge kp-badge-info"><span class="kp-dot"></span> {{ machine.get_status_display }}</span>
+      {% endif %}
+    </div>
+    <p class="kp-page-subtitle">Registration: <strong>{{ machine.reg_number }}</strong> • Model: {{ machine.make_model }} ({{ machine.model_year }})</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <button class="kp-btn kp-btn-secondary" data-modal-target="modal-update-location">
+      <i class="fa-solid fa-location-dot"></i> Update Site Location
+    </button>
+    <button class="kp-btn kp-btn-primary" data-modal-target="modal-meter">
+      <i class="fa-solid fa-gauge"></i> Log Daily Meter
+    </button>
+    <a href="{% url 'fleet_map' %}" class="kp-btn kp-btn-secondary">
+      <i class="fa-solid fa-earth-americas"></i> Site Map View
+    </a>
+    <a href="{% url 'machine_list' %}" class="kp-btn kp-btn-secondary">
+      <i class="fa-solid fa-arrow-left"></i> Fleet Directory
+    </a>
+  </div>
+</div>
+
+<!-- Equipment Job Site Location Panel -->
+<div class="kp-panel" style="border-left: 4px solid var(--info); margin-bottom: 1rem;">
+  <div class="kp-panel-header" style="justify-content: space-between;">
+    <div class="kp-panel-title"><i class="fa-solid fa-location-dot" style="color: var(--info);"></i> Current Job Site & Location Status</div>
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span class="kp-badge kp-badge-info"><span class="kp-dot"></span> Site Assigned</span>
+      <button class="kp-btn kp-btn-secondary" data-modal-target="modal-update-location" style="padding: 0.15rem 0.4rem; font-size: 0.62rem;">
+        <i class="fa-solid fa-pen-to-square"></i> Change Site Location
+      </button>
+    </div>
+  </div>
+  <div class="kp-panel-body">
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+      <div>
+        <div style="font-size: 0.62rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary);">Assigned Job Site Location</div>
+        <div style="font-size: 0.8rem; font-weight: 650; color: var(--brand); margin-top: 0.15rem;">
+          📍 {{ location.location_name|default:"NH-48 Expressway Site, Bengaluru" }}
+        </div>
+        <div style="font-size: 0.64rem; color: var(--text-tertiary);">
+          Active Work Site Assignment
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 0.62rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary);">Shift & Engine Status</div>
+        <div style="font-size: 0.8rem; font-weight: 650; margin-top: 0.15rem;">
+          {% if location.ignition_on %}
+            <span class="kp-badge kp-badge-success" style="font-size: 0.65rem;"><span class="kp-dot"></span> Engine Active / Operating</span>
+          {% else %}
+            <span class="kp-badge kp-badge-warning" style="font-size: 0.65rem;"><span class="kp-dot"></span> Parked / Off Shift</span>
+          {% endif %}
+        </div>
+        <div style="font-size: 0.64rem; color: var(--text-tertiary); margin-top: 0.2rem;">
+          Movement Speed: {{ location.speed_kmh|default:"0.0" }} km/h
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 0.62rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary);">Assigned Operator</div>
+        <div style="font-size: 0.8rem; font-weight: 650; color: var(--text-primary); margin-top: 0.15rem;">
+          👤 {{ operator.name|default:"Unassigned Operator" }}
+        </div>
+        <div style="font-size: 0.64rem; color: var(--text-tertiary);">
+          License: {{ operator.license_number|default:"N/A" }}
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 0.62rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary);">Last Site Update</div>
+        <div style="font-size: 0.8rem; font-weight: 650; color: var(--text-primary); margin-top: 0.15rem;" class="num-tabular">
+          {{ location.last_ping_time|default:"Today" }}
+        </div>
+        <div style="font-size: 0.64rem; color: var(--success); font-weight: 600;">
+          🟢 Assigned Site Verified
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Health Score Telemetry Panel -->
+<div class="kp-panel" style="border-left: 4px solid var(--brand); margin-bottom: 1rem;">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title"><i class="fa-solid fa-heart-pulse" style="color: var(--brand);"></i> Machine Health Engine (Score: {{ health.score }}/100)</div>
+    <span class="kp-badge {{ health.badge_class }}">{{ health.status_label }} Condition</span>
+  </div>
+  <div class="kp-panel-body">
+    <div class="kp-row-split" style="margin-bottom: 0;">
+      <div>
+        <div style="font-weight: 650; font-size: 0.72rem; color: var(--text-primary); margin-bottom: 0.3rem;">Score Degradation Factors:</div>
+        {% for r in health.reasons %}
+          <div style="font-size: 0.68rem; color: var(--text-secondary); margin-bottom: 0.2rem;">
+            • {{ r }}
+          </div>
+        {% endfor %}
+      </div>
+      <div>
+        <div style="font-weight: 650; font-size: 0.72rem; color: var(--brand); margin-bottom: 0.3rem;">Actionable Maintenance Recommendations:</div>
+        {% for rec in health.recommendations %}
+          <div style="font-size: 0.68rem; color: var(--text-primary); font-weight: 600; margin-bottom: 0.2rem;">
+            👉 {{ rec }}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Machine Performance Metrics -->
+<div class="kp-metrics-grid">
+  <div class="kp-metric-card kp-metric-card-hero">
+    <div>
+      <div class="kp-metric-label">Net Machine Profit</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ net_profit|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub num-tabular">
+      Lifetime Billed Revenue: {{ currency_symbol }}{{ rev_total|floatformat:2|intcomma }}
+    </div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Current Meter Reading</div>
+      <div class="kp-metric-val num-tabular">{{ machine.current_meter|floatformat:1 }} {{ machine.unit_label }}</div>
+    </div>
+    <div class="kp-metric-sub">
+      Tracking Mode: {{ machine.get_tracking_type_display }}
+    </div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Cumulative Fuel Cost</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ fuel_total|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub">
+      Refuel Entries Logged: {{ fuel_logs.count }}
+    </div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Maintenance & Repair Expenses</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ maint_total|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub">
+      Total Services: {{ maint_logs.count }}
+    </div>
+  </div>
+</div>
+
+<!-- Grid Split: Left = Meter Logs & Refuels, Right = Maintenance & Compliance -->
+<div class="kp-row-split">
+  
+  <!-- Left Column -->
+  <div>
+    <!-- Recent Meter Logs -->
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <div class="kp-panel-title">Meter Log History</div>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Meter Reading</th>
+              <th>Units Worked</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in meter_logs %}
+              <tr>
+                <td class="num-tabular">{{ m.date }}</td>
+                <td class="num-tabular" style="font-weight: 700;">{{ m.meter_reading|floatformat:1 }} {{ machine.unit_label }}</td>
+                <td class="num-tabular">+{{ m.hours_worked|floatformat:1 }}</td>
+                <td style="color: var(--text-secondary);">{{ m.notes|default:"--" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No meter logs recorded yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Fuel Logs -->
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <div class="kp-panel-title">Refueling History</div>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Filled</th>
+              <th>Total Cost</th>
+              <th>Efficiency</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for f in fuel_logs %}
+              <tr>
+                <td class="num-tabular">{{ f.date }}</td>
+                <td class="num-tabular">{{ f.fuel_liters }} L</td>
+                <td class="num-tabular">{{ currency_symbol }}{{ f.total_cost|floatformat:2|intcomma }}</td>
+                <td>
+                  {% if f.is_abnormal_flag %}
+                    <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> {{ f.efficiency_rate }} L/Hr</span>
+                  {% else %}
+                    <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> {{ f.efficiency_rate }} L/Hr</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No fuel logs for this machine.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column -->
+  <div>
+    <!-- Maintenance Logs -->
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <div class="kp-panel-title">Service & Breakdown Logs</div>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Service Type</th>
+              <th>Cost</th>
+              <th>Vendor / Parts</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for ml in maint_logs %}
+              <tr>
+                <td class="num-tabular">{{ ml.date }}</td>
+                <td>
+                  {% if ml.is_breakdown %}
+                    <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Breakdown</span>
+                  {% else %}
+                    <span class="kp-badge kp-badge-info"><span class="kp-dot"></span> {{ ml.get_service_type_display }}</span>
+                  {% endif %}
+                </td>
+                <td class="num-tabular">{{ currency_symbol }}{{ ml.cost|floatformat:2|intcomma }}</td>
+                <td style="font-size: 0.68rem;">{{ ml.parts_replaced|default:ml.vendor_mechanic|default:"--" }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No maintenance history.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Compliance Documents -->
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <div class="kp-panel-title">Compliance Documents</div>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Doc Number</th>
+              <th>Expiry</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for d in documents %}
+              <tr>
+                <td style="font-weight: 650;">{{ d.title }}</td>
+                <td class="num-tabular">{{ d.doc_number }}</td>
+                <td class="num-tabular">{{ d.expiry_date }}</td>
+                <td>
+                  {% if d.status_level == 'expired' %}
+                    <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Expired</span>
+                  {% elif d.status_level == 'warning' %}
+                    <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> Expiring Soon</span>
+                  {% else %}
+                    <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Valid</span>
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No documents attached.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Update Site Location -->
+<div class="kp-modal-backdrop" id="modal-update-location">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Update {{ machine.name }} Job Site Location</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'update_location' machine.pk %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Assigned Job Site / Location Name</label>
+          <input type="text" name="location_name" class="kp-input" value="{{ location.location_name|default:'' }}" placeholder="e.g. NH-48 Expressway Site, Bengaluru" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Movement Speed (km/h)</label>
+            <input type="number" step="0.1" name="speed_kmh" class="kp-input" value="{{ location.speed_kmh|default:'0.0' }}" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Engine Shift Status</label>
+            <select name="ignition_on" class="kp-select">
+              <option value="true" {% if location.ignition_on %}selected{% endif %}>Engine Active / Operating 🟢</option>
+              <option value="false" {% if not location.ignition_on %}selected{% endif %}>Parked / Off Shift 🟡</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Save Site Location</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Log Meter Modal -->
+<div class="kp-modal-backdrop" id="modal-meter">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Update {{ machine.name }} Meter Reading</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'log_meter' machine.pk %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Date</label>
+          <input type="date" name="date" class="kp-input" value="{% now 'Y-m-d' %}" required>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">New Meter Reading (Current: {{ machine.current_meter }} {{ machine.unit_label }})</label>
+          <input type="number" step="0.1" name="meter_reading" class="kp-input" value="{{ machine.current_meter }}" required>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Shift Notes / Site Location</label>
+          <input type="text" name="notes" class="kp-input" placeholder="e.g. Shift 1 operated at Metro Site">
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Update Meter</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

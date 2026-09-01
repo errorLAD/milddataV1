@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}Businesses Management | Platform Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-building text-primary me-2"></i> Registered Businesses</h3>
+        <p class="text-muted mb-0 fs-7">Manage platform tenant accounts, monitor business revenue, sales, udhaar, and toggle active/blocked status.</p>
+    </div>
+    <a href="{% url 'platform_admin:dashboard' %}" class="btn btn-light border btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Admin Overview
+    </a>
+</div>
+
+<!-- Search, Filter, Sort Controls Bar -->
+<div class="card card-custom p-3 mb-4 border-0">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-12 col-md-5">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" value="{{ query }}" class="form-control border-start-0" placeholder="Search business by name, owner, phone, email...">
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Filter: All Statuses</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Filter: Active Only</option>
+                <option value="blocked" {% if status_filter == 'blocked' %}selected{% endif %}>Filter: Blocked Only</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Sort: Date Joined (Newest)</option>
+                <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Sort: Date Joined (Oldest)</option>
+                <option value="revenue_desc" {% if sort_by == 'revenue_desc' %}selected{% endif %}>Sort: Highest Revenue</option>
+                <option value="udhaar_desc" {% if sort_by == 'udhaar_desc' %}selected{% endif %}>Sort: Highest Udhaar</option>
+                <option value="sales_desc" {% if sort_by == 'sales_desc' %}selected{% endif %}>Sort: Most Sales</option>
+                <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Sort: Name (A-Z)</option>
+            </select>
+        </div>
+        <div class="col-12 col-md-1">
+            <button type="submit" class="btn btn-primary-custom btn-sm w-100">Apply</button>
+        </div>
+    </form>
+</div>
+
+<!-- Business Table -->
+<div class="card card-custom p-0 border-0">
+    <div class="table-responsive">
+        <table class="table table-custom align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Business</th>
+                    <th>Status</th>
+                    <th class="text-end">Revenue</th>
+                    <th class="text-center">Sales</th>
+                    <th class="text-end">Udhaar</th>
+                    <th class="text-center">Prods</th>
+                    <th class="text-center">Custs</th>
+                    <th class="text-center">Txns</th>
+                    <th class="text-center">Orders</th>
+                    <th class="text-center">WA / AI</th>
+                    <th>Date Joined</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in business_data %}
+                {% with b=row.obj %}
+                <tr class="{% if not b.is_active %}table-secondary opacity-75{% endif %}">
+                    <td>
+                        <a href="{% url 'platform_admin:business_detail' b.pk %}" class="fw-bold text-dark text-decoration-none d-block">
+                            {{ b.name }}
+                        </a>
+                        <small class="text-muted fs-8">{{ b.owner_name }} | {{ b.phone }}</small>
+                    </td>
+                    <td>
+                        {% if b.is_active %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle fs-8">Active</span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-8">Blocked</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end fw-bold text-success fs-7">{{ row.revenue|inr }}</td>
+                    <td class="text-center fw-semibold fs-7">{{ row.sales_count }}</td>
+                    <td class="text-end fw-bold text-warning fs-7">{{ row.udhaar_amount|inr }}</td>
+                    <td class="text-center fs-7">{{ row.products_count }}</td>
+                    <td class="text-center fs-7">{{ row.customers_count }}</td>
+                    <td class="text-center fs-7">{{ row.transactions_count }}</td>
+                    <td class="text-center fs-7">{{ row.orders_count }}</td>
+                    <td class="text-center fs-8">
+                        <span class="badge bg-light text-dark border">{{ row.whatsapp_sent }}</span> / 
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ row.ai_replies }}</span>
+                    </td>
+                    <td class="fs-8 text-muted">{{ b.created_at|date:"d M Y" }}</td>
+                    <td class="text-end">
+                        <div class="d-flex align-items-center justify-content-end gap-1">
+                            <a href="{% url 'platform_admin:business_detail' b.pk %}" class="btn btn-sm btn-outline-primary py-0.5 px-2 fs-8" title="View Business Details">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            
+                            {% if b.is_active %}
+                            <form method="post" action="{% url 'platform_admin:business_block' b.pk %}" class="d-inline" onsubmit="return confirm('Block this business account? Users of this business will be prevented from accessing CRM.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-warning py-0.5 px-2 fs-8" title="Block Business">
+                                    <i class="bi bi-slash-circle"></i> Block
+                                </button>
+                            </form>
+                            {% else %}
+                            <form method="post" action="{% url 'platform_admin:business_unblock' b.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-success py-0.5 px-2 fs-8" title="Unblock Business">
+                                    <i class="bi bi-check-circle"></i> Unblock
+                                </button>
+                            </form>
+                            {% endif %}
+
+                            <form method="post" action="{% url 'platform_admin:business_delete' b.pk %}" class="d-inline" onsubmit="return confirm('PERMANENTLY DELETE business \'{{ b.name }}\' and all associated data? This action cannot be undone.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-0.5 px-1.5 fs-8" title="Delete Business">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endwith %}
+                {% empty %}
+                <tr>
+                    <td colspan="12" class="text-center py-5 text-muted">
+                        <i class="bi bi-building-exclamation fs-1 d-block mb-2 opacity-50"></i>
+                        <p class="mb-0 fs-6">No matching registered businesses found.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

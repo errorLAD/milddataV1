@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Products - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Products & Stock</h1>
+        <div class="page-subtitle">Manage catalog, pricing, reorder levels, and inventory status</div>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{% url 'barcode_scanner' %}" class="btn-saas btn-secondary">📷 Scan Barcode</a>
+        <a href="{% url 'product_create' %}" class="btn-saas btn-primary">+ Add Product</a>
+    </div>
+</div>
+
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="metric-label">Physical Products</div>
+        <div class="metric-number">{{ physical_count }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Inventory Valuation</div>
+        <div class="metric-number">{{ currency_symbol }}{{ inventory_value|floatformat:2 }}</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Low Stock Alerts</div>
+        <div class="metric-number" style="color: var(--warning);">{{ low_stock_count }}</div>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Product Catalog</div>
+        <div style="display: flex; gap: 0.4rem;">
+            <a href="{% url 'product_list' %}" class="btn-saas {% if not filter_type %}btn-primary{% else %}btn-secondary{% endif %}">All</a>
+            <a href="{% url 'product_list' %}?filter=low_stock" class="btn-saas {% if filter_type == 'low_stock' %}btn-primary{% else %}btn-secondary{% endif %}">⚠️ Low Stock</a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>SKU / Barcode</th>
+                    <th>Type</th>
+                    <th>Purchase Price</th>
+                    <th>Selling Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td style="font-weight: 650;">
+                        <a href="{% url 'product_detail' p.id %}" style="color: var(--text-primary); text-decoration: none;">{{ p.name }}</a>
+                    </td>
+                    <td>{{ p.sku }} {% if p.barcode %}<br><span style="font-size: 0.6rem; color: var(--text-tertiary);">{{ p.barcode }}</span>{% endif %}</td>
+                    <td><span class="badge-pill badge-info">{{ p.product_type }}</span></td>
+                    <td class="num">{{ currency_symbol }}{{ p.purchase_price|floatformat:2 }}</td>
+                    <td class="num" style="font-weight: 600;">{{ currency_symbol }}{{ p.selling_price|floatformat:2 }}</td>
+                    <td class="num" style="font-weight: 700;">{{ p.stock_quantity }} {{ p.unit }}</td>
+                    <td>
+                        {% if p.is_low_stock %}
+                        <span class="badge-pill badge-danger">Low Stock</span>
+                        {% else %}
+                        <span class="badge-pill badge-success">In Stock</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'stock_adjust' p.id %}" class="btn-saas btn-secondary" style="padding: 0.2rem 0.4rem; font-size: 0.65rem;">Adjust Stock</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center; color: var(--text-tertiary);">No products found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

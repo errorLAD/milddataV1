@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Adjust Stock - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Stock Adjustment: {{ product.name }}</h1>
+        <div class="page-subtitle">Current Stock: {{ product.stock_quantity }} {{ product.unit }}</div>
+    </div>
+</div>
+
+<div class="card-panel" style="max-width: 500px;">
+    <div class="panel-header">
+        <div class="panel-title">Stock Change Details</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Movement Type</label>
+                <select name="movement_type" class="form-select">
+                    {% for key, val in movement_types %}
+                    <option value="{{ key }}">{{ val }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Quantity</label>
+                <input type="number" name="quantity_change" class="form-input" placeholder="e.g. 10" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Reason / Notes</label>
+                <textarea name="notes" class="form-textarea" rows="3" placeholder="Reason for inventory change..."></textarea>
+            </div>
+
+            <button type="submit" class="btn-saas btn-primary">Save Adjustment</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

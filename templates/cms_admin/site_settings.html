@@ -1,0 +1,97 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Global Site Settings — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Global Website Settings</h1>
+        <p class="page-subtitle">Configure company identity, contact channels, default currency, analytics IDs, and primary CTA banners.</p>
+    </div>
+</div>
+
+<div class="cms-form-card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Company Name</label>
+                {{ form.company_name }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tagline</label>
+                {{ form.tagline }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Logo URL</label>
+                {{ form.logo_url }}
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Primary Contact Email</label>
+                {{ form.contact_email }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Support Email</label>
+                {{ form.support_email }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                {{ form.phone_number }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Default Currency</label>
+                {{ form.default_currency }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Headquarters Address</label>
+            {{ form.address }}
+        </div>
+
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin: 1.5rem 0 1rem; color: #38bdf8;">Social Links &amp; Analytics</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">LinkedIn URL</label>
+                {{ form.social_linkedin }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Twitter / X URL</label>
+                {{ form.social_twitter }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">GitHub URL</label>
+                {{ form.social_github }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Google Analytics Property ID</label>
+                {{ form.google_analytics_id }}
+            </div>
+        </div>
+
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin: 1.5rem 0 1rem; color: #34d399;">Default Bottom Call-to-Action (CTA)</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">CTA Title</label>
+                {{ form.default_cta_title }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Button Label &amp; URL</label>
+                <div style="display: flex; gap: 0.5rem;">
+                    {{ form.default_cta_button_text }}
+                    {{ form.default_cta_button_url }}
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">CTA Subtitle</label>
+            {{ form.default_cta_subtitle }}
+        </div>
+
+        <button type="submit" class="btn-cms btn-primary" style="margin-top: 1.5rem;">Save Site Settings</button>
+    </form>
+</div>
+{% endblock %}

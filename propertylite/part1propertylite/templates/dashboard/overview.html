@@ -1,0 +1,402 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Dashboard | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<!-- Header Row -->
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Portfolio Executive Dashboard</h1>
+    <p class="kp-page-subtitle">Real-time occupancy metrics, cash flow analytics, property yields, and recent payments.</p>
+  </div>
+  <div class="d-flex flex-wrap align-items-center gap-1.5">
+    <a href="{% url 'property_create' %}" class="kp-btn kp-btn-primary">
+      <i class="bi bi-building-add"></i> + Property
+    </a>
+    <a href="{% url 'tenant_create' %}" class="kp-btn kp-btn-secondary">
+      <i class="bi bi-person-plus"></i> + Tenant
+    </a>
+    <a href="{% url 'lease_create' %}" class="kp-btn kp-btn-secondary">
+      <i class="bi bi-file-earmark-plus"></i> + Lease
+    </a>
+    <a href="{% url 'rent_collection' %}" class="kp-btn kp-btn-secondary">
+      <i class="bi bi-cash-stack"></i> Record Payment
+    </a>
+  </div>
+</div>
+
+<!-- 6-Column Metrics Grid -->
+<div class="row g-2 mb-3">
+
+  <!-- Hero Card: Revenue Collected -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kp-card kp-hero-card h-100">
+      <div class="kp-card-body p-2.5">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <div class="kp-metric-label text-primary">Rent Collected</div>
+          <span class="kp-status-badge kp-status-brand fs-8"><i class="bi bi-graph-up-arrow"></i> +12.4%</span>
+        </div>
+        <div class="kp-metric-number text-primary">{{ current_org.currency_symbol|default:"$" }}{{ total_rent_collected|intcomma }}</div>
+        <div class="kp-metric-subtext">Due: {{ current_org.currency_symbol|default:"$" }}{{ outstanding_rent|intcomma }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric 2: Occupancy Rate -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kp-card h-100">
+      <div class="kp-card-body p-2.5">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <div class="kp-metric-label">Occupancy Rate</div>
+          <span class="kp-status-badge kp-status-success fs-8">{{ occupied_units }}/{{ total_units }}</span>
+        </div>
+        <div class="kp-metric-number">{{ occupancy_pct }}%</div>
+        <div class="kp-metric-subtext">{{ vacant_units }} vacant unit{% if vacant_units != 1 %}s{% endif %}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric 3: Net Income -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kp-card h-100">
+      <div class="kp-card-body p-2.5">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <div class="kp-metric-label">Net Income</div>
+          <span class="kp-status-badge kp-status-info fs-8">YTD</span>
+        </div>
+        <div class="kp-metric-number">{{ current_org.currency_symbol|default:"$" }}{{ net_income|intcomma }}</div>
+        <div class="kp-metric-subtext">Exp: {{ current_org.currency_symbol|default:"$" }}{{ total_expenses|intcomma }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric 4: Open Maintenance -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kp-card h-100">
+      <div class="kp-card-body p-2.5">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <div class="kp-metric-label">Maintenance</div>
+          <span class="kp-status-badge {% if open_tickets_count > 0 %}kp-status-warning{% else %}kp-status-success{% endif %} fs-8">
+            <span class="dot"></span> {{ open_tickets_count }} Open
+          </span>
+        </div>
+        <div class="kp-metric-number">{{ open_tickets_count }}</div>
+        <div class="kp-metric-subtext">Work orders active</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric 5: Total Portfolio Count -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kp-card h-100">
+      <div class="kp-card-body p-2.5">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <div class="kp-metric-label">Portfolio Assets</div>
+          <span class="kp-status-badge kp-status-brand fs-8">Real Estate</span>
+        </div>
+        <div class="kp-metric-number">{{ total_properties }}</div>
+        <div class="kp-metric-subtext">{{ total_units }} total units</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Metric 6: Overdue Rent Invoices -->
+  <div class="col-sm-6 col-xl-2">
+    <div class="kp-card h-100">
+      <div class="kp-card-body p-2.5">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <div class="kp-metric-label text-danger">Overdue Invoices</div>
+          <span class="kp-status-badge kp-status-danger fs-8">Follow-up</span>
+        </div>
+        <div class="kp-metric-number text-danger">{{ overdue_invoices_count }}</div>
+        <div class="kp-metric-subtext">Action required</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Dual Chart Row -->
+<div class="row g-3 mb-3">
+  <!-- Revenue Line Chart -->
+  <div class="col-lg-8">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <div>
+          <h3 class="kp-panel-title">Monthly Revenue vs Expenses Trend</h3>
+          <p class="kp-panel-desc">Cash flow collection against operational expenditure.</p>
+        </div>
+        <div class="d-flex gap-1">
+          <span class="kp-status-badge kp-status-brand"><span class="dot"></span> Rent Collected</span>
+          <span class="kp-status-badge kp-status-danger"><span class="dot"></span> Expenses</span>
+        </div>
+      </div>
+      <div class="p-3" style="position: relative; height: 250px;">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Occupancy Doughnut Chart -->
+  <div class="col-lg-4">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <div>
+          <h3 class="kp-panel-title">Unit Status Distribution</h3>
+          <p class="kp-panel-desc">Portfolio occupancy breakdown.</p>
+        </div>
+      </div>
+      <div class="p-3 d-flex flex-column align-items-center justify-content-center">
+        <!-- Relative position wrapper for Chart.js canvas sizing -->
+        <div style="position: relative; width: 170px; height: 170px;">
+          <canvas id="occupancyDoughnutChart"></canvas>
+        </div>
+        <div class="d-flex gap-2 mt-3 fs-8">
+          <span class="kp-status-badge kp-status-success"><span class="dot"></span> Occupied ({{ occupied_units }})</span>
+          <span class="kp-status-badge kp-status-warning"><span class="dot"></span> Vacant ({{ vacant_units }})</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Property Leaderboard & Expense Categories -->
+<div class="row g-3 mb-3">
+  <!-- Property Leaderboard -->
+  <div class="col-lg-7">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <div>
+          <h3 class="kp-panel-title">Property Asset Performance Leaderboard</h3>
+          <p class="kp-panel-desc">Top assets ranked by occupancy yield and current valuation.</p>
+        </div>
+        <a href="{% url 'property_list' %}" class="kp-btn kp-btn-secondary py-0.5 px-2">View Portfolio</a>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Property Name</th>
+              <th>Type</th>
+              <th>Units</th>
+              <th>Occupancy</th>
+              <th class="text-end">Asset Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for prop in properties %}
+            <tr>
+              <td class="fw-semibold">
+                <a href="{% url 'property_detail' pk=prop.id %}" class="text-dark text-decoration-none hover-underline">{{ prop.name }}</a>
+              </td>
+              <td><span class="kp-status-badge kp-status-brand">{{ prop.get_property_type_display }}</span></td>
+              <td class="tabular-nums">{{ prop.total_units_count }}</td>
+              <td>
+                <div class="d-flex align-items-center gap-1.5">
+                  <span class="tabular-nums fw-semibold">{{ prop.occupancy_rate }}%</span>
+                  <div class="progress flex-grow-1" style="height: 5px;">
+                    <div class="progress-bar bg-primary" style="width: {{ prop.occupancy_rate }}%;"></div>
+                  </div>
+                </div>
+              </td>
+              <td class="text-end tabular-nums fw-semibold">{{ current_org.currency_symbol|default:"$" }}{{ prop.current_value|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-3 text-muted">No properties found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense Categories Breakdown -->
+  <div class="col-lg-5">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <div>
+          <h3 class="kp-panel-title">Expense Breakdown by Category</h3>
+          <p class="kp-panel-desc">Operational expenditure categories.</p>
+        </div>
+        <a href="{% url 'expense_list' %}" class="kp-btn kp-btn-secondary py-0.5 px-2">+ Add Expense</a>
+      </div>
+      <div class="p-3">
+        {% for cat in expense_categories %}
+        <div class="mb-2">
+          <div class="d-flex justify-content-between text-dark fs-7 fw-semibold mb-1">
+            <span>{{ cat.name }}</span>
+            <span class="tabular-nums">{{ current_org.currency_symbol|default:"$" }}{{ cat.total|intcomma }}</span>
+          </div>
+          <div class="progress" style="height: 6px;">
+            <div class="progress-bar bg-danger" style="width: 65%;"></div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center text-muted py-3 fs-7">No expense records logged.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Secondary Content: Expiring Leases & Recent Payments -->
+<div class="row g-3">
+
+  <!-- Left: Expiring Leases Panel -->
+  <div class="col-lg-6">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <div>
+          <h3 class="kp-panel-title">Expiring Leases (Next 30 Days)</h3>
+          <p class="kp-panel-desc">Lease contracts reaching end-of-term.</p>
+        </div>
+        <span class="kp-status-badge kp-status-warning">{{ expiring_leases_count }} Alert{% if expiring_leases_count != 1 %}s{% endif %}</span>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Tenant</th>
+              <th>Unit / Property</th>
+              <th>End Date</th>
+              <th class="text-end">Rent</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for lease in expiring_leases %}
+            <tr>
+              <td class="fw-semibold">{{ lease.tenant.get_full_name }}</td>
+              <td>Unit {{ lease.unit.unit_number }} ({{ lease.property.name }})</td>
+              <td><span class="text-danger fw-semibold">{{ lease.end_date }}</span></td>
+              <td class="text-end tabular-nums">{{ current_org.currency_symbol|default:"$" }}{{ lease.monthly_rent|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-3 text-muted">No active leases expiring in the next 30 days.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Recent Processed Payments Stream -->
+  <div class="col-lg-6">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <div>
+          <h3 class="kp-panel-title">Recent Rent Payments</h3>
+          <p class="kp-panel-desc">Processed payment ledger.</p>
+        </div>
+        <a href="{% url 'rent_collection' %}" class="kp-btn kp-btn-secondary py-0.5 px-2">Rent Ledger</a>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Tenant</th>
+              <th>Method</th>
+              <th>Ref #</th>
+              <th class="text-end">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in recent_payments %}
+            <tr>
+              <td class="fw-semibold">{{ p.tenant.get_full_name }}</td>
+              <td>{{ p.get_payment_method_display }}</td>
+              <td class="text-muted">{{ p.reference_number|default:"—" }}</td>
+              <td class="text-end tabular-nums text-success fw-bold">{{ current_org.currency_symbol|default:"$" }}{{ p.amount|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-3 text-muted">No recent payments logged.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    // Revenue Line Chart
+    const ctxLineEl = document.getElementById('revenueChart');
+    if (ctxLineEl) {
+      new Chart(ctxLineEl.getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: {{ chart_months|safe }},
+          datasets: [
+            {
+              label: 'Rent Collected ({{ current_org.currency_symbol|default:"$" }})',
+              data: {{ revenue_data|safe }},
+              borderColor: '#2451FF',
+              backgroundColor: 'rgba(36, 81, 255, 0.08)',
+              fill: true,
+              tension: 0.3,
+              borderWidth: 2,
+              pointRadius: 3
+            },
+            {
+              label: 'Expenses ({{ current_org.currency_symbol|default:"$" }})',
+              data: {{ expense_data|safe }},
+              borderColor: '#B42318',
+              backgroundColor: 'transparent',
+              borderDash: [5, 5],
+              tension: 0.3,
+              borderWidth: 2,
+              pointRadius: 3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { grid: { color: '#E4E7EC' }, ticks: { font: { size: 10, family: 'Inter' } } },
+            x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Inter' } } }
+          }
+        }
+      });
+    }
+
+    // Occupancy Doughnut Chart
+    const ctxDoughnutEl = document.getElementById('occupancyDoughnutChart');
+    if (ctxDoughnutEl) {
+      const occupied = {{ occupied_units|default:0 }};
+      const vacant = {{ vacant_units|default:0 }};
+      const dataValues = (occupied === 0 && vacant === 0) ? [12, 4] : [occupied, vacant];
+
+      new Chart(ctxDoughnutEl.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Occupied Units', 'Vacant Units'],
+          datasets: [{
+            data: dataValues,
+            backgroundColor: ['#067647', '#B54708'],
+            borderWidth: 0,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          cutout: '72%'
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

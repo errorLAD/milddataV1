@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}AI Business Assistant — Machine OS Enterprise{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">AI Fleet Business Assistant</h1>
+    <p class="kp-page-subtitle">Instant conversational analytics backed directly by your company's live operational and financial database.</p>
+  </div>
+</div>
+
+<div class="kp-row-split" style="grid-template-columns: 320px 1fr;">
+  
+  <!-- Left Side: Quick Query Prompts -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Quick Fleet Questions</div>
+    </div>
+    <div class="kp-panel-body" style="display: flex; flex-direction: column; gap: 0.5rem; padding: 0.85rem;">
+      <button class="kp-btn kp-btn-secondary" style="text-align: left; justify-content: flex-start; width: 100%; white-space: normal;" onclick="sendQuickQuery('Which machine is most profitable?')">
+        🏆 Which machine is most profitable?
+      </button>
+      <button class="kp-btn kp-btn-secondary" style="text-align: left; justify-content: flex-start; width: 100%; white-space: normal;" onclick="sendQuickQuery('Which machines are currently idle?')">
+        ⚠️ Which machines are idle?
+      </button>
+      <button class="kp-btn kp-btn-secondary" style="text-align: left; justify-content: flex-start; width: 100%; white-space: normal;" onclick="sendQuickQuery('What maintenance or service is due soon?')">
+        🛠️ Upcoming maintenance due?
+      </button>
+      <button class="kp-btn kp-btn-secondary" style="text-align: left; justify-content: flex-start; width: 100%; white-space: normal;" onclick="sendQuickQuery('Are there any abnormal fuel consumption flags?')">
+        ⛽ Any abnormal fuel usage?
+      </button>
+      <button class="kp-btn kp-btn-secondary" style="text-align: left; justify-content: flex-start; width: 100%; white-space: normal;" onclick="sendQuickQuery('Give me a repair vs replace recommendation')">
+        🔄 Repair vs replace advice
+      </button>
+      <button class="kp-btn kp-btn-secondary" style="text-align: left; justify-content: flex-start; width: 100%; white-space: normal;" onclick="sendQuickQuery('Show monthly cost and revenue summary')">
+        📊 Monthly financial summary
+      </button>
+    </div>
+  </div>
+
+  <!-- Right Side: Interactive Chat Box -->
+  <div class="kp-panel" style="display: flex; flex-direction: column; height: 580px;">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title" style="display: flex; align-items: center; gap: 0.4rem;">
+        <i class="fa-solid fa-robot" style="color: var(--brand);"></i> Live AI Fleet Assistant
+      </div>
+      <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Connected to {{ org_name }} SQL DB</span>
+    </div>
+    
+    <!-- Chat Output Area -->
+    <div id="ai-chat-box" style="flex: 1; padding: 1.1rem; overflow-y: auto; background: var(--surface);">
+      
+      <!-- Welcome Message -->
+      <div style="margin-bottom: 0.75rem; display: flex; justify-content: flex-start;">
+        <div style="max-width: 85%; padding: 0.65rem 0.85rem; border-radius: 10px; font-size: 0.74rem; background: var(--surface-alt); border: 1px solid var(--border); color: var(--text-primary); line-height: 1.45;">
+          👋 Hello! I am your <strong>Machine OS AI Assistant</strong>. I have real-time context on your fleet equipment status, meter logs, fuel efficiency, repair history, document expiries, and profit/loss metrics.<br><br>
+          Type a question below or pick one of the quick prompts on the left to get instant insights!
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Input Form -->
+    <form id="ai-chat-form" style="background: var(--surface-alt); border-top: 1px solid var(--border); padding: 0.65rem 0.9rem; display: flex; gap: 0.5rem; align-items: center;">
+      <input type="text" id="ai-query-input" class="kp-input" placeholder="Ask about profit, idle machines, fuel spikes, or maintenance..." required style="flex: 1;">
+      <button type="submit" class="kp-btn kp-btn-primary" style="padding: 0.4rem 0.85rem;">
+        Send <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

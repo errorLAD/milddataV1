@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Supplier - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Add New Supplier</h1>
+        <div class="page-subtitle">Create vendor profile</div>
+    </div>
+</div>
+
+<div class="card-panel" style="max-width: 550px;">
+    <div class="panel-header">
+        <div class="panel-title">Supplier Details</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Company / Vendor Name</label>
+                <input type="text" name="company_name" class="form-input" placeholder="e.g. ABC Industrial Supplies" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Contact Person</label>
+                    <input type="text" name="contact_person" class="form-input" placeholder="e.g. John Doe">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Country</label>
+                    <input type="text" name="country" class="form-input" value="{{ organization.country }}" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="email" class="form-input" placeholder="supplier@abc.com">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="phone" class="form-input" placeholder="+1 555 0192">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Payment Terms</label>
+                <input type="text" name="payment_terms" class="form-input" value="Net 30" required>
+            </div>
+
+            <button type="submit" class="btn-saas btn-primary">Save Supplier</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

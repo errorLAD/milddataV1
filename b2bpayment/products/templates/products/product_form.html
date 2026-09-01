@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}{% if object %}Edit Product{% else %}Add New Product{% endif %} | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card card-custom p-4 shadow-sm border-0">
+            <div class="d-flex align-items-center justify-content-between mb-4 pb-3 border-bottom">
+                <h4 class="fw-bold text-dark mb-0">
+                    {% if object %}<i class="bi bi-pencil me-2"></i> Edit Product{% else %}<i class="bi bi-box-seam me-2"></i> Add New Product{% endif %}
+                </h4>
+                <a href="{% url 'products:list' %}" class="btn btn-sm btn-outline-secondary">Back to Catalog</a>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold fs-7">Product Name *</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}<div class="text-danger fs-8 mt-1">{{ form.name.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold fs-7">SKU / Barcode</label>
+                        {{ form.sku }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold fs-7">Category</label>
+                        {{ form.category }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold fs-7">Selling Price (₹) *</label>
+                        {{ form.selling_price }}
+                        {% if form.selling_price.errors %}<div class="text-danger fs-8 mt-1">{{ form.selling_price.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold fs-7">Cost Price (₹)</label>
+                        {{ form.cost_price }}
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold fs-7">Stock Quantity *</label>
+                        {{ form.stock_quantity }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-semibold fs-7">Low Stock Alert Threshold</label>
+                        {{ form.low_stock_threshold }}
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary-custom flex-grow-1 py-2">
+                        {% if object %}Save Changes{% else %}Add to Inventory{% endif %}
+                    </button>
+                    <a href="{% url 'products:list' %}" class="btn btn-light border py-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

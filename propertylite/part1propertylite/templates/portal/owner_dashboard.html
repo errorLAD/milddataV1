@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Owner Portal | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Property Owner Financial Portal</h1>
+    <p class="kp-page-subtitle">Real-time asset valuation, portfolio cash yield, and net ROI reporting.</p>
+  </div>
+  <div>
+    <a href="{% url 'export_csv' report_type='properties' %}" class="kp-btn kp-btn-secondary">
+      <i class="bi bi-download"></i> Export Owner Statement (CSV)
+    </a>
+  </div>
+</div>
+
+<!-- 4 Financial Metrics -->
+<div class="kp-metrics-grid mb-3">
+  <div class="kp-card kp-hero-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label text-primary">Portfolio Valuation</div>
+      <div class="kp-metric-number text-primary">{{ current_org.currency_symbol|default:"$" }}{{ total_portfolio_value|intcomma }}</div>
+      <div class="kp-metric-subtext">{{ properties.count }} Owned Real Estate Assets</div>
+    </div>
+  </div>
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label">Gross Rental Revenue</div>
+      <div class="kp-metric-number text-success">{{ current_org.currency_symbol|default:"$" }}{{ total_income|intcomma }}</div>
+      <div class="kp-metric-subtext">Year-to-date collected rent</div>
+    </div>
+  </div>
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label">Net Cash Yield (Profit)</div>
+      <div class="kp-metric-number">{{ current_org.currency_symbol|default:"$" }}{{ net_income|intcomma }}</div>
+      <div class="kp-metric-subtext">After {{ current_org.currency_symbol|default:"$" }}{{ total_expenses|intcomma }} expenses</div>
+    </div>
+  </div>
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label">Annualized Net ROI</div>
+      <div class="kp-metric-number text-primary">{{ roi_pct }}%</div>
+      <div class="kp-metric-subtext">Overall Occupancy: {{ overall_occupancy }}%</div>
+    </div>
+  </div>
+</div>
+
+<!-- Asset Performance Table -->
+<div class="kp-panel mb-3">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Property Asset Performance</h3>
+  </div>
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Property Asset Name</th>
+          <th>Location</th>
+          <th>Units</th>
+          <th>Occupancy</th>
+          <th class="text-end">Current Valuation</th>
+          <th class="text-end">Rental Income</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in properties %}
+        <tr>
+          <td class="fw-semibold">{{ p.name }}</td>
+          <td>{{ p.city }}, {{ p.state }}</td>
+          <td class="tabular-nums">{{ p.total_units_count }} Units</td>
+          <td>
+            <span class="kp-status-badge kp-status-success">{{ p.occupancy_rate }}%</span>
+          </td>
+          <td class="text-end tabular-nums fw-semibold">{{ current_org.currency_symbol|default:"$" }}{{ p.current_value|intcomma }}</td>
+          <td class="text-end tabular-nums text-success fw-semibold">{{ current_org.currency_symbol|default:"$" }}{{ p.purchase_value|intcomma }}</td>
+          <td class="text-end">
+            <a href="{% url 'property_detail' pk=p.id %}" class="kp-btn kp-btn-secondary py-0.5 px-2">View Asset</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="text-center py-4 text-muted">No properties assigned to this owner account.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

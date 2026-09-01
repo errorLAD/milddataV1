@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Reports & Analytics — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Executive Reports & Analytics Center</h1>
+    <p class="kp-page-subtitle">Custom date range filtering, operational trends, and one-click report exports.</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{% url 'export_fleet_csv' %}" class="kp-btn kp-btn-primary">
+      <i class="fa-solid fa-file-excel"></i> Export Fleet Data (CSV)
+    </a>
+    <button class="kp-btn kp-btn-secondary" onclick="window.print()">
+      <i class="fa-solid fa-print"></i> Print Report
+    </button>
+  </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="kp-panel" style="margin-bottom: 0.875rem;">
+  <div class="kp-panel-body" style="padding: 0.65rem 0.9rem;">
+    <form method="GET" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+      <div style="width: 200px;">
+        <label class="kp-label">Time Period Filter</label>
+        <select name="range" class="kp-select" onchange="this.form.submit()">
+          <option value="7days" {% if range_type == '7days' %}selected{% endif %}>Last 7 Days</option>
+          <option value="month" {% if range_type == 'month' %}selected{% endif %}>Last 30 Days (This Month)</option>
+          <option value="year" {% if range_type == 'year' %}selected{% endif %}>Past 12 Months</option>
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Summary Metrics -->
+<div class="kp-metrics-grid">
+  <div class="kp-metric-card kp-metric-card-hero">
+    <div>
+      <div class="kp-metric-label">Period Gross Revenue</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ total_rev|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub">Filter: Since {{ start_date }}</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Diesel Refuel Expense</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ total_fuel|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub">Fuel Logs: {{ fuel_logs.count }}</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Maintenance & Repair Spend</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ total_maint|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub">Service Entries: {{ maint_logs.count }}</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Net Operating Profit</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--success);">{{ currency_symbol }}{{ net_profit|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub">Revenue minus fuel & repairs</div>
+  </div>
+</div>
+
+<!-- Report Data Tables -->
+<div class="kp-row-split">
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Period Refueling Logs</div>
+    </div>
+    <div class="kp-table-responsive">
+      <table class="kp-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Machine</th>
+            <th>Liters</th>
+            <th>Total Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in fuel_logs %}
+            <tr>
+              <td class="num-tabular">{{ f.date }}</td>
+              <td style="font-weight: 600;">{{ f.machine.name }}</td>
+              <td class="num-tabular">{{ f.fuel_liters }} L</td>
+              <td class="num-tabular">{{ currency_symbol }}{{ f.total_cost|floatformat:2|intcomma }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No fuel entries in date range.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Period Service Logs</div>
+    </div>
+    <div class="kp-table-responsive">
+      <table class="kp-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Machine</th>
+            <th>Category</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ml in maint_logs %}
+            <tr>
+              <td class="num-tabular">{{ ml.date }}</td>
+              <td style="font-weight: 600;">{{ ml.machine.name }}</td>
+              <td><span class="kp-badge kp-badge-brand">{{ ml.get_service_type_display }}</span></td>
+              <td class="num-tabular">{{ currency_symbol }}{{ ml.cost|floatformat:2|intcomma }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No maintenance entries in date range.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

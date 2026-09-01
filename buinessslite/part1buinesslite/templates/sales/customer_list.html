@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Customers - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Customers</h1>
+        <div class="page-subtitle">Customer profiles, billing histories, and accounts receivable</div>
+    </div>
+    <div>
+        <a href="{% url 'customer_create' %}" class="btn-saas btn-primary">+ Add Customer</a>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Customer Directory</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Contact Person</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Country</th>
+                    <th>Payment Terms</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in customers %}
+                <tr>
+                    <td style="font-weight: 650;">
+                        <a href="{% url 'customer_detail' c.id %}" style="color: var(--text-primary); text-decoration: none;">{{ c.company_name }}</a>
+                    </td>
+                    <td>{{ c.contact_person|default:"-" }}</td>
+                    <td>{{ c.email|default:"-" }}</td>
+                    <td>{{ c.phone|default:"-" }}</td>
+                    <td>{{ c.country }}</td>
+                    <td><span class="badge-pill badge-info">{{ c.payment_terms }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-tertiary);">No customers found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

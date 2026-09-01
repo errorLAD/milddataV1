@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2451FF">
+  <link rel="manifest" href="{% url 'pwa_manifest' %}">
+  <title>{% block title %}Driver PWA{% endblock %} | Fleet Operator</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/karobarplus.css' %}">
+
+  {% block extra_head %}{% endblock %}
+</head>
+<body class="pwa-body">
+
+  <!-- Driver Header -->
+  <header class="bg-white border-bottom p-3 sticky-top">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <div class="btn-kp-primary p-2 radius-sm" style="width: 32px; height: 32px; border-radius: 8px;">
+          <i class="fa-solid fa-truck-fast text-white"></i>
+        </div>
+        <div>
+          <h1 class="mb-0 fw-bold text-dark" style="font-size: 0.9rem;">Fleet Driver PWA</h1>
+          <span class="text-secondary" style="font-size: 0.65rem;">{{ request.user.get_full_name|default:request.user.username }}</span>
+        </div>
+      </div>
+      <div id="pwa-online-status" class="status-pill success">
+        <span class="status-dot"></span> Online
+      </div>
+    </div>
+  </header>
+
+  <!-- PWA Content Container -->
+  <main class="container p-3">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Touch-Friendly Bottom Navigation Bar -->
+  <nav class="pwa-bottom-nav">
+    <a href="{% url 'pwa_home' %}" class="pwa-nav-item {% if request.resolver_match.url_name == 'pwa_home' %}active{% endif %}">
+      <i class="fa-solid fa-house"></i>
+      <span>Home</span>
+    </a>
+    <a href="{% url 'pwa_trip' %}" class="pwa-nav-item {% if request.resolver_match.url_name == 'pwa_trip' %}active{% endif %}">
+      <i class="fa-solid fa-route"></i>
+      <span>Trip</span>
+    </a>
+    <a href="{% url 'pwa_jobs' %}" class="pwa-nav-item {% if request.resolver_match.url_name == 'pwa_jobs' %}active{% endif %}">
+      <i class="fa-solid fa-list-check"></i>
+      <span>Jobs</span>
+    </a>
+    <a href="{% url 'pwa_inspection' %}" class="pwa-nav-item {% if request.resolver_match.url_name == 'pwa_inspection' %}active{% endif %}">
+      <i class="fa-solid fa-clipboard-check"></i>
+      <span>Inspect</span>
+    </a>
+    <a href="{% url 'pwa_profile' %}" class="pwa-nav-item {% if request.resolver_match.url_name == 'pwa_profile' %}active{% endif %}">
+      <i class="fa-solid fa-user"></i>
+      <span>Profile</span>
+    </a>
+  </nav>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg failed', err));
+    }
+
+    // Online / Offline Status Detection
+    function updateOnlineState() {
+      const badge = document.getElementById('pwa-online-status');
+      if (navigator.onLine) {
+        badge.className = 'status-pill success';
+        badge.innerHTML = '<span class="status-dot"></span> Online';
+      } else {
+        badge.className = 'status-pill danger';
+        badge.innerHTML = '<span class="status-dot"></span> Offline (Queued)';
+      }
+    }
+    window.addEventListener('online', updateOnlineState);
+    window.addEventListener('offline', updateOnlineState);
+    updateOnlineState();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

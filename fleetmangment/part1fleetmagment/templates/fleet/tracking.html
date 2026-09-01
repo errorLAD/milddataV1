@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Live Fleet Tracking{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 gap-2">
+  <div>
+    <h1 class="page-title mb-0">Live Fleet Tracking</h1>
+    <p class="page-subtitle mb-0">Real-time GPS telemetry, vehicle position, speed, and driver activity</p>
+  </div>
+
+  <!-- Status Filters -->
+  <div class="d-flex align-items-center gap-1 flex-wrap">
+    <a href="?status=ALL" class="btn-kp {% if status_filter == 'ALL' %}btn-kp-primary{% else %}btn-kp-secondary{% endif %}">
+      All Units
+    </a>
+    <a href="?status=MOVING" class="btn-kp {% if status_filter == 'MOVING' %}btn-kp-primary{% else %}btn-kp-secondary{% endif %}">
+      <span class="status-dot" style="background: var(--success);"></span> Moving
+    </a>
+    <a href="?status=IDLE" class="btn-kp {% if status_filter == 'IDLE' %}btn-kp-primary{% else %}btn-kp-secondary{% endif %}">
+      <span class="status-dot" style="background: var(--warning);"></span> Idle
+    </a>
+    <a href="?status=OFFLINE" class="btn-kp {% if status_filter == 'OFFLINE' %}btn-kp-primary{% else %}btn-kp-secondary{% endif %}">
+      <span class="status-dot" style="background: var(--text-tertiary);"></span> Offline
+    </a>
+    <a href="?status=MAINTENANCE" class="btn-kp {% if status_filter == 'MAINTENANCE' %}btn-kp-primary{% else %}btn-kp-secondary{% endif %}">
+      <span class="status-dot" style="background: var(--danger);"></span> Maintenance
+    </a>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Interactive Leaflet Map Container -->
+  <div class="col-lg-8 col-xl-9">
+    <div class="kp-panel mb-0" style="height: 600px; position: relative;">
+      <div id="live-map" style="width: 100%; height: 100%; z-index: 1;"></div>
+    </div>
+  </div>
+
+  <!-- Sidebar Detail Panel -->
+  <div class="col-lg-4 col-xl-3">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title" id="vehicle-panel-title">Vehicle Telemetry Panel</h3>
+      </div>
+      <div class="kp-panel-body" id="vehicle-panel-body">
+        <div class="text-center py-5 text-muted">
+          <i class="fa-solid fa-location-crosshairs fa-2x mb-2 text-secondary"></i>
+          <p class="mb-0" style="font-size: 0.72rem;">Click any vehicle marker on the map to inspect live speed, telemetry, driver details, and historical route.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const vehicles = {{ vehicles_json|safe }};
+    
+    // Default Delhi center or average coords
+    let map = L.map('live-map').setView([28.6139, 77.2090], 12);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let markersGroup = L.featureGroup().addTo(map);
+
+    vehicles.forEach(v => {
+      let color = '#2451FF';
+      if (v.status === 'MOVING') color = '#067647';
+      else if (v.status === 'IDLE') color = '#B54708';
+      else if (v.status === 'MAINTENANCE') color = '#B42318';
+      else if (v.status === 'OFFLINE') color = '#98A2B3';
+
+      let customIcon = L.divIcon({
+        className: 'custom-vehicle-marker',
+        html: `<div style="background-color: ${color}; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #FFFFFF; box-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-size: 0.7rem;">
+                 <i class="fa-solid ${v.type === 'JCB' || v.type === 'EXCAVATOR' ? 'fa-tractor' : (v.type === 'TRUCK' ? 'fa-truck' : 'fa-car')}"></i>
+               </div>`,
+        iconSize: [26, 26],
+        iconAnchor: [13, 13]
+      });
+
+      let marker = L.marker([v.lat, v.lng], { icon: customIcon }).addTo(markersGroup);
+
+      marker.on('click', function() {
+        showVehiclePanel(v);
+        map.panTo([v.lat, v.lng]);
+      });
+    });
+
+    if (vehicles.length > 0) {
+      map.fitBounds(markersGroup.getBounds(), { padding: [30, 30] });
+    }
+
+    function showVehiclePanel(v) {
+      document.getElementById('vehicle-panel-title').innerText = v.code + ' (' + v.reg + ')';
+      
+      let staleBadge = v.is_stale ? `<span class="badge bg-danger-subtle text-danger border border-danger-subtle">Stale GPS Signal</span>` : `<span class="status-pill success"><span class="status-dot"></span> Live Signal</span>`;
+      
+      document.getElementById('vehicle-panel-body').innerHTML = `
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="status-pill brand"><span class="status-dot"></span> ${v.type_display}</span>
+            ${staleBadge}
+          </div>
+          <h4 class="metric-val text-primary mb-1">${v.code}</h4>
+          <p class="text-secondary mb-0">${v.reg}</p>
+        </div>
+
+        <div class="p-2 mb-3 radius-sm" style="background: var(--surface-alt); border: 1px solid var(--border);">
+          <div class="row text-center g-2">
+            <div class="col-6 border-end">
+              <span class="metric-label">SPEED</span>
+              <div class="fw-bold num text-dark" style="font-size: 0.95rem;">${Math.round(v.speed)} km/h</div>
+            </div>
+            <div class="col-6">
+              <div class="metric-label">BATTERY</div>
+              <div class="fw-bold num text-dark" style="font-size: 0.95rem;"><i class="fa-solid fa-battery-three-quarters text-success me-1"></i>${v.battery}%</div>
+            </div>
+          </div>
+        </div>
+
+        <ul class="list-unstyled mb-4" style="font-size: 0.72rem;">
+          <li class="py-1 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Assigned Driver:</span>
+            <span class="fw-semibold text-dark">${v.driver}</span>
+          </li>
+          <li class="py-1 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Status:</span>
+            <span class="fw-semibold text-dark">${v.status_display}</span>
+          </li>
+          <li class="py-1 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Heading:</span>
+            <span class="fw-semibold text-dark">${Math.round(v.heading)}°</span>
+          </li>
+          <li class="py-1 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Last Update:</span>
+            <span class="fw-semibold text-dark num">${v.updated}</span>
+          </li>
+        </ul>
+
+        <div class="d-grid gap-2">
+          <a href="/trips/playback/?vehicle_id=${v.id}" class="btn-kp btn-kp-primary">
+            <i class="fa-solid fa-play me-1"></i> Route Playback History
+          </a>
+          <a href="/vehicles/${v.id}/" class="btn-kp btn-kp-secondary">
+            <i class="fa-solid fa-folder me-1"></i> Vehicle Profile & Health Score
+          </a>
+        </div>
+      `;
+    }
+  });
+</script>
+{% endblock %}

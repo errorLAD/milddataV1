@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Products — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Products & Inventory</h1>
+    <p class="page-subtitle">Manage physical stock items, services, prices, categories, and reorder levels.</p>
+  </div>
+  <div class="page-actions">
+    <button onclick="document.getElementById('new-product-modal').style.display='flex'" class="btn btn-primary">+ Add Product</button>
+    <a href="{% url 'import_csv' %}?entity_type=products" class="btn btn-secondary">Import CSV</a>
+  </div>
+</div>
+
+<!-- Metrics summary -->
+<div class="metrics-grid" style="grid-template-columns: repeat(4, 1fr);">
+  <div class="metric-card">
+    <div class="metric-label">Total Products</div>
+    <div class="metric-value">{{ total_products }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Low Stock Items</div>
+    <div class="metric-value" style="color: var(--warning);">{{ low_stock_count }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Out of Stock</div>
+    <div class="metric-value" style="color: var(--danger);">{{ out_of_stock_count }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Total Inventory Value</div>
+    <div class="metric-value money">{{ total_val|money:org }}</div>
+  </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="panel" style="margin-bottom: 0.8rem;">
+  <div class="panel-body" style="padding: 0.6rem 0.9rem;">
+    <form method="get" style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+      <input type="text" name="q" class="form-control" style="width: 220px;" placeholder="Search name, SKU, barcode..." value="{{ q }}">
+      <select name="category" class="form-select" style="width: 160px;">
+        <option value="">All Categories</option>
+        {% for cat in categories %}
+          <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+        {% endfor %}
+      </select>
+      <select name="status" class="form-select" style="width: 140px;">
+        <option value="">All Stock Statuses</option>
+        <option value="In Stock" {% if selected_status == 'In Stock' %}selected{% endif %}>In Stock</option>
+        <option value="Low Stock" {% if selected_status == 'Low Stock' %}selected{% endif %}>Low Stock</option>
+        <option value="Out of Stock" {% if selected_status == 'Out of Stock' %}selected{% endif %}>Out of Stock</option>
+      </select>
+      <button type="submit" class="btn btn-secondary">Filter</button>
+    </form>
+  </div>
+</div>
+
+<!-- Product Table -->
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table table-card-mobile">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>SKU</th>
+          <th>Type</th>
+          <th>Category</th>
+          <th>Cost Price</th>
+          <th>Selling Price</th>
+          <th>Total Stock</th>
+          <th>Value</th>
+          <th>Status</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td data-label="Product Name">
+            <a href="{% url 'product_detail' p.id %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">{{ p.name }}</a>
+            {% if p.brand %}<div style="font-size: 0.62rem; color: var(--text-tertiary);">{{ p.brand }}</div>{% endif %}
+          </td>
+          <td data-label="SKU" class="tabular-nums" style="font-weight: 600;">{{ p.sku }}</td>
+          <td data-label="Type"><span class="badge badge-neutral">{{ p.get_product_type_display }}</span></td>
+          <td data-label="Category">{{ p.category.name|default:'—' }}</td>
+          <td data-label="Cost Price" class="money">{{ p.purchase_price|money:org }}</td>
+          <td data-label="Selling Price" class="money" style="font-weight: 650;">{{ p.selling_price|money:org }}</td>
+          <td data-label="Total Stock" class="tabular-nums" style="font-weight: 700;">
+            {% if p.product_type == 'PHYSICAL' %}
+              {{ p.total_stock }} {{ p.unit.abbreviation|default:'pcs' }}
+            {% else %}
+              N/A
+            {% endif %}
+          </td>
+          <td data-label="Value" class="money">{{ p.inventory_value|money:org }}</td>
+          <td data-label="Status">
+            {% if p.status == 'In Stock' %}
+              <span class="badge badge-success"><span class="badge-dot-mark"></span> In Stock</span>
+            {% elif p.status == 'Low Stock' %}
+              <span class="badge badge-warning"><span class="badge-dot-mark"></span> Low Stock</span>
+            {% else %}
+              <span class="badge badge-danger"><span class="badge-dot-mark"></span> Out of Stock</span>
+            {% endif %}
+          </td>
+          <td data-label="Action" style="text-align: right;">
+            <a href="{% url 'product_detail' p.id %}" class="btn btn-secondary btn-sm">View</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="10" style="text-align: center; color: var(--text-tertiary); padding: 2rem;">
+            No products found matching criteria. <br>
+            <button onclick="document.getElementById('new-product-modal').style.display='flex'" class="btn btn-primary btn-sm" style="margin-top: 0.5rem;">Add Product</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: New Product Form -->
+<div id="new-product-modal" class="modal-backdrop" style="display: none;">
+  <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-header">
+      <span class="panel-title">Add New Product</span>
+      <button onclick="document.getElementById('new-product-modal').style.display='none'" class="btn-icon">×</button>
+    </div>
+    <form method="post" action="{% url 'product_create' %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Product Name *</label>
+            <input type="text" name="name" class="form-control" placeholder="e.g. Wireless Router K10" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">SKU *</label>
+            <input type="text" name="sku" class="form-control" placeholder="e.g. WR-1002" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Barcode (UPC/EAN)</label>
+            <input type="text" name="barcode" class="form-control" placeholder="e.g. 8801928371">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Product Type</label>
+            <select name="product_type" class="form-select">
+              <option value="PHYSICAL">Physical Stock Item</option>
+              <option value="SERVICE">Service Item</option>
+              <option value="NON_STOCK">Non-Stock Material</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select name="category_id" class="form-select">
+              <option value="">None</option>
+              {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit of Measure</label>
+            <select name="unit_id" class="form-select">
+              {% for unit in units %}
+                <option value="{{ unit.id }}">{{ unit.name }} ({{ unit.abbreviation }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Purchase Price (Cost)</label>
+            <input type="number" step="0.01" name="purchase_price" class="form-control" value="0.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Selling Price</label>
+            <input type="number" step="0.01" name="selling_price" class="form-control" value="0.00">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Reorder Level Threshold</label>
+            <input type="number" name="reorder_level" class="form-control" value="10">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Initial Opening Stock</label>
+            <input type="number" name="opening_stock" class="form-control" value="0">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="document.getElementById('new-product-modal').style.display='none'" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Product</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

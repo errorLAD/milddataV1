@@ -1,0 +1,38 @@
+{% extends 'pwa/base_pwa.html' %}
+
+{% block title %}Assigned Vehicle{% endblock %}
+
+{% block content %}
+<div class="card kp-panel mb-3">
+  <div class="card-header kp-panel-header">
+    <span class="fw-bold text-dark" style="font-size: 0.85rem;">ASSIGNED FLEET UNIT</span>
+  </div>
+  <div class="card-body p-3">
+    {% if vehicle %}
+    <h2 class="fw-bold text-primary mb-1">{{ vehicle.vehicle_code }}</h2>
+    <p class="text-secondary mb-3" style="font-size: 0.78rem;">Reg: {{ vehicle.registration_number }} | {{ vehicle.get_vehicle_type_display }}</p>
+    
+    <ul class="list-group list-group-flush mb-0" style="font-size: 0.75rem;">
+      <li class="list-group-item d-flex justify-content-between py-2">
+        <span class="text-muted">Brand & Model:</span>
+        <strong class="text-dark">{{ vehicle.brand }} {{ vehicle.model }}</strong>
+      </li>
+      <li class="list-group-item d-flex justify-content-between py-2">
+        <span class="text-muted">Fuel Type:</span>
+        <strong class="text-dark">{{ vehicle.get_fuel_type_display }}</strong>
+      </li>
+      <li class="list-group-item d-flex justify-content-between py-2">
+        <span class="text-muted">Current Odometer:</span>
+        <strong class="text-dark num">{{ vehicle.mileage_km|floatformat:0 }} km</strong>
+      </li>
+      <li class="list-group-item d-flex justify-content-between py-2">
+        <span class="text-muted">Engine Hours:</span>
+        <strong class="text-dark num">{{ vehicle.engine_hours|floatformat:0 }} hrs</strong>
+      </li>
+    </ul>
+    {% else %}
+    <div class="text-center py-4 text-muted">No assigned vehicle.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

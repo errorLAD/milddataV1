@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Reports - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Reports & Export</h1>
+        <div class="page-subtitle">Simple, actionable business reporting and CSV data exports</div>
+    </div>
+    <div>
+        <a href="{% url 'export_csv' report_type %}" class="btn-saas btn-primary">📥 Export {{ report_type|capfirst }} CSV</a>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Report Selector</div>
+        <div style="display: flex; gap: 0.4rem;">
+            <a href="{% url 'reports_dashboard' %}?type=sales" class="btn-saas {% if report_type == 'sales' %}btn-primary{% else %}btn-secondary{% endif %}">Sales</a>
+            <a href="{% url 'reports_dashboard' %}?type=inventory" class="btn-saas {% if report_type == 'inventory' %}btn-primary{% else %}btn-secondary{% endif %}">Inventory</a>
+            <a href="{% url 'reports_dashboard' %}?type=purchases" class="btn-saas {% if report_type == 'purchases' %}btn-primary{% else %}btn-secondary{% endif %}">Purchases</a>
+            <a href="{% url 'reports_dashboard' %}?type=expenses" class="btn-saas {% if report_type == 'expenses' %}btn-primary{% else %}btn-secondary{% endif %}">Expenses</a>
+        </div>
+    </div>
+    <div class="table-responsive">
+        {% if report_type == 'sales' %}
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Invoice Number</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Paid</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td style="font-weight: 650;">{{ inv.invoice_number }}</td>
+                    <td>{{ inv.customer.company_name }}</td>
+                    <td>{{ inv.date }}</td>
+                    <td><span class="badge-pill badge-info">{{ inv.status }}</span></td>
+                    <td class="num">{{ currency_symbol }}{{ inv.total_amount|floatformat:2 }}</td>
+                    <td class="num" style="font-weight: 700; color: var(--success);">{{ currency_symbol }}{{ inv.paid_amount|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'inventory' %}
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th>Type</th>
+                    <th>Cost Price</th>
+                    <th>Selling Price</th>
+                    <th>Stock Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td style="font-weight: 650;">{{ p.name }}</td>
+                    <td>{{ p.sku }}</td>
+                    <td>{{ p.product_type }}</td>
+                    <td class="num">{{ currency_symbol }}{{ p.purchase_price|floatformat:2 }}</td>
+                    <td class="num">{{ currency_symbol }}{{ p.selling_price|floatformat:2 }}</td>
+                    <td class="num" style="font-weight: 700;">{{ p.stock_quantity }} {{ p.unit }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'expenses' %}
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Expense Title</th>
+                    <th>Category</th>
+                    <th>Vendor</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in expenses %}
+                <tr>
+                    <td style="font-weight: 650;">{{ e.title }}</td>
+                    <td>{{ e.category.name|default:"General" }}</td>
+                    <td>{{ e.vendor|default:"-" }}</td>
+                    <td>{{ e.date }}</td>
+                    <td class="num" style="font-weight: 700; color: var(--danger);">{{ currency_symbol }}{{ e.amount|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% elif report_type == 'purchases' %}
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>PO Number</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for po in orders %}
+                <tr>
+                    <td style="font-weight: 650;">{{ po.po_number }}</td>
+                    <td>{{ po.supplier.company_name }}</td>
+                    <td>{{ po.date }}</td>
+                    <td><span class="badge-pill badge-info">{{ po.status }}</span></td>
+                    <td class="num" style="font-weight: 700;">{{ currency_symbol }}{{ po.total_amount|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

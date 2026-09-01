@@ -1,0 +1,64 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Blog &amp; Articles CMS — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Blog Articles &amp; Content CMS</h1>
+        <p class="page-subtitle">Publish technical articles, enterprise SaaS insights, AI research papers, and company news.</p>
+    </div>
+    <a href="{% url 'website_cms:blog_create' %}" class="btn-cms btn-primary">+ Create New Article</a>
+</div>
+
+<div style="margin-bottom: 1rem; display: flex; gap: 0.5rem;">
+    <a href="{% url 'website_cms:blog_list' %}" class="btn-cms btn-outline btn-sm {% if not active_status %}btn-primary{% endif %}">All Posts</a>
+    <a href="{% url 'website_cms:blog_list' %}?status=published" class="btn-cms btn-outline btn-sm {% if active_status == 'published' %}btn-primary{% endif %}">Published</a>
+    <a href="{% url 'website_cms:blog_list' %}?status=draft" class="btn-cms btn-outline btn-sm {% if active_status == 'draft' %}btn-primary{% endif %}">Drafts</a>
+    <a href="{% url 'website_cms:blog_list' %}?status=scheduled" class="btn-cms btn-outline btn-sm {% if active_status == 'scheduled' %}btn-primary{% endif %}">Scheduled</a>
+</div>
+
+<div class="cms-table-card">
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Article Title</th>
+                    <th>Category</th>
+                    <th>Author</th>
+                    <th>Publish Date</th>
+                    <th>Status</th>
+                    <th>Views</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                <tr>
+                    <td>
+                        <strong>{{ post.title }}</strong>
+                        <div style="font-size: 0.76rem; color: var(--cms-muted);">/blog/{{ post.slug }}/</div>
+                    </td>
+                    <td>{{ post.category.name|default:'Uncategorized' }}</td>
+                    <td>{{ post.author_name }}</td>
+                    <td>{{ post.publish_date|date:"M d, Y" }}</td>
+                    <td>
+                        <span class="badge {% if post.status == 'published' %}badge-success{% elif post.status == 'draft' %}badge-warning{% else %}badge-info{% endif %}">
+                            {{ post.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ post.views_count }}</td>
+                    <td>
+                        <a href="{% url 'website_cms:blog_edit' post.pk %}" class="btn-cms btn-outline btn-sm">Edit</a>
+                        <a href="{% url 'website_cms:draft_preview' 'blog' post.slug %}" target="_blank" class="btn-cms btn-outline btn-sm">Preview</a>
+                        <a href="{% url 'website_cms:blog_delete' post.pk %}" class="btn-cms btn-danger btn-sm" onclick="return confirm('Delete this article?');">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">No blog posts found. <a href="{% url 'website_cms:blog_create' %}">Write your first post</a>.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

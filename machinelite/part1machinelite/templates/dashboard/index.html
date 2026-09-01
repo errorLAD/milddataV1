@@ -1,0 +1,406 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Executive Fleet Operations Dashboard — Machine OS{% endblock %}
+
+{% block content %}
+<!-- Header Row -->
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Executive Operations & Telemetry Dashboard</h1>
+    <p class="kp-page-subtitle">Real-time heavy machinery utilization, fuel efficiency, site deployments, compliance alerts, and unit-level profitability.</p>
+  </div>
+  <div style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+    <button class="kp-btn kp-btn-secondary" data-modal-target="modal-quick-machine">
+      <i class="fa-solid fa-plus"></i> Add Machine
+    </button>
+    <button class="kp-btn kp-btn-secondary" data-modal-target="modal-quick-fuel">
+      <i class="fa-solid fa-gas-pump"></i> Log Refuel
+    </button>
+    <a href="{% url 'reports_overview' %}" class="kp-btn kp-btn-secondary">
+      <i class="fa-solid fa-chart-column"></i> Reports
+    </a>
+    <a href="{% url 'ai_assistant_chat' %}" class="kp-btn kp-btn-primary">
+      <i class="fa-solid fa-robot"></i> Ask AI Assistant
+    </a>
+  </div>
+</div>
+
+<!-- Key Performance Metrics Grid -->
+<div class="kp-metrics-grid">
+  <!-- Hero Metric Card (Light Brand Gradient) -->
+  <div class="kp-metric-card kp-metric-card-hero">
+    <div>
+      <div class="kp-metric-label">Net Fleet Operating Profit</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ net_profit|floatformat:2|intcomma }}</div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem;">
+      <span class="kp-metric-sub num-tabular">Gross Revenue: {{ currency_symbol }}{{ rev_total|floatformat:2|intcomma }}</span>
+      <span class="kp-badge kp-badge-success num-tabular">
+        <span class="kp-dot"></span> {{ profit_margin }}% Margin
+      </span>
+    </div>
+  </div>
+
+  <!-- Supporting Metric 1: Fleet Utilization -->
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Active Fleet Utilization</div>
+      <div class="kp-metric-val num-tabular">{{ working_machines }} / {{ total_machines }} Units</div>
+    </div>
+    <div class="kp-metric-sub" style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
+      <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> {{ working_machines }} Working</span>
+      <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> {{ idle_machines }} Idle</span>
+      {% if breakdown_machines > 0 %}
+        <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> {{ breakdown_machines }} Down</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Supporting Metric 2: Asset Valuation -->
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Fleet Asset Valuation</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ total_fleet_value|floatformat:0|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub">
+      Total {{ total_machines }} registered machinery assets
+    </div>
+  </div>
+
+  <!-- Supporting Metric 3: Compliance & Expiry Risk -->
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Compliance & Expiry Risk</div>
+      <div class="kp-metric-val num-tabular">
+        {% if expired_docs_count > 0 %}
+          <span style="color: var(--danger);">{{ expired_docs_count }} Expired</span>
+        {% else %}
+          <span style="color: var(--success);">100% Compliant</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="kp-metric-sub" style="display: flex; justify-content: space-between;">
+      <span>Expiring in 30 days:</span>
+      <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> {{ expiring_docs_count }} Docs</span>
+    </div>
+  </div>
+</div>
+
+<!-- Primary Dominant Panel: Fleet Equipment Directory & Status -->
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div>
+      <div class="kp-panel-title">Fleet Equipment Directory & Meter Tracking</div>
+      <div class="kp-panel-desc">Real-time status pipeline, meter readings, daily billing rates, and machine performance.</div>
+    </div>
+    <a href="{% url 'machine_list' %}" class="kp-btn kp-btn-secondary">View All Machines</a>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Equipment Name</th>
+          <th>Reg Number</th>
+          <th>Category</th>
+          <th>Current Meter</th>
+          <th>Daily Rate</th>
+          <th>Status</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in machines %}
+          <tr>
+            <td>
+              <a href="{% url 'machine_detail' m.pk %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">
+                {{ m.name }}
+              </a>
+              <div style="font-size: 0.64rem; color: var(--text-tertiary);">{{ m.make_model }} ({{ m.model_year }})</div>
+            </td>
+            <td class="num-tabular" style="font-weight: 600;">{{ m.reg_number }}</td>
+            <td>
+              <span class="kp-badge kp-badge-brand">{{ m.get_category_display }}</span>
+            </td>
+            <td class="num-tabular" style="font-weight: 700;">
+              {{ m.current_meter|floatformat:1 }} {{ m.unit_label }}
+            </td>
+            <td class="num-tabular">{{ currency_symbol }}{{ m.daily_rate|floatformat:2|intcomma }}/day</td>
+            <td>
+              {% if m.status == 'working' %}
+                <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Working</span>
+              {% elif m.status == 'idle' %}
+                <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> Idle</span>
+              {% elif m.status == 'breakdown' %}
+                <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Breakdown</span>
+              {% elif m.status == 'maintenance' %}
+                <span class="kp-badge kp-badge-info"><span class="kp-dot"></span> Service</span>
+              {% else %}
+                <span class="kp-badge kp-badge-brand"><span class="kp-dot"></span> On Rent</span>
+              {% endif %}
+            </td>
+            <td style="text-align: right;">
+              <a href="{% url 'machine_detail' m.pk %}" class="kp-btn kp-btn-secondary" style="padding: 0.2rem 0.45rem; font-size: 0.65rem;">
+                Details <i class="fa-solid fa-arrow-right"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">
+              No equipment units registered yet. Click "Add Machine" to populate fleet.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Secondary Split Row: Category Distribution & Top Earners -->
+<div class="kp-row-split">
+  
+  <!-- Left Panel: Category Asset Distribution -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Equipment Portfolio Category Breakdown</div>
+    </div>
+    <div class="kp-panel-body" style="display: flex; flex-direction: column; gap: 0.75rem;">
+      {% for cat in category_counts %}
+        <div>
+          <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 650; margin-bottom: 0.2rem;">
+            <span>{{ cat.label }}</span>
+            <span class="num-tabular">{{ cat.count }} Units ({{ currency_symbol }}{{ cat.value|floatformat:0|intcomma }})</span>
+          </div>
+          <div style="width: 100%; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden;">
+            <div style="width: {{ cat.percentage }}%; height: 100%; background: var(--brand);"></div>
+          </div>
+        </div>
+      {% empty %}
+        <div style="text-align: center; color: var(--text-tertiary);">No category data available.</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Right Panel: Top 5 Profitability Earners -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Top Equipment Profitability Ranking</div>
+      <a href="{% url 'profit_loss' %}" class="kp-btn kp-btn-secondary" style="font-size: 0.65rem;">Full P&L Engine</a>
+    </div>
+    <div class="kp-table-responsive">
+      <table class="kp-table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Machine</th>
+            <th>Revenue</th>
+            <th>Expenses</th>
+            <th>Net Profit</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in machine_profit_ranking %}
+            <tr>
+              <td class="num-tabular" style="font-weight: 700; color: var(--text-tertiary);">#{{ forloop.counter }}</td>
+              <td style="font-weight: 650;">{{ r.machine.name }}</td>
+              <td class="num-tabular" style="color: var(--success);">{{ currency_symbol }}{{ r.revenue|floatformat:0|intcomma }}</td>
+              <td class="num-tabular" style="color: var(--danger);">{{ currency_symbol }}{{ r.fuel|add:r.maint|floatformat:0|intcomma }}</td>
+              <td class="num-tabular" style="font-weight: 700; color: var(--success);">
+                +{{ currency_symbol }}{{ r.net_profit|floatformat:0|intcomma }}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No financial logs calculated.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Tertiary Split Row: Site Deployments & Service Watchlist -->
+<div class="kp-row-split">
+  
+  <!-- Left Panel: Job Site & Project Deployments -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Active Construction Site Allocations</div>
+    </div>
+    <div class="kp-table-responsive">
+      <table class="kp-table">
+        <thead>
+          <tr>
+            <th>Project Site</th>
+            <th>Client Name</th>
+            <th>Location</th>
+            <th>Deployed Machines</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pd in project_deployments %}
+            <tr>
+              <td style="font-weight: 650; color: var(--brand);">{{ pd.project.name }}</td>
+              <td>{{ pd.project.client_name }}</td>
+              <td style="font-size: 0.68rem; color: var(--text-secondary);">{{ pd.project.location }}</td>
+              <td><span class="kp-badge kp-badge-brand"><span class="kp-dot"></span> {{ pd.machine_count }} Deployed</span></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No active project sites.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Right Panel: Service Interval Watchlist & Breakdown Alerts -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Service Interval Watchlist (< 100 HRs)</div>
+      <a href="{% url 'maintenance_list' %}" class="kp-btn kp-btn-secondary" style="font-size: 0.65rem;">Maintenance Logs</a>
+    </div>
+    <div class="kp-table-responsive">
+      <table class="kp-table">
+        <thead>
+          <tr>
+            <th>Machine</th>
+            <th>Current Meter</th>
+            <th>Service Target</th>
+            <th>HRs Remaining</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sw in service_watchlist %}
+            <tr>
+              <td style="font-weight: 650;">{{ sw.machine.name }}</td>
+              <td class="num-tabular">{{ sw.current_meter|floatformat:1 }} {{ sw.machine.unit_label }}</td>
+              <td class="num-tabular">{{ sw.target_meter|floatformat:1 }} {{ sw.machine.unit_label }}</td>
+              <td>
+                {% if sw.remaining <= 20 %}
+                  <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> {{ sw.remaining }} HRs Left</span>
+                {% else %}
+                  <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> {{ sw.remaining }} HRs Left</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">✅ All equipment service intervals are up to date.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Quick Add Machine Modal -->
+<div class="kp-modal-backdrop" id="modal-quick-machine">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Register New Heavy Machinery</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_machine' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Equipment Name / ID</label>
+          <input type="text" name="name" class="kp-input" placeholder="e.g. JCB 3DX Super #105" required>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Registration Number</label>
+          <input type="text" name="reg_number" class="kp-input" placeholder="e.g. KA-04-MB-8921" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Category</label>
+            <select name="category" class="kp-select">
+              <option value="jcb">JCB Backhoe Loader</option>
+              <option value="excavator">Excavator</option>
+              <option value="crane">Crane</option>
+              <option value="dumper">Dumper / Tipper</option>
+              <option value="loader">Wheel Loader</option>
+              <option value="tractor">Tractor</option>
+              <option value="generator">Generator</option>
+              <option value="truck">Heavy Duty Truck</option>
+            </select>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Current Meter Reading (HR/KM)</label>
+            <input type="number" step="0.1" name="current_meter" class="kp-input" value="0.0" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Status</label>
+            <select name="status" class="kp-select">
+              <option value="working">Working / Active</option>
+              <option value="idle">Idle / Available</option>
+              <option value="maintenance">Scheduled Maintenance</option>
+              <option value="breakdown">Under Breakdown</option>
+              <option value="rented">On Client Rent</option>
+            </select>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Daily Rental Rate ({{ currency_symbol }})</label>
+            <input type="number" step="100" name="daily_rate" class="kp-input" value="9500" required>
+          </div>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Save Machine</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Quick Refuel Modal -->
+<div class="kp-modal-backdrop" id="modal-quick-fuel">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Log Fuel Refueling Entry</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_fuel' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Select Equipment</label>
+          <select name="machine" class="kp-select" required>
+            {% for m in machines %}
+              <option value="{{ m.pk }}">{{ m.name }} ({{ m.reg_number }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Refuel Date</label>
+            <input type="date" name="date" class="kp-input" value="{% now 'Y-m-d' %}" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Fuel Filled (Liters)</label>
+            <input type="number" step="0.5" name="fuel_liters" class="kp-input" placeholder="e.g. 120" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Cost per Liter ({{ currency_symbol }})</label>
+            <input type="number" step="0.1" name="cost_per_liter" class="kp-input" value="94.50" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Hours Operated Since Last Refuel</label>
+            <input type="number" step="0.1" name="hours_run_since_last" class="kp-input" placeholder="e.g. 10.5" required>
+          </div>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Record Refuel Log</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

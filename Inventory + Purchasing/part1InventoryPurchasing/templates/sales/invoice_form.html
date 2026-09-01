@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Create Invoice — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Create Sales Invoice</h1>
+    <p class="page-subtitle">Submitting an invoice automatically updates inventory stock levels and creates Accounts Receivable.</p>
+  </div>
+</div>
+
+<form method="post" action="{% url 'invoice_create' %}">
+  {% csrf_token %}
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.2rem;">
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Invoice Line Items</span>
+          <button type="button" onclick="addLineItemRow()" class="btn btn-secondary btn-sm">+ Add Product Line</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width: 40%;">Product</th>
+                <th style="width: 15%;">Qty</th>
+                <th style="width: 20%;">Price ({{ org.currency_symbol }})</th>
+                <th style="width: 15%;">Discount</th>
+                <th style="width: 10%; text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody id="line-items-body">
+              <tr>
+                <td>
+                  <select name="product_id[]" class="form-select product-select" required>
+                    <option value="">Select Product...</option>
+                    {% for p in products %}
+                      <option value="{{ p.id }}" data-price="{{ p.selling_price }}">{{ p.name }} (SKU: {{ p.sku }}) — Available: {{ p.available_stock }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <input type="number" name="quantity[]" class="form-control qty-input calc-input" value="1" min="1" required>
+                </td>
+                <td>
+                  <input type="number" step="0.01" name="unit_price[]" class="form-control unit-price-input calc-input" value="0.00" required>
+                </td>
+                <td>
+                  <input type="number" step="0.01" name="discount[]" class="form-control calc-input" value="0.00">
+                </td>
+                <td style="text-align: right; font-weight: 700;" class="line-total-cell money">
+                  0.00
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Customer & Invoice Meta</span>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Customer *</label>
+            <select name="customer_id" class="form-select" required>
+              <option value="">Select Customer...</option>
+              {% for c in customers %}
+                <option value="{{ c.id }}">{{ c.company_name }} ({{ c.country }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Fulfillment Warehouse *</label>
+            <select name="warehouse_id" class="form-select" required>
+              {% for wh in warehouses %}
+                <option value="{{ wh.id }}">{{ wh.name }} ({{ wh.code }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Invoice Date</label>
+            <input type="date" name="invoice_date" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Due Date</label>
+            <input type="date" name="due_date" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Payment Instructions / Notes</label>
+            <textarea name="notes" class="form-control" rows="2" placeholder="Bank details, wire instructions, etc."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Issue & Generate Invoice</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

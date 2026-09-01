@@ -1,0 +1,116 @@
+{% load humanize static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Tenant Portal | PropFlow PWA</title>
+  <link rel="manifest" href="{% static 'pwa/manifest.json' %}">
+  <meta name="theme-color" content="#2451FF">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/karobarplus.css' %}">
+  <style>
+    body { background-color: #F7F8FA; padding-bottom: 70px; }
+    .pwa-header { background: linear-gradient(135deg, #2451FF 0%, #1939B7 100%); color: white; border-radius: 0 0 20px 20px; }
+  </style>
+</head>
+<body>
+
+  <!-- PWA Header -->
+  <div class="pwa-header p-4 mb-3 text-center">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="fw-bold fs-5">PropFlow App</div>
+      <a href="{% url 'logout' %}" class="btn btn-sm btn-outline-light rounded-pill px-3" style="font-size: 0.7rem;">Sign Out</a>
+    </div>
+    {% if unit %}
+    <span class="badge bg-white text-primary rounded-pill px-3 py-1 mb-2 fw-semibold" style="font-size: 0.75rem;">Unit {{ unit.unit_number }}</span>
+    <h3 class="fw-bold mb-1 fs-4">{{ property.name }}</h3>
+    <p class="mb-0 text-white-50" style="font-size: 0.75rem;">{{ property.address }}, {{ property.city }}</p>
+    {% else %}
+    <h3 class="fw-bold mb-0">Welcome, {{ user.get_full_name }}</h3>
+    {% endif %}
+  </div>
+
+  <div class="container px-3" style="max-width: 500px;">
+
+    <!-- Rent Due Card -->
+    {% if pending_invoice %}
+    <div class="card border-0 shadow-sm rounded-4 mb-3 overflow-hidden">
+      <div class="card-body p-4 bg-white">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-uppercase text-secondary fw-bold" style="font-size: 0.65rem; letter-spacing: 0.05em;">Current Rent Invoice</span>
+          <span class="badge {% if pending_invoice.status == 'OVERDUE' %}bg-danger{% else %}bg-warning text-dark{% endif %} rounded-pill px-2.5 py-1" style="font-size: 0.65rem;">
+            Due {{ pending_invoice.due_date }}
+          </span>
+        </div>
+        <div class="display-6 fw-bold text-dark tabular-nums mb-3">${{ pending_invoice.balance_due|intcomma }}</div>
+        <a href="{% url 'payment_record' invoice_pk=pending_invoice.id %}" class="btn btn-primary w-100 py-2.5 rounded-3 fw-bold d-flex align-items-center justify-content-center gap-2" style="background-color: var(--brand) !important; font-size: 0.85rem;">
+          <i class="bi bi-credit-card"></i> Pay Rent Now
+        </a>
+      </div>
+    </div>
+    {% else %}
+    <div class="card border-0 shadow-sm rounded-4 mb-3 p-4 text-center bg-white">
+      <i class="bi bi-check-circle-fill text-success display-5 mb-2"></i>
+      <h5 class="fw-bold mb-1">Rent Up to Date!</h5>
+      <p class="text-secondary fs-7 mb-0">No outstanding balance due. Next rent cycle starts on 1st of month.</p>
+    </div>
+    {% endif %}
+
+    <!-- Quick Action Buttons -->
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <a href="{% url 'ticket_create' %}" class="card border-0 shadow-sm rounded-3 p-3 text-center text-decoration-none bg-white text-dark">
+          <i class="bi bi-wrench text-warning fs-3 mb-1"></i>
+          <div class="fw-bold fs-7">Report Repair</div>
+        </a>
+      </div>
+      <div class="col-6">
+        <a href="{% url 'ai_chat' %}" class="card border-0 shadow-sm rounded-3 p-3 text-center text-decoration-none bg-white text-dark">
+          <i class="bi bi-stars text-primary fs-3 mb-1"></i>
+          <div class="fw-bold fs-7">Ask PropFlow AI</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Active Repair Requests -->
+    <div class="kp-panel mb-3">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Active Repair Tickets</h3>
+        <a href="{% url 'ticket_create' %}" class="kp-btn kp-btn-secondary py-0.5 px-2">+ New Request</a>
+      </div>
+      <div class="p-3">
+        {% for tk in active_tickets %}
+        <div class="border-bottom pb-2 mb-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold text-dark mb-0 fs-7">{{ tk.title }}</h6>
+            <span class="kp-status-badge kp-status-brand">{{ tk.get_status_display }}</span>
+          </div>
+          <p class="text-secondary fs-8 mb-0 mt-1">{{ tk.description|truncatewords:10 }}</p>
+        </div>
+        {% empty %}
+        <p class="text-center text-muted fs-7 mb-0 py-2">No active repair tickets.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom PWA Nav -->
+  <div class="fixed-bottom bg-white border-top py-2 px-3 shadow">
+    <div class="d-flex justify-content-around text-center">
+      <a href="{% url 'tenant_pwa' %}" class="text-decoration-none text-primary fw-bold" style="font-size: 0.65rem;">
+        <i class="bi bi-house d-block fs-5"></i> Home
+      </a>
+      <a href="{% url 'ticket_create' %}" class="text-decoration-none text-dark" style="font-size: 0.65rem;">
+        <i class="bi bi-tools d-block fs-5"></i> Repair
+      </a>
+      <a href="{% url 'ai_chat' %}" class="text-decoration-none text-dark" style="font-size: 0.65rem;">
+        <i class="bi bi-stars d-block fs-5"></i> AI Help
+      </a>
+    </div>
+  </div>
+
+</body>
+</html>

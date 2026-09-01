@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Settings — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Settings</h1>
+    <p class="page-subtitle">Manage organization preferences, currency, tax rules, and user roles.</p>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.2rem;">
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Organization & International Settings</span>
+      </div>
+      <div class="panel-body">
+        <form method="post" action="{% url 'settings' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_org">
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Business Name</label>
+              <input type="text" name="name" class="form-control" value="{{ org.name }}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Country</label>
+              <input type="text" name="country" class="form-control" value="{{ org.country }}">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Currency Code</label>
+              <input type="text" name="currency_code" class="form-control" value="{{ org.currency_code }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Currency Symbol</label>
+              <input type="text" name="currency_symbol" class="form-control" value="{{ org.currency_symbol }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Symbol Position</label>
+              <select name="currency_position" class="form-select">
+                <option value="prefix" {% if org.currency_position == 'prefix' %}selected{% endif %}>Prefix ($100)</option>
+                <option value="suffix" {% if org.currency_position == 'suffix' %}selected{% endif %}>Suffix (100€)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Date Format</label>
+              <select name="date_format" class="form-select">
+                <option value="MM/DD/YYYY" {% if org.date_format == 'MM/DD/YYYY' %}selected{% endif %}>MM/DD/YYYY (US, CA)</option>
+                <option value="DD/MM/YYYY" {% if org.date_format == 'DD/MM/YYYY' %}selected{% endif %}>DD/MM/YYYY (UK, AU, NZ)</option>
+                <option value="DD.MM.YYYY" {% if org.date_format == 'DD.MM.YYYY' %}selected{% endif %}>DD.MM.YYYY (DE, EU)</option>
+                <option value="YYYY-MM-DD" {% if org.date_format == 'YYYY-MM-DD' %}selected{% endif %}>YYYY-MM-DD (ISO standard)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Number Format</label>
+              <select name="number_format" class="form-select">
+                <option value="1,234.56" {% if org.number_format == '1,234.56' %}selected{% endif %}>1,234.56 (Standard)</option>
+                <option value="1.234,56" {% if org.number_format == '1.234,56' %}selected{% endif %}>1.234,56 (European)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Tax Label Name</label>
+              <input type="text" name="tax_name" class="form-control" value="{{ org.tax_name }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tax Rate (%)</label>
+              <input type="number" step="0.01" name="tax_rate" class="form-control" value="{{ org.tax_rate }}">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Tax ID Label</label>
+              <input type="text" name="tax_id_label" class="form-control" value="{{ org.tax_id_label }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tax Registration Value</label>
+              <input type="text" name="tax_id_value" class="form-control" value="{{ org.tax_id_value }}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Business Address</label>
+            <textarea name="address" class="form-control" rows="2">{{ org.address }}</textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">User Profile & Role</span>
+      </div>
+      <div class="panel-body">
+        <div style="margin-bottom: 0.8rem;">
+          <div style="font-weight: 650;">{{ request.user.get_full_name|default:request.user.username }}</div>
+          <div style="font-size: 0.68rem; color: var(--text-secondary);">Role: <span class="badge badge-info">{{ user_profile.get_role_display }}</span></div>
+        </div>
+
+        <form method="post" action="{% url 'settings' %}">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_profile">
+          <div class="form-group">
+            <label class="form-label">First Name</label>
+            <input type="text" name="first_name" class="form-control" value="{{ request.user.first_name }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Last Name</label>
+            <input type="text" name="last_name" class="form-control" value="{{ request.user.last_name }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" name="email" class="form-control" value="{{ request.user.email }}">
+          </div>
+          <button type="submit" class="btn btn-secondary">Update Profile</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Quick Actions</span>
+      </div>
+      <div class="panel-body" style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <a href="{% url 'seed_demo_data' %}" class="btn btn-secondary" style="justify-content: flex-start;">⚡ Seed Demo Data</a>
+        <a href="{% url 'import_csv' %}" class="btn btn-secondary" style="justify-content: flex-start;">📥 Import CSV Products/Customers</a>
+        <a href="{% url 'logout' %}" class="btn btn-danger" style="justify-content: flex-start;">🚪 Sign Out</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

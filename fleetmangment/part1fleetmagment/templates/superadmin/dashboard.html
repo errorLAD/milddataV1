@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Super Admin Panel{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h1 class="page-title mb-0">Platform Super Admin Control Panel</h1>
+    <p class="page-subtitle mb-0">Multi-tenant SaaS analytics, MRR, tenant subscriptions, and platform health</p>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-md-3">
+    <div class="metric-card hero-card">
+      <div class="metric-label text-primary">MONTHLY RECURRING REVENUE (MRR)</div>
+      <div class="metric-val text-primary">${{ mrr|floatformat:2 }}</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="metric-card">
+      <div class="metric-label">TOTAL TENANT COMPANIES</div>
+      <div class="metric-val text-dark">{{ total_tenants }}</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="metric-card">
+      <div class="metric-label">TOTAL MANAGED VEHICLES</div>
+      <div class="metric-val text-success">{{ total_vehicles_all }}</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="metric-card">
+      <div class="metric-label">TOTAL PLATFORM USERS</div>
+      <div class="metric-val text-secondary">{{ total_users_all }}</div>
+    </div>
+  </div>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">SaaS Tenant Organizations</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Organization Name</th>
+          <th>Plan</th>
+          <th>Max Vehicles</th>
+          <th>Created Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in organizations %}
+        <tr>
+          <td class="fw-bold">{{ o.name }}</td>
+          <td><span class="status-pill brand"><span class="status-dot"></span> {{ o.plan_name }}</span></td>
+          <td class="num">{{ o.max_vehicles }}</td>
+          <td class="num">{{ o.created_at|date:"Y-m-d" }}</td>
+          <td><span class="status-pill success"><span class="status-dot"></span> Active</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

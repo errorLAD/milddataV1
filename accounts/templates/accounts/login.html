@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Log In — Milda Data{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="form-card">
+            <h1 style="text-align: center; color: var(--color-primary); margin: 0 0 0.5rem;">Log In</h1>
+            <p style="text-align: center; color: var(--color-muted); margin: 0 0 1.5rem;">
+                Log in to access your products and full features.
+            </p>
+
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 0.85rem 1rem; margin-bottom: 1.5rem; text-align: center;">
+                <div style="font-weight: 700; color: #1e40af; font-size: 0.9rem; margin-bottom: 0.3rem;">🔑 Demo Account Credentials</div>
+                <div style="font-family: monospace; font-size: 0.88rem; color: #1e3a8a;">
+                    Email: <strong>demo@demo.com</strong> &nbsp;|&nbsp; Password: <strong>demo123</strong>
+                </div>
+                <button type="button" id="fill-demo-btn" style="margin-top: 0.6rem; background: #2563eb; color: #ffffff; border: none; padding: 0.35rem 0.85rem; border-radius: 6px; font-weight: 700; font-size: 0.8rem; cursor: pointer;">Auto-fill Demo Credentials</button>
+            </div>
+
+            <form method="post" id="login-form" novalidate>
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="form-error">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% if form.non_field_errors %}
+                <div class="form-error" style="margin-bottom: 1rem;">{{ form.non_field_errors.0 }}</div>
+                {% endif %}
+                <button type="submit" class="btn btn-primary btn-block">Log In</button>
+            </form>
+
+            <div style="margin: 1.5rem 0; text-align: center; position: relative;">
+                <hr style="border: 0; border-top: 1px solid #e5e7eb;">
+                <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #ffffff; padding: 0 10px; font-size: 0.8rem; color: #6b7280; font-family: monospace; text-transform: uppercase;">Or</span>
+            </div>
+
+            <a href="{% url 'accounts:guest_login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="btn btn-secondary btn-block" style="text-align: center; display: block; border-color: #6366f1; color: #4f46e5; font-weight: 700;">
+                ⚡ Continue as Guest (Public Preview)
+            </a>
+
+{% endblock %}

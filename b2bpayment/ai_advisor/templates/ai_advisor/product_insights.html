@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}Product & Inventory Intelligence | AI Business Advisor{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-box-seam-fill text-primary me-2"></i> Product & Inventory Intelligence</h3>
+        <p class="text-muted mb-0 fs-7">Sales velocity, restock intelligence, slow-moving inventory flags, and estimated gross margin analysis.</p>
+    </div>
+    <a href="{% url 'ai_advisor:dashboard' %}" class="btn btn-light border btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> AI Advisor Dashboard
+    </a>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Fast Moving -->
+    <div class="col-12 col-md-6">
+        <div class="card card-custom p-4 h-100">
+            <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom"><i class="bi bi-graph-up-arrow text-success me-2"></i> Fast-Moving Products</h6>
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0 fs-7">
+                    <thead>
+                        <tr>
+                            <th>Product Name</th>
+                            <th class="text-center">Units Sold</th>
+                            <th class="text-end">Revenue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for f in fast_moving %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ f.product_name }}</td>
+                            <td class="text-center fw-bold text-success">{{ f.units_sold }}</td>
+                            <td class="text-end fw-bold text-dark">₹{{ f.revenue|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-3 text-muted">No sales recorded.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restock Needed -->
+    <div class="col-12 col-md-6">
+        <div class="card card-custom p-4 h-100">
+            <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom"><i class="bi bi-cart-plus-fill text-primary me-2"></i> Restock Recommendations</h6>
+            <div class="table-responsive">
+                <table class="table table-custom align-middle mb-0 fs-7">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Stock</th>
+                            <th>Recommendation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in restock %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ r.product_name }}</td>
+                            <td class="text-center fw-bold text-danger">{{ r.current_stock }}</td>
+                            <td class="text-secondary">{{ r.recommendation }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center py-3 text-muted">All products have sufficient stock.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Gross Margin Analysis -->
+<div class="card card-custom p-4">
+    <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom"><i class="bi bi-percent text-info me-2"></i> Estimated Product Gross Margin & Profitability</h6>
+    <div class="table-responsive">
+        <table class="table table-custom align-middle mb-0 fs-7">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th class="text-center">Units Sold</th>
+                    <th class="text-end">Revenue</th>
+                    <th class="text-end">Margin %</th>
+                    <th class="text-end">Est. Profit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in profitability %}
+                <tr>
+                    <td class="fw-bold text-dark">{{ p.product_name }}</td>
+                    <td class="text-center fs-7">{{ p.units_sold }}</td>
+                    <td class="text-end fw-bold text-dark">₹{{ p.revenue|floatformat:2 }}</td>
+                    <td class="text-end fw-bold text-primary">{{ p.margin_pct }}%</td>
+                    <td class="text-end fw-bold text-success">₹{{ p.est_profit|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-3 text-muted">No profitability data calculated yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

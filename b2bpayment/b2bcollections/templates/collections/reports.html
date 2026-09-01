@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% load localization_tags %}
+
+{% block title %}Collections & Receivables Reports | NextSlot{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2.5">
+
+    <!-- Header Section -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+        <div>
+            <div class="kp-eyebrow mb-1">
+                <i class="bi bi-graph-up-arrow"></i> Cash Flow & Recovery Analytics
+            </div>
+            <h1 class="kp-page-title mb-0">Collections &amp; AR Reports</h1>
+            <p class="kp-page-sub mb-0">Track receivables aging buckets, recovery velocity, collection efficiency, and promise discipline.</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{% url 'collections:list' %}" class="btn-kp-secondary">
+                <i class="bi bi-collection"></i>
+                <span>Open Workspace</span>
+            </a>
+            <button type="button" class="btn-kp-secondary" onclick="window.print()">
+                <i class="bi bi-printer"></i>
+                <span>Print Report</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Core KPI Summary Grid (4-Column Enterprise Layout) -->
+    <div class="kp-metric-grid mb-3">
+        <!-- Hero Card: Outstanding AR -->
+        <div class="kp-card kp-hero-card">
+            <div class="kp-metric-top">
+                <span class="hero-label">Outstanding AR</span>
+                <span class="kp-icon-action"><i class="bi bi-cash-stack"></i></span>
+            </div>
+            <div class="hero-value">{{ total_outstanding|money:business_currency_symbol }}</div>
+            <div class="hero-sub">Active receivables balance</div>
+        </div>
+
+        <!-- Total Invoiced -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label">Total Invoiced</span>
+                <span class="kp-pill neutral"><span class="kp-dot"></span>Billed</span>
+            </div>
+            <div class="kp-metric-number">{{ total_billed|money:business_currency_symbol }}</div>
+            <div class="kp-metric-sub">Cumulative sales billed</div>
+        </div>
+
+        <!-- Total Collected -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label text-success">Total Collected</span>
+                <span class="kp-pill success"><span class="kp-dot"></span>Recovered</span>
+            </div>
+            <div class="kp-metric-number text-success">{{ total_collected|money:business_currency_symbol }}</div>
+            <div class="kp-metric-sub text-success"><i class="bi bi-check-circle-fill"></i> Payments processed</div>
+        </div>
+
+        <!-- Collection Rate -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label">Collection Rate</span>
+                {% if collection_rate >= 70 %}
+                    <span class="kp-pill success"><span class="kp-dot"></span>Optimal</span>
+                {% elif collection_rate >= 40 %}
+                    <span class="kp-pill high"><span class="kp-dot"></span>Moderate</span>
+                {% else %}
+                    <span class="kp-pill urgent"><span class="kp-dot"></span>Low</span>
+                {% endif %}
+            </div>
+            <div class="kp-metric-number {% if collection_rate >= 70 %}text-success{% elif collection_rate >= 40 %}text-warning{% else %}text-danger{% endif %}">
+                {{ collection_rate }}%
+            </div>
+            <div class="kp-metric-sub">Billed vs collected ratio</div>
+        </div>
+
+        <!-- Avg Delay -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label">Average Delay</span>
+                <span class="kp-pill neutral"><span class="kp-dot"></span>Maturity</span>
+            </div>
+            <div class="kp-metric-number">{{ avg_delay }} <small class="fs-8 font-monospace fw-normal text-muted">days</small></div>
+            <div class="kp-metric-sub">Past invoice due date</div>
+        </div>
+
+        <!-- Promise Health -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label">Promise Health</span>
+                {% if promises_missed > 0 %}
+                    <span class="kp-pill urgent"><span class="kp-dot"></span>{{ promises_missed }} Missed</span>
+                {% else %}
+                    <span class="kp-pill success"><span class="kp-dot"></span>100% Kept</span>
+                {% endif %}
+            </div>
+            <div class="kp-metric-number">{{ promises_kept }} <span class="fs-8 text-muted fw-normal">/ {{ promises_missed|add:promises_kept }}</span></div>
+            <div class="kp-metric-sub {% if promises_missed > 0 %}text-danger{% else %}text-success{% endif %}">
+                {% if promises_missed > 0 %}<i class="bi bi-exclamation-octagon-fill me-1"></i>{{ promises_missed }} broken promise{{ promises_missed|pluralize }}{% else %}<i class="bi bi-shield-check me-1"></i>Zero missed promises{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-3 mb-3">
+        <!-- Monthly Trend Chart Panel -->
+        <div class="col-12 col-lg-8">
+            <div class="kp-panel h-100 mb-0">
+                <div class="kp-panel-header">
+                    <div>
+                        <h2 class="kp-panel-title">Recovery &amp; Outstanding Trend (Last 6 Months)</h2>
+                        <p class="kp-panel-desc">Monthly collection velocity vs outstanding balance pipeline.</p>
+                    </div>
+                </div>
+                <div class="p-3" style="height: 280px; position: relative;">
+                    <canvas id="monthlyTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aging Breakdown Panel -->
+        <div class="col-12 col-lg-4">
+            <div class="kp-panel h-100 mb-0">
+                <div class="kp-panel-header">
+                    <div>
+                        <h2 class="kp-panel-title">Aging Schedule Breakdown</h2>
+                        <p class="kp-panel-desc">Distribution of outstanding balances by overdue duration.</p>
+                    </div>
+                </div>
+                <div class="p-3">
+                    <div style="height: 180px; position: relative;" class="d-flex align-items-center justify-content-center">
+                        <canvas id="agingChart"></canvas>
+                    </div>
+                    <div class="row g-2 mt-2 pt-2 border-top fs-8 font-monospace">
+                        <div class="col-6"><span class="text-success fw-bold">● 0–30 Days:</span> {{ aging.0_30|money:business_currency_symbol }}</div>
+                        <div class="col-6"><span class="text-warning fw-bold">● 31–60 Days:</span> {{ aging.31_60|money:business_currency_symbol }}</div>
+                        <div class="col-6"><span class="text-danger fw-bold">● 61–90 Days:</span> {{ aging.61_90|money:business_currency_symbol }}</div>
+                        <div class="col-6"><span class="text-danger fw-bold" style="color: #991B1B;">● 90+ Days:</span> {{ aging.90_plus|money:business_currency_symbol }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Overdue Accounts Table Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title">Highest Overdue Customer Accounts</h2>
+                <p class="kp-panel-desc">Accounts with the largest overdue balances requiring urgent collection follow-up.</p>
+            </div>
+            <a href="{% url 'collections:list' %}?tab=overdue" class="btn-kp-secondary">
+                <span>View All Overdue</span>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="kp-table">
+                <thead>
+                    <tr>
+                        <th class="ps-3" style="min-width: 170px;">Rank &amp; Customer</th>
+                        <th style="min-width: 140px;">Contact Phone</th>
+                        <th style="min-width: 140px;" class="text-end">Overdue Amount</th>
+                        <th class="text-end pe-3" style="min-width: 120px;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in top_overdue %}
+                    <tr>
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge {% if forloop.counter <= 3 %}bg-danger{% else %}bg-secondary{% endif %} rounded-circle p-1.5 fs-9" style="width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;">
+                                    {{ forloop.counter }}
+                                </span>
+                                <span class="fw-bold text-dark">{{ item.customer__name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <i class="bi bi-telephone text-primary me-1"></i> {{ item.customer__phone }}
+                        </td>
+                        <td class="text-end fw-bold text-danger">
+                            {{ item.total_overdue|money:business_currency_symbol }}
+                        </td>
+                        <td class="text-end pe-3">
+                            <a href="{% url 'collections:list' %}?q={{ item.customer__phone }}" class="btn-kp-primary py-0.5 px-2">
+                                Follow Up <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            <i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>
+                            <div class="fw-bold text-dark fs-8">No overdue customer accounts found!</div>
+                            <div class="fs-9">All customer balances are currently paid or up to date.</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Scripts -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const curSymbol = "{{ business_currency_symbol|escapejs }}";
+
+    // 1. Monthly Trend Chart
+    const monthlyCtx = document.getElementById('monthlyTrendChart');
+    if (monthlyCtx) {
+        new Chart(monthlyCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ monthly_labels|safe }},
+                datasets: [
+                    {
+                        label: 'Payments Collected (' + curSymbol + ')',
+                        data: {{ monthly_collected|safe }},
+                        backgroundColor: 'rgba(16, 185, 129, 0.85)',
+                        borderColor: '#10B981',
+                        borderRadius: 6,
+                    },
+                    {
+                        label: 'Outstanding AR (' + curSymbol + ')',
+                        data: {{ monthly_outstanding|safe }},
+                        backgroundColor: 'rgba(239, 68, 68, 0.65)',
+                        borderColor: '#EF4444',
+                        borderRadius: 6,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + curSymbol + ' ' + Number(context.raw).toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) { return curSymbol + ' ' + Number(value).toLocaleString(); }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // 2. Aging Breakdown Doughnut Chart
+    const agingCtx = document.getElementById('agingChart');
+    if (agingCtx) {
+        new Chart(agingCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ aging_labels|safe }},
+                datasets: [{
+                    data: {{ aging_data|safe }},
+                    backgroundColor: ['#10B981', '#F59E0B', '#F97316', '#EF4444'],
+                    borderWidth: 2,
+                    borderColor: '#FFFFFF'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + curSymbol + ' ' + Number(context.raw).toLocaleString();
+                            }
+                        }
+                    }
+                },
+                cutout: '70%'
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

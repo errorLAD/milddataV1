@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Audit Log - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Audit Log</h1>
+        <div class="page-subtitle">Security and action history logs</div>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Audit History</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Model</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td style="color: var(--text-tertiary);">{{ log.created_at|date:"Y-m-d H:i" }}</td>
+                    <td style="font-weight: 600;">{{ log.user.username|default:"System" }}</td>
+                    <td><span class="badge-pill badge-info">{{ log.action }}</span></td>
+                    <td>{{ log.model_name }}</td>
+                    <td>{{ log.details }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-tertiary);">No audit logs recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

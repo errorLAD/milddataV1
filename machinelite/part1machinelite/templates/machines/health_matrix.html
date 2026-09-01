@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Fleet Machine Health Score (0–100) Matrix — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Fleet Machine Health Score (0–100) Matrix</h1>
+    <p class="kp-page-subtitle">Real-time health score calculations from breakdown history, service intervals, fuel efficiency, downtime, and repair cost ratios.</p>
+  </div>
+  <div>
+    <a href="{% url 'machine_list' %}" class="kp-btn kp-btn-secondary">
+      <i class="fa-solid fa-truck-monster"></i> Equipment Directory
+    </a>
+  </div>
+</div>
+
+<!-- Health Summary Metrics -->
+<div class="kp-metrics-grid">
+  <div class="kp-metric-card kp-metric-card-hero">
+    <div>
+      <div class="kp-metric-label">Managed Fleet Units</div>
+      <div class="kp-metric-val num-tabular">{{ total_count }} Machines</div>
+    </div>
+    <div class="kp-metric-sub">Real-time telemetry algorithms</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Excellent (85–100)</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--success);">{{ excellent_count }} Units</div>
+    </div>
+    <div class="kp-metric-sub">Optimal mechanical condition</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Warning (50–69)</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--warning);">{{ warning_count }} Units</div>
+    </div>
+    <div class="kp-metric-sub">Requires service attention</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Critical (0–49)</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--danger);">{{ critical_count }} Units</div>
+    </div>
+    <div class="kp-metric-sub">High breakdown risk</div>
+  </div>
+</div>
+
+<!-- Fleet Health Matrix Table -->
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title">Side-by-Side Fleet Health Score Ranking</div>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Equipment Name</th>
+          <th>Health Score (0-100)</th>
+          <th>Status Level</th>
+          <th>Downtime / Breakdowns</th>
+          <th>Repair-to-Asset Ratio</th>
+          <th>Primary Degradation Reasons</th>
+          <th>Maintenance Recommendations</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in matrix %}
+          <tr>
+            <td>
+              <a href="{% url 'machine_detail' item.machine.pk %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">
+                {{ item.machine.name }}
+              </a>
+              <div style="font-size: 0.64rem; color: var(--text-tertiary);">{{ item.machine.reg_number }}</div>
+            </td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="num-tabular" style="font-size: 1rem; font-weight: 800; color: var(--text-primary);">
+                  {{ item.health.score }}/100
+                </span>
+              </div>
+            </td>
+            <td>
+              <span class="kp-badge {{ item.health.badge_class }}">
+                <span class="kp-dot"></span> {{ item.health.status_label }}
+              </span>
+            </td>
+            <td class="num-tabular">
+              {{ item.health.total_downtime }} HRs / {{ item.health.breakdown_count }} Events
+            </td>
+            <td class="num-tabular">
+              {{ item.health.repair_ratio }}%
+            </td>
+            <td style="font-size: 0.68rem; color: var(--text-secondary); max-width: 240px; white-space: normal;">
+              {% for r in item.health.reasons %}
+                • {{ r }}<br>
+              {% endfor %}
+            </td>
+            <td style="font-size: 0.68rem; color: var(--brand); max-width: 240px; white-space: normal; font-weight: 600;">
+              {% for rec in item.health.recommendations %}
+                👉 {{ rec }}<br>
+              {% endfor %}
+            </td>
+            <td style="text-align: right;">
+              <a href="{% url 'machine_detail' item.machine.pk %}" class="kp-btn kp-btn-secondary" style="font-size: 0.65rem; padding: 0.2rem 0.45rem;">
+                Full Profile <i class="fa-solid fa-arrow-right"></i>
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 2rem;">No machines in fleet database.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

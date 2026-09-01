@@ -1,0 +1,27 @@
+{% extends 'pwa/base_pwa.html' %}
+
+{% block title %}Trip History{% endblock %}
+
+{% block content %}
+<h2 class="fw-bold mb-3" style="font-size: 1rem;">Completed Trip History</h2>
+
+<div class="list-group list-group-flush">
+  {% for t in trips %}
+  <div class="list-group-item bg-white radius-md border mb-2 p-3">
+    <div class="d-flex align-items-center justify-content-between mb-1">
+      <span class="fw-bold text-primary">{{ t.trip_id }}</span>
+      <span class="status-pill success"><span class="status-dot"></span> {{ t.get_status_display }}</span>
+    </div>
+    <div class="d-flex align-items-center justify-content-between text-secondary" style="font-size: 0.72rem;">
+      <span>{{ t.start_location }} → {{ t.destination }}</span>
+      <span class="num fw-bold text-dark">{{ t.distance_km|floatformat:1 }} km</span>
+    </div>
+    <div class="text-muted num pt-1 mt-1 border-top" style="font-size: 0.65rem;">
+      Ended: {{ t.end_time|date:"M d, H:i" }}
+    </div>
+  </div>
+  {% empty %}
+  <div class="text-center py-4 text-muted">No completed trips.</div>
+  {% endfor %}
+</div>
+{% endblock %}

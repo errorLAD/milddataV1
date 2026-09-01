@@ -1,0 +1,1188 @@
+
+{% load static %}
+{% load indian_formatting %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <title>{% block title %}NextSlot | Global B2B Payment Collections SaaS{% endblock %}</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    
+    <style>
+        :root {
+            --nav-bg: rgba(255, 255, 255, 0.88);
+            --nav-border: #E2E8F0;
+            --brand-primary: #4F46E5;
+            --brand-primary-hover: #4338CA;
+            --brand-primary-light: #EEF2FF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --text-subtle: #94A3B8;
+            --shadow-nav: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+            --shadow-dropdown: 0 10px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8FAFC;
+        }
+
+        /* Modern Clean Light SaaS Top Navigation Header */
+        .top-header {
+            height: 56px;
+            background: #FFFFFF;
+            border-bottom: 1px solid var(--border);
+            padding: 0 1.25rem;
+            position: sticky;
+            top: 0;
+            z-index: 1020;
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03);
+        }
+
+        /* Action Icon Button */
+        .header-icon-btn {
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .header-icon-btn:hover {
+            background-color: var(--surface-alt);
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+        }
+
+        /* Business / Tenant Pill */
+        .tenant-pill {
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0 0.75rem 0 0.4rem;
+            background-color: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            transition: all 0.15s ease;
+            cursor: pointer;
+        }
+
+        .tenant-pill:hover {
+            border-color: var(--border-strong);
+            background-color: var(--surface-alt);
+        }
+
+        .tenant-icon-wrap {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: var(--brand-soft);
+            color: var(--brand);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+        }
+
+        /* Live Status Pulse Dot */
+        .status-pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #067647;
+            box-shadow: 0 0 0 0 rgba(6, 118, 71, 0.4);
+            animation: pulse-emerald 2s infinite;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        @keyframes pulse-emerald {
+            0% { box-shadow: 0 0 0 0 rgba(6, 118, 71, 0.4); }
+            70% { box-shadow: 0 0 0 5px rgba(6, 118, 71, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(6, 118, 71, 0); }
+        }
+
+        /* Omnibox Global Search Bar */
+        .nav-search-bar {
+            position: relative;
+            width: 260px;
+        }
+
+        @media (max-width: 992px) {
+            .nav-search-bar {
+                width: 170px;
+            }
+        }
+
+        .nav-search-bar input {
+            width: 100%;
+            height: 36px;
+            padding: 0.35rem 2.2rem 0.35rem 2.2rem;
+            font-size: 0.74rem;
+            font-weight: 500;
+            background-color: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            transition: all 0.15s ease;
+        }
+
+        .nav-search-bar input::placeholder {
+            color: var(--text-tertiary);
+            font-size: 0.74rem;
+        }
+
+        .nav-search-bar input:focus {
+            background-color: #FFFFFF;
+            border-color: var(--brand);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(36, 81, 255, 0.12);
+        }
+
+        .nav-search-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-tertiary);
+            font-size: 0.85rem;
+            pointer-events: none;
+        }
+
+        .search-kbd {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.64rem;
+            font-weight: 600;
+            background: #FFFFFF;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            padding: 0.1rem 0.35rem;
+            color: var(--text-tertiary);
+            pointer-events: none;
+        }
+
+        /* Simulator SaaS Badge Button */
+        .btn-simulator {
+            height: 36px;
+            background-color: var(--success-soft);
+            color: var(--success);
+            border: 1px solid var(--success-border);
+            font-weight: 600;
+            font-size: 0.72rem;
+            padding: 0 0.8rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s ease;
+            text-decoration: none;
+            white-space: nowrap !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-simulator:hover {
+            background-color: var(--success);
+            color: #FFFFFF;
+            border-color: var(--success);
+        }
+
+        /* Header Quick Action Button */
+        .btn-header-action {
+            height: 36px;
+            background: var(--brand);
+            color: #FFFFFF;
+            border: 1px solid var(--brand-dark);
+            font-weight: 600;
+            font-size: 0.72rem;
+            padding: 0 0.85rem;
+            border-radius: var(--radius-sm);
+            transition: background 0.15s ease;
+            box-shadow: var(--shadow-xs);
+            text-decoration: none;
+            white-space: nowrap !important;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-header-action:hover {
+            background: var(--brand-dark);
+            color: #FFFFFF;
+        }
+
+        /* User Profile Pill */
+        .user-profile-pill {
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0 0.75rem 0 0.35rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: #FFFFFF;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .user-profile-pill:hover {
+            border-color: var(--border-strong);
+            background-color: var(--surface-alt);
+        }
+
+        .avatar-container {
+            position: relative;
+        }
+
+        .avatar-initial {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #2451FF 0%, #1939B7 100%);
+            color: #FFFFFF;
+            font-weight: 700;
+            font-size: 0.76rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-status-badge {
+            position: absolute;
+            bottom: -1px;
+            right: -1px;
+            width: 8px;
+            height: 8px;
+            background-color: #067647;
+            border: 1.5px solid #FFFFFF;
+            border-radius: 50%;
+        }
+
+        /* Dropdown Styling */
+        .saas-dropdown-menu {
+            border: 1px solid var(--nav-border) !important;
+            box-shadow: var(--shadow-dropdown) !important;
+            animation: dropdownFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes dropdownFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ============================================================
+           UDHAAR CRM — LIGHT SAAS SIDEBAR
+           ============================================================ */
+
+        #sidebar-wrapper {
+            background: #FFFFFF !important;
+            color: #475569 !important;
+            border-right: 1px solid #E2E8F0 !important;
+            box-shadow: 2px 0 12px rgba(15, 23, 42, 0.03) !important;
+        }
+
+        /* Brand area */
+        #sidebar-wrapper .sidebar-heading {
+            background: #FFFFFF !important;
+            color: #101828 !important;
+            border-bottom: 1px solid #E4E7EC !important;
+            padding: 20px 18px !important;
+        }
+
+        #sidebar-wrapper .brand-badge {
+            width: 44px !important;
+            height: 44px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: linear-gradient(135deg, #2451FF 0%, #1939B7 100%) !important;
+            color: #FFFFFF !important;
+            border-radius: 12px !important;
+            font-size: 20px !important;
+            font-weight: 800 !important;
+            box-shadow: 0 4px 14px rgba(36, 81, 255, 0.25) !important;
+        }
+
+        #sidebar-wrapper .sidebar-heading .fw-bold {
+            color: #101828 !important;
+            font-weight: 700 !important;
+            font-size: 1.02rem !important;
+        }
+
+        #sidebar-wrapper .sidebar-heading small {
+            color: #475467 !important;
+            font-size: 0.72rem !important;
+        }
+
+        /* Navigation */
+        #sidebar-wrapper .sidebar-nav {
+            background: #FFFFFF !important;
+            padding: 12px 0 !important;
+        }
+
+        #sidebar-wrapper .sidebar-nav .nav-link {
+            display: flex !important;
+            align-items: center !important;
+            color: #475467 !important;
+            background: transparent !important;
+            border-radius: 8px !important;
+            margin: 2px 8px !important;
+            padding: 6px 10px !important;
+            font-size: 0.74rem !important;
+            font-weight: 500 !important;
+            text-decoration: none !important;
+            transition: background 0.15s ease, color 0.15s ease !important;
+        }
+
+        #sidebar-wrapper .sidebar-nav .nav-link i {
+            width: 20px !important;
+            min-width: 20px !important;
+            margin-right: 6px !important;
+            color: #475467 !important;
+            font-size: 1rem !important;
+            transition: color 0.15s ease !important;
+        }
+
+        /* Hover */
+        #sidebar-wrapper .sidebar-nav .nav-link:hover {
+            background: #F7F8FA !important;
+            color: #101828 !important;
+        }
+
+        #sidebar-wrapper .sidebar-nav .nav-link:hover i {
+            color: #2451FF !important;
+        }
+
+        /* Active item */
+        #sidebar-wrapper .sidebar-nav .nav-link.active {
+            background: #EEF2FF !important;
+            color: #1939B7 !important;
+            font-weight: 650 !important;
+            border: 1px solid #D6E0FF !important;
+        }
+
+        #sidebar-wrapper .sidebar-nav .nav-link.active i {
+            color: #2451FF !important;
+        }
+
+        #sidebar-wrapper .sidebar-nav .nav-link.active:hover {
+            background: #E5ECFF !important;
+            color: #1939B7 !important;
+        }
+
+        /* Admin/warning links */
+        #sidebar-wrapper .sidebar-nav .nav-link.text-warning {
+            color: #B45309 !important;
+        }
+
+        #sidebar-wrapper .sidebar-nav .nav-link.text-warning i {
+            color: #D97706 !important;
+        }
+
+        #sidebar-wrapper .sidebar-nav .nav-link.text-warning:hover {
+            background: #FFFBEB !important;
+            color: #92400E !important;
+        }
+
+        /* Footer */
+        #sidebar-wrapper > div:last-child {
+            background: #FFFFFF !important;
+            border-top: 1px solid #E2E8F0 !important;
+        }
+
+        /* New Sale button */
+        #sidebar-wrapper .btn-primary-custom {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%) !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            border-radius: 10px !important;
+            font-weight: 600 !important;
+            box-shadow: 0 5px 14px rgba(79, 70, 229, 0.18) !important;
+            transition: transform 0.18s ease, box-shadow 0.18s ease !important;
+        }
+
+        #sidebar-wrapper .btn-primary-custom:hover {
+            background: linear-gradient(135deg, #4338CA 0%, #4F46E5 100%) !important;
+            color: #FFFFFF !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 7px 18px rgba(79, 70, 229, 0.25) !important;
+        }
+
+        #sidebar-wrapper .btn-primary-custom i {
+            color: #FFFFFF !important;
+        }
+
+        /* Text helpers */
+        #sidebar-wrapper .text-white {
+            color: #0F172A !important;
+        }
+
+        #sidebar-wrapper .text-white-50 {
+            color: #64748B !important;
+        }
+
+        #sidebar-wrapper .border-top {
+            border-top-color: #E2E8F0 !important;
+        }
+
+        #sidebar-wrapper .border-bottom {
+            border-bottom-color: #E2E8F0 !important;
+        }
+
+        /* Scrollbar */
+        #sidebar-wrapper::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        #sidebar-wrapper::-webkit-scrollbar-track {
+            background: #FFFFFF !important;
+        }
+
+        #sidebar-wrapper::-webkit-scrollbar-thumb {
+            background: #CBD5E1 !important;
+            border-radius: 10px !important;
+        }
+
+        #sidebar-wrapper::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8 !important;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            #sidebar-wrapper {
+                background: #FFFFFF !important;
+            }
+
+            #sidebar-wrapper .sidebar-heading {
+                padding: 20px 16px !important;
+            }
+
+            #sidebar-wrapper .sidebar-nav .nav-link {
+                margin: 3px 8px !important;
+                padding: 11px 13px !important;
+            }
+        }
+
+        /* ========================================================================= */
+        /* KAROBARPLUS / NEXTSLOT LIGHT ENTERPRISE SAAS GLOBAL DESIGN SYSTEM          */
+        /* ========================================================================= */
+        :root {
+            --bg: #F7F8FA;
+            --surface: #FFFFFF;
+            --surface-alt: #FAFAFB;
+            --border: #E4E7EC;
+            --border-strong: #D0D5DD;
+            --text-primary: #101828;
+            --text-secondary: #475467;
+            --text-tertiary: #98A2B3;
+            --brand: #2451FF;
+            --brand-dark: #1939B7;
+            --brand-soft: #EEF2FF;
+            --brand-soft-border: #D6E0FF;
+            --success: #067647;
+            --success-soft: #ECFDF3;
+            --success-border: #ABEFC6;
+            --danger: #B42318;
+            --danger-soft: #FEF3F2;
+            --danger-border: #FECDCA;
+            --warning: #B54708;
+            --warning-soft: #FFFAEB;
+            --warning-border: #FEDF89;
+            --info: #175CD3;
+            --info-soft: #EFF8FF;
+            --info-border: #B2DDFF;
+            --whatsapp: #128C7E;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 14px;
+            --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+            --shadow-sm: 0 2px 4px rgba(16, 24, 40, 0.06);
+        }
+
+        body {
+            background-color: var(--bg) !important;
+            color: var(--text-primary) !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        }
+
+        /* Page Header Typography & Eyebrow */
+        .kp-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 9px;
+            border-radius: 9999px;
+            font-size: 0.62rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            background: var(--brand-soft);
+            color: var(--brand-dark);
+            border: 1px solid var(--brand-soft-border);
+        }
+
+        .kp-page-title {
+            font-size: 1.02rem !important;
+            font-weight: 650 !important;
+            letter-spacing: -0.02em !important;
+            color: var(--text-primary) !important;
+        }
+
+        .kp-page-sub {
+            font-size: 0.72rem !important;
+            color: var(--text-secondary) !important;
+        }
+
+        /* Buttons */
+        .btn-kp-primary {
+            background: var(--brand) !important;
+            color: #FFFFFF !important;
+            border: 1px solid var(--brand-dark) !important;
+            font-weight: 600 !important;
+            border-radius: var(--radius-sm) !important;
+            padding: 0.32rem 0.65rem !important;
+            font-size: 0.7rem !important;
+            box-shadow: var(--shadow-xs) !important;
+            transition: background 0.15s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            text-decoration: none !important;
+        }
+        .btn-kp-primary:hover { background: var(--brand-dark) !important; color: #FFFFFF !important; }
+
+        .btn-kp-whatsapp {
+            background: var(--surface) !important;
+            color: var(--whatsapp) !important;
+            border: 1px solid var(--success-border) !important;
+            font-weight: 600 !important;
+            border-radius: var(--radius-sm) !important;
+            padding: 0.32rem 0.65rem !important;
+            font-size: 0.7rem !important;
+            box-shadow: var(--shadow-xs) !important;
+            transition: all 0.15s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            text-decoration: none !important;
+        }
+        .btn-kp-whatsapp:hover { background: var(--success) !important; color: #FFFFFF !important; border-color: var(--success) !important; }
+
+        .btn-kp-secondary {
+            background: var(--surface) !important;
+            color: var(--text-secondary) !important;
+            border: 1px solid var(--border) !important;
+            font-weight: 600 !important;
+            border-radius: var(--radius-sm) !important;
+            padding: 0.32rem 0.65rem !important;
+            font-size: 0.7rem !important;
+            box-shadow: var(--shadow-xs) !important;
+            transition: all 0.15s ease !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.4rem !important;
+            text-decoration: none !important;
+        }
+        .btn-kp-secondary:hover { background: var(--surface-alt) !important; color: var(--text-primary) !important; border-color: var(--border-strong) !important; }
+
+        /* Metric Cards Grid */
+        .kp-metric-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.875rem;
+        }
+        @media (max-width: 1200px) { .kp-metric-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 576px) { .kp-metric-grid { grid-template-columns: 1fr; } }
+
+        .kp-card {
+            background: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-md) !important;
+            padding: 1rem 1.1rem !important;
+            box-shadow: var(--shadow-xs) !important;
+            transition: border-color 0.15s ease !important;
+        }
+        .kp-card:hover { border-color: var(--border-strong) !important; }
+
+        .kp-hero-card {
+            background: linear-gradient(180deg, #F5F7FF 0%, #FFFFFF 100%) !important;
+            border: 1px solid var(--brand-soft-border) !important;
+        }
+        .kp-hero-card .hero-label {
+            font-size: 0.6rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.06em !important;
+            color: var(--brand-dark) !important;
+        }
+        .kp-hero-card .hero-value {
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            letter-spacing: -0.02em !important;
+            color: var(--text-primary) !important;
+            margin: 0.2rem 0 !important;
+            font-feature-settings: "tnum" !important;
+        }
+        .kp-hero-card .hero-sub { font-size: 0.66rem !important; color: var(--text-secondary) !important; }
+
+        .kp-metric-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .kp-metric-label {
+            font-size: 0.6rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            color: var(--text-tertiary) !important;
+        }
+        .kp-metric-number {
+            font-size: 1.15rem !important;
+            font-weight: 700 !important;
+            color: var(--text-primary) !important;
+            letter-spacing: -0.02em !important;
+            margin: 0.2rem 0 !important;
+            font-feature-settings: "tnum" !important;
+        }
+        .kp-metric-sub {
+            font-size: 0.66rem !important;
+            color: var(--text-secondary) !important;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Panels & Tables */
+        .kp-panel {
+            background: var(--surface) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-lg) !important;
+            box-shadow: var(--shadow-xs) !important;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .kp-panel-header {
+            background: var(--surface-alt) !important;
+            border-bottom: 1px solid var(--border) !important;
+            padding: 0.9rem 1.1rem !important;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .kp-panel-title {
+            font-size: 0.8rem !important;
+            font-weight: 650 !important;
+            color: var(--text-primary) !important;
+            margin: 0 !important;
+        }
+        .kp-panel-desc {
+            font-size: 0.68rem !important;
+            color: var(--text-secondary) !important;
+            margin: 0 !important;
+        }
+
+        /* Tabs */
+        .kp-nav-tabs {
+            border-bottom: 1px solid var(--border) !important;
+            background: var(--surface) !important;
+            padding: 0 1.1rem !important;
+            display: flex;
+            gap: 0.25rem;
+            overflow-x: auto;
+        }
+        .kp-nav-link {
+            color: var(--text-secondary) !important;
+            font-size: 0.72rem !important;
+            font-weight: 600 !important;
+            padding: 0.65rem 0.85rem !important;
+            text-decoration: none !important;
+            border-bottom: 2.5px solid transparent !important;
+            transition: all 0.15s ease !important;
+            white-space: nowrap;
+        }
+        .kp-nav-link:hover { color: var(--text-primary) !important; }
+        .kp-nav-link.active {
+            color: var(--brand) !important;
+            border-bottom-color: var(--brand) !important;
+            background: transparent !important;
+        }
+
+        /* Status Pills */
+        .kp-pill {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            border-radius: 9999px !important;
+            padding: 2px 8px 2px 6px !important;
+            font-size: 0.6rem !important;
+            font-weight: 650 !important;
+            white-space: nowrap;
+        }
+        .kp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+        .kp-pill.urgent { background: var(--danger-soft) !important; color: var(--danger) !important; border: 1px solid var(--danger-border) !important; }
+        .kp-pill.urgent .kp-dot { background: var(--danger) !important; }
+
+        .kp-pill.high { background: var(--warning-soft) !important; color: var(--warning) !important; border: 1px solid var(--warning-border) !important; }
+        .kp-pill.high .kp-dot { background: var(--warning) !important; }
+
+        .kp-pill.normal { background: var(--info-soft) !important; color: var(--info) !important; border: 1px solid var(--info-border) !important; }
+        .kp-pill.normal .kp-dot { background: var(--info) !important; }
+
+        .kp-pill.success { background: var(--success-soft) !important; color: var(--success) !important; border: 1px solid var(--success-border) !important; }
+        .kp-pill.success .kp-dot { background: var(--success) !important; }
+
+        .kp-pill.neutral { background: var(--surface-alt) !important; color: var(--text-tertiary) !important; border: 1px solid var(--border) !important; }
+        .kp-pill.neutral .kp-dot { background: var(--text-tertiary) !important; }
+
+        /* Tables */
+        .kp-table {
+            width: 100% !important;
+            margin-bottom: 0 !important;
+            border-collapse: collapse !important;
+        }
+        .kp-table th {
+            font-size: 0.58rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            color: var(--text-tertiary) !important;
+            background: var(--surface-alt) !important;
+            border-bottom: 1px solid var(--border) !important;
+            padding: 0.6rem 0.9rem !important;
+            white-space: nowrap;
+        }
+        .kp-table td {
+            padding: 0.55rem 0.9rem !important;
+            border-bottom: 1px solid var(--border) !important;
+            color: var(--text-primary) !important;
+            vertical-align: middle !important;
+            font-size: 0.72rem !important;
+            font-feature-settings: "tnum" !important;
+        }
+        .kp-table tbody tr:hover { background-color: var(--surface-alt) !important; }
+        .kp-table tbody tr:last-child td { border-bottom: none !important; }
+
+        .kp-icon-action {
+            width: 27px;
+            height: 27px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-strong);
+            background: var(--surface);
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all 0.15s ease;
+            text-decoration: none;
+        }
+        .kp-icon-action:hover { background: var(--surface-alt); color: var(--text-primary); }
+
+        /* Centered Light Modals */
+        .modal-content {
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius-lg) !important;
+            box-shadow: var(--shadow-sm) !important;
+            overflow: hidden;
+        }
+        .modal-header {
+            background: var(--surface-alt) !important;
+            border-bottom: 1px solid var(--border) !important;
+            padding: 0.9rem 1.1rem !important;
+        }
+        .modal-footer {
+            background: var(--surface-alt) !important;
+            border-top: 1px solid var(--border) !important;
+            padding: 0.65rem 1.1rem !important;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if request.is_guest %}
+<div class="guest-banner text-white px-3 py-2 text-center sticky-top d-flex align-items-center justify-content-between shadow-sm" style="background: linear-gradient(90deg, #4F46E5 0%, #312E81 100%); font-size: 0.82rem; z-index: 1060;">
+    <div class="d-flex align-items-center gap-2 mx-auto flex-wrap justify-content-center">
+        <span class="badge bg-warning text-dark fw-bold text-uppercase px-2 py-1"><i class="bi bi-eye-fill me-1"></i> Guest Mode</span>
+        <span>You are exploring interactive demo features. Session expires in ~{{ request.guest_remaining_minutes|default:"120" }} minutes.</span>
+        <a href="{% url 'accounts:upgrade_guest' %}" class="btn btn-sm btn-light fw-bold text-indigo ms-2 shadow-xs" style="color: #4F46E5; border-radius: 6px; font-size: 0.76rem;">
+            <i class="bi bi-rocket-takeoff-fill me-1"></i> Upgrade to Full Account
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div class="d-flex" id="wrapper">
+    {% if user.is_authenticated or request.is_guest %}
+    <!-- Sidebar -->
+    <div id="sidebar-wrapper">
+        <div class="sidebar-heading">
+            <div class="brand-badge">N</div>
+            <div>
+                <div class="fw-bold fs-5 text-white lh-1">NextSlot</div>
+                <small class="text-indigo-400 fw-semibold" style="font-size: 0.7rem; color: #818CF8 !important;">B2B Payment Collections</small>
+            </div>
+        </div>
+
+        <div class="sidebar-nav">
+            {% if request.resolver_match.app_name == 'platform_admin' %}
+            <a href="{% url 'platform_admin:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %} text-warning">
+                <i class="bi bi-speedometer2"></i> Admin Dashboard
+            </a>
+            <a href="{% url 'platform_admin:business_list' %}" class="nav-link {% if request.resolver_match.url_name == 'business_list' or request.resolver_match.url_name == 'business_detail' %}active{% endif %}">
+                <i class="bi bi-building"></i> Registered Businesses
+            </a>
+            <a href="{% url 'platform_admin:ai_metrics' %}" class="nav-link {% if request.resolver_match.url_name == 'ai_metrics' %}active{% endif %}">
+                <i class="bi bi-robot"></i> AI Analytics & Impact
+            </a>
+            <a href="{% url 'dashboard:index' %}" class="nav-link text-muted mt-3 pt-2 border-top">
+                <i class="bi bi-arrow-left-circle"></i> Back to App
+            </a>
+            {% else %}
+            <!-- Primary Collections SaaS Navigation -->
+            <a href="{% url 'dashboard:index' %}" class="nav-link {% if request.resolver_match.app_name == 'dashboard' %}active{% endif %}">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+
+            <div class="nav-item">
+                <a href="#collectionsSubmenu" class="nav-link {% if request.resolver_match.app_name == 'collections' %}active{% endif %} d-flex justify-content-between align-items-center" data-bs-toggle="collapse" role="button" aria-expanded="{% if request.resolver_match.app_name == 'collections' %}true{% else %}false{% endif %}" aria-controls="collectionsSubmenu">
+                    <span><i class="bi bi-collection-fill"></i> Collections</span>
+                    <i class="bi bi-chevron-down fs-8 opacity-50"></i>
+                </a>
+                <div class="collapse {% if request.resolver_match.app_name == 'collections' %}show{% endif %}" id="collectionsSubmenu" style="padding-left: 24px;">
+                    <a href="{% url 'collections:list' %}?tab=all" class="nav-link py-1 fs-8 {% if request.resolver_match.app_name == 'collections' and request.resolver_match.url_name == 'list' and not request.GET.tab or request.GET.tab == 'all' %}fw-bold text-primary{% endif %}">
+                        <i class="bi bi-list-ul fs-7"></i> All Collections
+                    </a>
+                    <a href="{% url 'collections:list' %}?tab=due_today" class="nav-link py-1 fs-8 {% if request.GET.tab == 'due_today' %}fw-bold text-info{% endif %}">
+                        <i class="bi bi-calendar-event fs-7 text-info"></i> Due Today
+                    </a>
+                    <a href="{% url 'collections:list' %}?tab=overdue" class="nav-link py-1 fs-8 {% if request.GET.tab == 'overdue' %}fw-bold text-danger{% endif %}">
+                        <i class="bi bi-exclamation-circle fs-7 text-danger"></i> Overdue
+                    </a>
+                    <a href="{% url 'collections:list' %}?tab=upcoming" class="nav-link py-1 fs-8 {% if request.GET.tab == 'upcoming' %}fw-bold text-primary{% endif %}">
+                        <i class="bi bi-clock-history fs-7 text-muted"></i> Upcoming
+                    </a>
+                    <a href="{% url 'collections:list' %}?tab=promise" class="nav-link py-1 fs-8 {% if request.GET.tab == 'promise' %}fw-bold text-primary{% endif %}">
+                        <i class="bi bi-handshake fs-7 text-primary"></i> Promise to Pay
+                    </a>
+                    <a href="{% url 'collections:list' %}?tab=missed" class="nav-link py-1 fs-8 {% if request.GET.tab == 'missed' %}fw-bold text-warning{% endif %}">
+                        <i class="bi bi-exclamation-triangle fs-7 text-warning"></i> Missed Promises
+                    </a>
+                </div>
+            </div>
+
+            <a href="{% url 'customers:list' %}" class="nav-link {% if request.resolver_match.app_name == 'customers' %}active{% endif %}">
+                <i class="bi bi-people-fill"></i> Customers
+            </a>
+            <a href="{% url 'sales:list' %}" class="nav-link {% if request.resolver_match.app_name == 'sales' %}active{% endif %}">
+                <i class="bi bi-receipt"></i> Invoices / Sales
+            </a>
+            <a href="{% url 'payments:list' %}" class="nav-link {% if request.resolver_match.app_name == 'payments' %}active{% endif %}">
+                <i class="bi bi-credit-card-2-front-fill"></i> Payments
+            </a>
+            <a href="{% url 'whatsapp:inbox' %}" class="nav-link {% if request.resolver_match.app_name == 'whatsapp' %}active{% endif %}">
+                <i class="bi bi-whatsapp"></i> WhatsApp
+            </a>
+            <a href="{% url 'collections:reports' %}" class="nav-link {% if request.resolver_match.app_name == 'collections' and request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                <i class="bi bi-bar-chart-line-fill"></i> Reports
+            </a>
+            <a href="{% url 'ai_advisor:dashboard' %}" class="nav-link {% if request.resolver_match.app_name == 'ai_advisor' %}active{% endif %}">
+                <i class="bi bi-robot"></i> AI Collections Assistant
+            </a>
+            <a href="{% url 'collections:reminder_rules' %}" class="nav-link {% if request.resolver_match.app_name == 'collections' and request.resolver_match.url_name == 'reminder_rules' %}active{% endif %}">
+                <i class="bi bi-alarm-fill"></i> Reminder Cadence
+            </a>
+            <a href="{% url 'settings_app:index' %}" class="nav-link {% if request.resolver_match.app_name == 'settings_app' %}active{% endif %}">
+                <i class="bi bi-gear-fill"></i> Settings
+            </a>
+
+            <!-- Secondary: Business Tools / More -->
+            <div class="pt-2 mt-2 border-top">
+                <div class="px-3 py-1 fs-8 text-uppercase fw-bold text-muted" style="letter-spacing: 0.05em;">
+                    Business Tools
+                </div>
+                <a href="{% url 'products:list' %}" class="nav-link py-2 fs-7 {% if request.resolver_match.app_name == 'products' %}active{% endif %}">
+                    <i class="bi bi-box-seam"></i> Products & Inventory
+                </a>
+                <a href="{% url 'suppliers:list' %}" class="nav-link py-2 fs-7 {% if request.resolver_match.app_name == 'suppliers' and request.resolver_match.url_name != 'payable_list' %}active{% endif %}">
+                    <i class="bi bi-truck"></i> Suppliers
+                </a>
+                <a href="{% url 'suppliers:payable_list' %}" class="nav-link py-2 fs-7 {% if request.resolver_match.app_name == 'suppliers' and request.resolver_match.url_name == 'payable_list' %}active{% endif %}">
+                    <i class="bi bi-wallet2"></i> Supplier Payables
+                </a>
+                <a href="{% url 'promotions:list' %}" class="nav-link py-2 fs-7 {% if request.resolver_match.app_name == 'promotions' %}active{% endif %}">
+                    <i class="bi bi-megaphone"></i> Promotions
+                </a>
+            </div>
+
+            {% if user.is_superuser or user.is_staff %}
+            <div class="pt-2">
+                <a href="{% url 'platform_admin:dashboard' %}" class="nav-link text-warning">
+                    <i class="bi bi-shield-check"></i> Platform Admin
+                </a>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Quick Action Footer in Sidebar -->
+        <div class="p-3 border-top border-slate-800">
+            {% if request.resolver_match.app_name == 'platform_admin' %}
+            <a href="{% url 'platform_admin:business_list' %}" class="btn btn-outline-warning w-100 py-2 d-flex align-items-center justify-content-center gap-2 fs-7">
+                <i class="bi bi-building"></i> Manage Stores
+            </a>
+            {% else %}
+            <a href="{% url 'sales:create' %}" class="btn btn-primary-custom w-100 py-2 d-flex align-items-center justify-content-center gap-2 mb-2">
+                <i class="bi bi-plus-circle-fill"></i> New Invoice / Sale
+            </a>
+            <a href="{% url 'collections:list' %}" class="btn btn-outline-secondary w-100 py-1 fs-7 d-flex align-items-center justify-content-center gap-1">
+                <i class="bi bi-collection"></i> View Collections
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper" {% if not user.is_authenticated and not request.is_guest %}style="margin-left:0; width:100%;"{% endif %}>
+        {% if user.is_authenticated or request.is_guest %}
+        <!-- Redesigned SaaS Top Navigation Header -->
+        <header class="top-header d-flex align-items-center justify-content-between">
+            <!-- Left Side: Mobile Toggle, Store Pill, Global Omnibox Search -->
+            <div class="d-flex align-items-center gap-3">
+                <button class="header-icon-btn d-lg-none" id="menu-toggle" aria-label="Toggle navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <div class="tenant-pill" title="Current Store / Workspace">
+                    {% if request.resolver_match.app_name == 'platform_admin' %}
+                        <div class="tenant-icon-wrap bg-warning-subtle text-warning-emphasis">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <span class="text-slate-800">Platform Admin</span>
+                        <span class="status-pulse-dot ms-1" title="System Active"></span>
+                    {% else %}
+                        <div class="tenant-icon-wrap">
+                            <i class="bi bi-building-fill"></i>
+                        </div>
+                        <span class="fw-bold text-slate-800 fs-7">{{ current_business.name|default:"Demo Guest Business" }}</span>
+                        <span class="status-pulse-dot ms-1" title="Live Store Sync Active"></span>
+                        <i class="bi bi-chevron-expand fs-8 text-muted opacity-75 ms-1"></i>
+                    {% endif %}
+                </div>
+
+                <!-- Global SaaS Omnibox Search -->
+                {% if request.resolver_match.app_name != 'platform_admin' %}
+                <div class="nav-search-bar d-none d-md-block">
+                    <i class="bi bi-search nav-search-icon"></i>
+                    <input type="text" placeholder="Search customers, sales, udhaar..." aria-label="Search dashboard">
+                    <kbd class="search-kbd">Ctrl K</kbd>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Right Side: Actions, Simulator, Notifications, User Profile -->
+            <div class="d-flex align-items-center gap-2 gap-sm-3">
+                {% if request.resolver_match.app_name != 'platform_admin' %}
+                <!-- Quick Sale Header Action -->
+                {% if not request.is_guest %}
+                <a href="{% url 'sales:create' %}" class="btn-header-action d-none d-lg-flex align-items-center gap-2">
+                    <i class="bi bi-plus-lg"></i>
+                    <span>New Sale</span>
+                </a>
+                {% else %}
+                <a href="{% url 'accounts:upgrade_guest' %}" class="btn-header-action d-none d-lg-flex align-items-center gap-2 bg-indigo border-indigo">
+                    <i class="bi bi-rocket-takeoff-fill"></i>
+                    <span>Upgrade Account</span>
+                </a>
+                {% endif %}
+
+                <!-- WhatsApp Sandbox Badge -->
+                <a href="{% url 'whatsapp:sandbox' %}" class="btn-simulator d-flex align-items-center gap-2">
+                    <span class="status-pulse-dot"></span>
+                    <i class="bi bi-whatsapp fs-7"></i>
+                    <span class="d-none d-sm-inline">Sandbox Simulator</span>
+                </a>
+                {% endif %}
+
+                <!-- Notification Dropdown -->
+                <div class="dropdown">
+                    <button class="header-icon-btn position-relative" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications">
+                        <i class="bi bi-bell"></i>
+                        {% if unread_notifications_count > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                            <span class="visually-hidden">New alerts</span>
+                        </span>
+                        {% endif %}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end saas-dropdown-menu rounded-4 p-2 mt-2" style="width: 330px;">
+                        <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="fw-bold text-dark fs-7">Notifications</span>
+                                {% if unread_notifications_count > 0 %}
+                                <span class="badge bg-indigo-subtle text-primary rounded-pill fs-8">{{ unread_notifications_count }} new</span>
+                                {% endif %}
+                            </div>
+                            {% if unread_notifications_count > 0 %}
+                            <a href="{% url 'notifications:mark_all_read' %}" class="text-decoration-none text-primary fs-8 fw-semibold">Mark all read</a>
+                            {% endif %}
+                        </div>
+                        <div class="list-group list-group-flush fs-7" style="max-height: 290px; overflow-y: auto;">
+                            {% for notif in recent_notifications %}
+                            <a href="{% if notif.link %}{{ notif.link }}{% else %}#{% endif %}" class="list-group-item list-group-item-action py-2 px-3 border-0 rounded-3 mb-1 {% if not notif.is_read %}bg-light fw-medium{% endif %}">
+                                <div class="d-flex align-items-start gap-2">
+                                    <i class="bi bi-info-circle text-primary mt-1 fs-7"></i>
+                                    <div class="w-100">
+                                        <div class="text-dark fw-semibold fs-7">{{ notif.title }}</div>
+                                        <div class="text-muted fs-8 lh-sm">{{ notif.message }}</div>
+                                        <small class="text-secondary opacity-75 fs-8">{{ notif.created_at|timesince }} ago</small>
+                                    </div>
+                                </div>
+                            </a>
+                            {% empty %}
+                            <div class="text-center py-4 text-muted fs-7">
+                                <i class="bi bi-bell-slash d-block fs-4 text-muted opacity-50 mb-1"></i>
+                                No new notifications
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Profile Dropdown -->
+                <div class="dropdown">
+                    <div class="user-profile-pill" data-bs-toggle="dropdown" aria-expanded="false" title="User Menu">
+                        <div class="avatar-container">
+                            <div class="avatar-initial">
+                                {% if request.is_guest %}G{% else %}{{ user.username|slice:":1"|upper }}{% endif %}
+                            </div>
+                            <span class="avatar-status-badge"></span>
+                        </div>
+                        <div class="d-none d-md-flex flex-column text-start lh-1 pe-1">
+                            <span class="fw-bold text-slate-800 fs-7 mb-1">{% if request.is_guest %}Guest User{% else %}{{ user.username }}{% endif %}</span>
+                            <span class="text-muted fs-8" style="font-size: 0.725rem;">{% if request.is_guest %}Guest Session{% elif user.is_superuser %}Admin{% else %}Owner{% endif %}</span>
+                        </div>
+                        <i class="bi bi-chevron-down fs-8 text-muted ms-1"></i>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end saas-dropdown-menu rounded-3 mt-2 p-2" style="min-width: 210px;">
+                        <li class="px-3 py-2 border-bottom mb-1 bg-light-subtle rounded-2">
+                            <div class="fw-bold text-dark fs-7">{% if request.is_guest %}Guest User{% else %}{{ user.username }}{% endif %}</div>
+                            <div class="text-muted fs-8">{% if request.is_guest %}Temporary Demo Session{% else %}{{ user.email|default:"Active Account" }}{% endif %}</div>
+                        </li>
+                        {% if request.is_guest %}
+                        <li>
+                            <a class="dropdown-item rounded-2 py-2 fs-7 fw-bold text-primary d-flex align-items-center gap-2" href="{% url 'accounts:upgrade_guest' %}">
+                                <i class="bi bi-rocket-takeoff text-primary fs-7"></i> Upgrade to Full Account
+                            </a>
+                        </li>
+                        {% elif request.resolver_match.app_name != 'platform_admin' %}
+                        <li>
+                            <a class="dropdown-item rounded-2 py-2 fs-7 fw-medium text-secondary d-flex align-items-center gap-2" href="{% url 'settings_app:index' %}">
+                                <i class="bi bi-gear text-slate-600 fs-7"></i> Account Settings
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item rounded-2 py-2 fs-7 fw-medium text-secondary d-flex align-items-center gap-2" href="{% url 'ai_advisor:dashboard' %}">
+                                <i class="bi bi-cpu text-indigo fs-7"></i> AI Advisor
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        {% endif %}
+                        <li>
+                            <form action="{% url 'accounts:logout' %}" method="post" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item rounded-2 py-2 fs-7 fw-medium text-danger d-flex align-items-center gap-2">
+                                    <i class="bi bi-box-arrow-right fs-7"></i> {% if request.is_guest %}Exit Guest Mode{% else %}Log out{% endif %}
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+        {% endif %}
+
+        <!-- Alert Banners -->
+        <div class="container-fluid px-4 pt-3">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show border-0 shadow-sm rounded-3" role="alert">
+                    <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Main Content Injection -->
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Sidebar Toggle JS
+    document.getElementById("menu-toggle")?.addEventListener("click", function(e) {
+        e.preventDefault();
+        document.getElementById("wrapper")?.classList.toggle("toggled");
+    });
+
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/static/js/sw.js').then(function(reg) {
+                console.log('NextSlot PWA Service Worker registered with scope:', reg.scope);
+            }).catch(function(err) {
+                console.log('NextSlot PWA Service Worker registration failed:', err);
+            });
+        });
+    }
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

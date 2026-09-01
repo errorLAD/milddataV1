@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} — Service Offline / Configuration Notice{% endblock %}
+
+{% block content %}
+<div class="saas-offline-page">
+<style>
+    .saas-offline-page {
+        --ink: #0b0f1a;
+        --ink-soft: #565d74;
+        --paper: #f7f7f3;
+        --surface: #ffffff;
+        --sindoor: #b5451f;
+        --marigold: #d98e2b;
+        --line: rgba(11, 15, 26, 0.09);
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        background: var(--paper);
+        color: var(--ink);
+        padding-bottom: 5rem;
+    }
+
+    .saas-offline-hero {
+        background: var(--ink);
+        color: #f3f4f8;
+        padding: 4rem 1.5rem 3.5rem;
+        border-bottom: 3px solid var(--sindoor);
+        text-align: center;
+    }
+    .saas-offline-hero .container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .saas-offline-hero .eyebrow {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #f87171;
+        margin-bottom: 0.8rem;
+        display: block;
+    }
+    .saas-offline-hero h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(2rem, 4vw, 2.8rem);
+        font-weight: 700;
+        margin: 0 0 1rem;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+    }
+
+    .saas-offline-body {
+        max-width: 800px;
+        margin: 3rem auto 0;
+        padding: 0 1.5rem;
+    }
+
+    .saas-offline-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 2.2rem;
+        box-shadow: 0 4px 16px rgba(11, 15, 26, 0.05);
+    }
+
+    .saas-offline-card h2 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.35rem;
+        margin: 0 0 0.8rem;
+        color: var(--ink) !important;
+        -webkit-text-fill-color: var(--ink) !important;
+    }
+
+    .saas-offline-card p {
+        font-size: 1rem;
+        color: var(--ink-soft);
+        line-height: 1.6;
+        margin: 0 0 1.5rem;
+    }
+
+    .cmd-box {
+        background: #0f172a;
+        color: #38bdf8;
+        font-family: 'IBM Plex Mono', monospace;
+        padding: 1.1rem 1.4rem;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        overflow-x: auto;
+        margin-bottom: 1.8rem;
+        border: 1px solid #1e293b;
+    }
+
+    .action-row {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+</style>
+
+<section class="saas-offline-hero">
+    <div class="container">
+        <span class="eyebrow">⚠️ Service Currently Offline</span>
+        <h1>{{ product.name }}</h1>
+        <p style="color: #9aa1b8; margin: 0;">The target application server is not currently accepting connections at <code>{{ target_url }}</code>.</p>
+    </div>
+</section>
+
+<div class="saas-offline-body">
+    <div class="saas-offline-card">
+        <h2>Local Development &amp; Service Startup</h2>
+        <p>To run and launch this subproject application locally, open a new terminal window in the workspace and execute the following command:</p>
+
+        <div class="cmd-box">
+            <code>{{ run_cmd }}</code>
+        </div>
+
+        <p>Alternatively, if this application is hosted externally, configure the <code>{{ product.env_var }}</code> environment variable in your server environment.</p>
+
+        <div class="action-row">
+            <a href="{% url 'products:saas_directory' %}" class="btn btn-primary">← Return to SaaS Directory</a>
+            <a href="{% url 'products:saas_detail' product.slug %}" class="btn btn-secondary" style="color: var(--ink); border-color: var(--line);">View Product Details</a>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

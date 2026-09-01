@@ -1,0 +1,433 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Milda Data Admin &amp; CMS Panel{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cms-bg: #0f172a;
+            --cms-card: #1e293b;
+            --cms-card-hover: #334155;
+            --cms-border: #334155;
+            --cms-text: #f8fafc;
+            --cms-muted: #94a3b8;
+            --cms-primary: #3b82f6;
+            --cms-primary-dark: #2563eb;
+            --cms-accent: #8b5cf6;
+            --cms-success: #10b981;
+            --cms-warning: #f59e0b;
+            --cms-danger: #ef4444;
+            --cms-sidebar-w: 260px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+            color: var(--cms-text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--cms-sidebar-w);
+            background: #0f172a;
+            border-right: 1px solid var(--cms-border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; bottom: 0; left: 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+        }
+        .sidebar-brand {
+            padding: 1.5rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--cms-border);
+            text-decoration: none;
+        }
+        .sidebar-brand img {
+            height: 32px;
+            width: auto;
+        }
+        .sidebar-brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #ffffff;
+        }
+        .sidebar-brand-badge {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--cms-primary);
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .sidebar-menu {
+            flex: 1;
+            padding: 1rem 0;
+            overflow-y: auto;
+        }
+        .nav-section-title {
+            padding: 0.75rem 1.25rem 0.25rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #64748b;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 1.25rem;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 600;
+            transition: all 0.15s ease;
+            border-left: 3px solid transparent;
+        }
+        .nav-item:hover, .nav-item.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+            border-left-color: var(--cms-primary);
+        }
+        .nav-item-icon { font-size: 1.1rem; width: 22px; text-align: center; }
+
+        /* Main Content Wrapper */
+        .main-wrapper {
+            margin-left: var(--cms-sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        /* Top Header Bar */
+        .topbar {
+            height: 64px;
+            background: #0f172a;
+            border-bottom: 1px solid var(--cms-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.75rem;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 0.4rem 0.85rem;
+            width: 320px;
+        }
+        .search-bar input {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            outline: none;
+            font-size: 0.85rem;
+            width: 100%;
+            margin-left: 0.5rem;
+        }
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .btn-cms {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.84rem;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s ease;
+        }
+        .btn-primary { background: var(--cms-primary); color: #ffffff; }
+        .btn-primary:hover { background: var(--cms-primary-dark); }
+        .btn-outline { background: transparent; border-color: #334155; color: #cbd5e1; }
+        .btn-outline:hover { background: #1e293b; color: #ffffff; }
+        .btn-danger { background: var(--cms-danger); color: #ffffff; }
+        .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.78rem; }
+
+        /* Container & Grid */
+        .content-area {
+            padding: 1.75rem;
+            flex: 1;
+        }
+        .page-header {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .page-subtitle {
+            font-size: 0.85rem;
+            color: var(--cms-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Dashboard Cards */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.75rem;
+        }
+        .metric-card {
+            background: var(--cms-card);
+            border: 1px solid var(--cms-border);
+            border-radius: 10px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .metric-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--cms-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .metric-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0.5rem 0 0.2rem;
+            color: #ffffff;
+        }
+        .metric-sub {
+            font-size: 0.76rem;
+            color: #10b981;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Form Controls */
+        .cms-form-card {
+            background: var(--cms-card);
+            border: 1px solid var(--cms-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #cbd5e1;
+            margin-bottom: 0.4rem;
+        }
+        .form-control, .form-select {
+            width: 100%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 0.6rem 0.85rem;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 0.88rem;
+            outline: none;
+            transition: border-color 0.15s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: var(--cms-primary);
+        }
+
+        /* Tables */
+        .cms-table-card {
+            background: var(--cms-card);
+            border: 1px solid var(--cms-border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .cms-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.86rem;
+        }
+        .cms-table th {
+            background: #0f172a;
+            padding: 0.85rem 1.25rem;
+            font-weight: 700;
+            color: #94a3b8;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--cms-border);
+        }
+        .cms-table td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #e2e8f0;
+            vertical-align: middle;
+        }
+        .cms-table tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .badge-warning { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .badge-info { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+        .badge-danger { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+        /* Alerts */
+        .alert {
+            padding: 0.85rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+        .alert-success { background: rgba(16, 185, 129, 0.2); color: #a7f3d0; border: 1px solid #059669; }
+        .alert-error, .alert-danger { background: rgba(239, 68, 68, 0.2); color: #fecaca; border: 1px solid #dc2626; }
+
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-wrapper { margin-left: 0; }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="adminSidebar">
+        <a href="{% url 'website_cms:dashboard' %}" class="sidebar-brand">
+            <img src="https://i.postimg.cc/43gxKLrL/6e2fd4bb-c219-46d7-a5a3-21d4df5b9461.png" alt="Milda Data">
+            <span class="sidebar-brand-title">Milda CMS</span>
+            <span class="sidebar-brand-badge">ADMIN</span>
+        </a>
+        <nav class="sidebar-menu">
+            <a href="{% url 'website_cms:dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <span class="nav-item-icon">📊</span> Dashboard
+            </a>
+            
+            <div class="nav-section-title">Website Content</div>
+            <a href="{% url 'website_cms:homepage_admin' %}" class="nav-item {% if request.resolver_match.url_name == 'homepage_admin' %}active{% endif %}">
+                <span class="nav-item-icon">🏠</span> Homepage Manager
+            </a>
+            <a href="{% url 'website_cms:services_list' %}" class="nav-item {% if 'service' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">🛠️</span> Services CMS
+            </a>
+            <a href="{% url 'website_cms:projects_list' %}" class="nav-item {% if 'project' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">💼</span> Portfolio / Projects
+            </a>
+            <a href="{% url 'website_cms:blog_list' %}" class="nav-item {% if 'blog' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">📝</span> Blog Engine
+            </a>
+            <a href="{% url 'website_cms:team_list' %}" class="nav-item {% if 'team' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">👥</span> Team Members
+            </a>
+            <a href="{% url 'website_cms:testimonials_list' %}" class="nav-item {% if 'testimonial' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">⭐</span> Testimonials
+            </a>
+            <a href="{% url 'website_cms:faqs_list' %}" class="nav-item {% if 'faq' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">❓</span> FAQs Manager
+            </a>
+
+            <div class="nav-section-title">Products &amp; SaaS</div>
+            <a href="{% url 'website_cms:products_list' %}" class="nav-item {% if 'product' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">🚀</span> Products Marketplace
+            </a>
+
+            <div class="nav-section-title">Leads &amp; CRM</div>
+            <a href="{% url 'website_cms:leads_list' %}" class="nav-item {% if 'lead' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">📥</span> Leads &amp; Demo Requests
+            </a>
+
+            <div class="nav-section-title">System &amp; Media</div>
+            <a href="{% url 'website_cms:media_library' %}" class="nav-item {% if 'media' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">🖼️</span> Media Library
+            </a>
+            <a href="{% url 'website_cms:navigation_footer_admin' %}" class="nav-item {% if 'navigation' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">🗺️</span> Header &amp; Footer Menu
+            </a>
+            <a href="{% url 'website_cms:seo_settings_admin' %}" class="nav-item {% if 'seo' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">🔍</span> SEO &amp; Metadata
+            </a>
+            <a href="{% url 'website_cms:site_settings_admin' %}" class="nav-item {% if 'site_settings' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">⚙️</span> Site Settings
+            </a>
+            <a href="{% url 'website_cms:user_permissions' %}" class="nav-item {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">🛡️</span> Users &amp; Roles
+            </a>
+            <a href="{% url 'website_cms:audit_logs' %}" class="nav-item {% if 'audit' in request.resolver_match.url_name %}active{% endif %}">
+                <span class="nav-item-icon">📜</span> Audit Logs
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <header class="topbar">
+            <form action="{% url 'website_cms:universal_search' %}" method="get" class="search-bar">
+                <span>🔍</span>
+                <input type="text" name="q" placeholder="Search products, blog, leads, services..." value="{{ request.GET.q }}">
+            </form>
+            <div class="topbar-actions">
+                <a href="/" target="_blank" class="btn-cms btn-outline btn-sm">🌐 View Website</a>
+                <span style="font-size: 0.84rem; color: #cbd5e1;">👤 {{ request.user.email }}</span>
+                <a href="{% url 'website_cms:admin_logout' %}" class="btn-cms btn-outline btn-sm" style="color: #f87171;">Logout</a>
+            </div>
+        </header>
+
+        <main class="content-area">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

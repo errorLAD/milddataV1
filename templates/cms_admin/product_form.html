@@ -1,0 +1,83 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Edit Product — {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Edit Product Details &amp; Regional Pricing</h1>
+        <p class="page-subtitle">Configure pricing tiers, features list, tax rates, and post-purchase customer instructions.</p>
+    </div>
+    <a href="{% url 'website_cms:products_list' %}" class="btn-cms btn-outline">&larr; Back to Products</a>
+</div>
+
+<div class="cms-form-card">
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Product Name</label>
+                {{ form.name }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                {{ form.category }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Description</label>
+            {{ form.description }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Key Features (One feature per line)</label>
+            {{ form.features }}
+        </div>
+
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin: 1.5rem 0 1rem; color: var(--cms-primary);">🇮🇳 India Pricing &amp; GST</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">INR Monthly Price (₹)</label>
+                {{ form.price_inr_monthly }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">INR Yearly Price (₹)</label>
+                {{ form.price_inr_yearly }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">India GST Tax Rate (%)</label>
+                {{ form.gst_tax_rate }}
+            </div>
+        </div>
+
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin: 1.5rem 0 1rem; color: #38bdf8;">🌐 International Pricing &amp; VAT</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">USD Monthly Price ($)</label>
+                {{ form.price_usd_monthly }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">USD Yearly Price ($)</label>
+                {{ form.price_usd_yearly }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">International Tax/VAT Rate (%)</label>
+                {{ form.vat_tax_rate }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Customer Post-Payment Access Information</label>
+            {{ form.access_info }}
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+            {{ form.is_active }}
+            <label class="form-label" style="margin: 0;">Product is Active and Publicly Visible</label>
+        </div>
+
+        <button type="submit" class="btn-cms btn-primary" style="margin-top: 1rem;">Save Product Changes</button>
+    </form>
+</div>
+{% endblock %}

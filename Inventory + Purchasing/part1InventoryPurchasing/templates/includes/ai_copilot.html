@@ -1,0 +1,35 @@
+<div id="ai-copilot-drawer" class="mobile-drawer" style="right: 0; left: auto; transform: translateX(100%); width: 340px; max-width: 90vw;">
+  <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border);">
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <div style="width: 28px; height: 28px; background: var(--brand-soft); border: 1px solid var(--brand-soft-border); color: var(--brand); border-radius: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center;">🤖</div>
+      <div>
+        <div style="font-weight: 700; font-size: 0.85rem;">StockFlow AI</div>
+        <div style="font-size: 0.58rem; color: var(--text-tertiary);">Business Copilot • {{ org.name }}</div>
+      </div>
+    </div>
+    <button onclick="toggleAICopilotDrawer()" class="btn-icon">×</button>
+  </div>
+
+  <div id="ai-chat-body" style="flex: 1; overflow-y: auto; padding: 0.8rem 0; display: flex; flex-direction: column; gap: 0.75rem;">
+    <!-- Welcome message -->
+    <div style="background: var(--surface-alt); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border); font-size: 0.72rem;">
+      👋 Hi! I am StockFlow AI. I analyze your live inventory, purchases, invoices, receivables, and payables.
+    </div>
+
+    <!-- Quick Chips -->
+    <div style="display: flex; flex-direction: column; gap: 0.35rem;">
+      <div style="font-size: 0.6rem; font-weight: 700; color: var(--text-tertiary); text-transform: uppercase;">Quick Questions:</div>
+      <button onclick="askAICopilot('Which products are low on stock?')" class="btn btn-secondary btn-sm" style="text-align: left; justify-content: flex-start; font-size: 0.68rem;">📦 Which products are low on stock?</button>
+      <button onclick="askAICopilot('Who owes us money and what is overdue?')" class="btn btn-secondary btn-sm" style="text-align: left; justify-content: flex-start; font-size: 0.68rem;">💰 Who owes us money?</button>
+      <button onclick="askAICopilot('Summarize sales performance')" class="btn btn-secondary btn-sm" style="text-align: left; justify-content: flex-start; font-size: 0.68rem;">📊 Summarize sales performance</button>
+    </div>
+  </div>
+
+  <!-- Input Bar -->
+  <div style="padding-top: 0.6rem; border-top: 1px solid var(--border);">
+    <div style="display: flex; gap: 0.4rem;">
+      <input type="text" id="ai-input-prompt" class="form-control" placeholder="Ask StockFlow AI..." onkeydown="if(event.key==='Enter') sendAICopilotQuery()">
+      <button onclick="sendAICopilotQuery()" class="btn btn-primary" style="padding: 0 0.8rem;">Send</button>
+    </div>
+  </div>
+</div>

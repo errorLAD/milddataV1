@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Stock Movements - MildData BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Stock Movements Log</h1>
+        <div class="page-subtitle">Complete audit trail of stock ins, outs, returns, adjustments, and damages</div>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Inventory History</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Product</th>
+                    <th>Movement Type</th>
+                    <th>Quantity Change</th>
+                    <th>Reference</th>
+                    <th>Recorded By</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in movements %}
+                <tr>
+                    <td>{{ m.created_at|date:"Y-m-d H:i" }}</td>
+                    <td style="font-weight: 650;">{{ m.product.name }} ({{ m.product.sku }})</td>
+                    <td><span class="badge-pill badge-info">{{ m.movement_type }}</span></td>
+                    <td class="num" style="font-weight: 700;">{% if m.quantity_change > 0 %}+{{ m.quantity_change }}{% else %}{{ m.quantity_change }}{% endif %}</td>
+                    <td>{{ m.reference|default:"-" }}</td>
+                    <td>{{ m.created_by.username|default:"System" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-tertiary);">No stock movements recorded.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

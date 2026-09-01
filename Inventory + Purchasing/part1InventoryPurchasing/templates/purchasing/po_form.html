@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Create Purchase Order — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Create Purchase Order</h1>
+    <p class="page-subtitle">Order inventory items from suppliers.</p>
+  </div>
+</div>
+
+<form method="post" action="{% url 'po_create' %}">
+  {% csrf_token %}
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.2rem;">
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Order Line Items</span>
+          <button type="button" onclick="addLineItemRow()" class="btn btn-secondary btn-sm">+ Add Line Item</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width: 45%;">Product</th>
+                <th style="width: 20%;">Qty</th>
+                <th style="width: 25%;">Unit Cost ({{ org.currency_symbol }})</th>
+                <th style="width: 10%; text-align: right;">Total</th>
+              </tr>
+            </thead>
+            <tbody id="line-items-body">
+              <tr>
+                <td>
+                  <select name="product_id[]" class="form-select product-select" required>
+                    <option value="">Select Product...</option>
+                    {% for p in products %}
+                      <option value="{{ p.id }}" data-price="{{ p.purchase_price }}">{{ p.name }} (SKU: {{ p.sku }})</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <input type="number" name="quantity[]" class="form-control qty-input calc-input" value="1" min="1" required>
+                </td>
+                <td>
+                  <input type="number" step="0.01" name="unit_cost[]" class="form-control unit-price-input calc-input" value="0.00" required>
+                </td>
+                <td style="text-align: right; font-weight: 700;" class="line-total-cell money">
+                  0.00
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">PO Header & Supplier</span>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Supplier *</label>
+            <select name="supplier_id" class="form-select" required>
+              <option value="">Select Supplier...</option>
+              {% for s in suppliers %}
+                <option value="{{ s.id }}">{{ s.company_name }} ({{ s.country }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Target Warehouse *</label>
+            <select name="warehouse_id" class="form-select" required>
+              {% for wh in warehouses %}
+                <option value="{{ wh.id }}">{{ wh.name }} ({{ wh.code }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Order Date</label>
+            <input type="date" name="order_date" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Expected Delivery Date</label>
+            <input type="date" name="expected_delivery" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="2" placeholder="Instructions for supplier"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Save & Generate PO</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

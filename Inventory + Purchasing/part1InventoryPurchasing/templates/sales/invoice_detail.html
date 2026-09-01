@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Invoice {{ invoice.invoice_number }} — StockFlow{% endblock %}
+
+{% block extra_css %}
+<style>
+@media print {
+  .app-sidebar, .app-header, .mobile-nav, .page-actions, .no-print {
+    display: none !important;
+  }
+  .app-main {
+    margin-left: 0 !important;
+  }
+  body {
+    background: #fff !important;
+  }
+  .printable-invoice {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header no-print">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.6rem;">
+      <h1 class="page-title">Invoice {{ invoice.invoice_number }}</h1>
+      {% if invoice.status == 'PAID' %}
+        <span class="badge badge-success"><span class="badge-dot-mark"></span> Paid</span>
+      {% elif invoice.status == 'OVERDUE' %}
+        <span class="badge badge-danger"><span class="badge-dot-mark"></span> Overdue</span>
+      {% else %}
+        <span class="badge badge-warning"><span class="badge-dot-mark"></span> {{ invoice.get_status_display }}</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="page-actions">
+    <button onclick="window.print()" class="btn btn-secondary">🖨️ Print / Download PDF</button>
+    {% if invoice.remaining_balance > 0 %}
+      <button onclick="document.getElementById('record-payment-modal').style.display='flex'" class="btn btn-primary">Record Payment</button>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Printable Invoice Card -->
+<div class="panel printable-invoice" style="max-width: 900px; margin: 0 auto; padding: 2rem;">
+  <!-- Invoice Header Strip -->
+  <div style="display: flex; justify-content: space-between; border-bottom: 2px solid var(--border); padding-bottom: 1.2rem; margin-bottom: 1.5rem;">
+    <div>
+      <div style="font-size: 1.4rem; font-weight: 700; color: var(--brand);">{{ org.name }}</div>
+      <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.2rem;">
+        {{ org.address|linebreaksbr }}<br>
+        {% if org.phone %}Phone: {{ org.phone }} | {% endif %}{{ org.email }}<br>
+        {% if org.tax_id_value %}<strong>{{ org.tax_id_label }}:</strong> {{ org.tax_id_value }}{% endif %}
+      </div>
+    </div>
+    <div style="text-align: right;">
+      <div style="font-size: 1.5rem; font-weight: 700; text-transform: uppercase; color: var(--text-primary);">INVOICE</div>
+      <div style="font-size: 0.9rem; font-weight: 650; color: var(--brand); font-variant-numeric: tabular-nums;">{{ invoice.invoice_number }}</div>
+      <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.4rem;">
+        Date: <strong>{{ invoice.invoice_date|date_fmt:org }}</strong><br>
+        Due Date: <strong>{{ invoice.due_date|date_fmt:org }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customer / Billed To Section -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 1.5rem; font-size: 0.72rem;">
+    <div>
+      <div style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.3rem;">BILLED TO:</div>
+      <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">{{ invoice.customer.company_name }}</div>
+      <div>Attn: {{ invoice.customer.contact_person|default:'Accounts Payable' }}</div>
+      <div>{{ invoice.customer.address|linebreaksbr }}</div>
+      <div>Country: {{ invoice.customer.country }}</div>
+      {% if invoice.customer.tax_id %}<div>Tax ID: {{ invoice.customer.tax_id }}</div>{% endif %}
+    </div>
+    <div style="background: var(--surface-alt); padding: 0.8rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+      <div style="font-size: 0.6rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 0.3rem;">PAYMENT SUMMARY</div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+        <span>Payment Terms:</span>
+        <span style="font-weight: 600;">{{ invoice.payment_terms }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
+        <span>Amount Due:</span>
+        <span class="money" style="font-weight: 700; color: var(--danger);">{{ invoice.remaining_balance|money:org }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <span>Currency:</span>
+        <span style="font-weight: 600;">{{ org.currency_code }} ({{ org.currency_symbol }})</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Line Items Table -->
+  <table class="table" style="margin-bottom: 1.5rem;">
+    <thead>
+      <tr>
+        <th>Item & Description</th>
+        <th style="text-align: center;">Qty</th>
+        <th style="text-align: right;">Unit Price</th>
+        <th style="text-align: right;">Discount</th>
+        <th style="text-align: right;">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in invoice.items.all %}
+      <tr>
+        <td>
+          <div style="font-weight: 650;">{{ item.product.name }}</div>
+          <div style="font-size: 0.62rem; color: var(--text-tertiary);">SKU: {{ item.product.sku }}</div>
+        </td>
+        <td class="tabular-nums" style="text-align: center;">{{ item.quantity }}</td>
+        <td class="money" style="text-align: right;">{{ item.unit_price|money:org }}</td>
+        <td class="money" style="text-align: right;">{{ item.discount|money:org }}</td>
+        <td class="money" style="text-align: right; font-weight: 700;">{{ item.total|money:org }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Totals Calculation Block -->
+  <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+    <div style="width: 280px; font-size: 0.72rem;">
+      <div style="display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid var(--border);">
+        <span>Subtotal</span>
+        <span class="money" style="font-weight: 600;">{{ invoice.subtotal|money:org }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 0.3rem 0; border-bottom: 1px solid var(--border);">
+        <span>{{ org.tax_name }} ({{ org.tax_rate }}%)</span>
+        <span class="money">{{ invoice.tax_amount|money:org }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; font-size: 0.9rem; font-weight: 700; border-bottom: 2px solid var(--border-strong);">
+        <span>Grand Total</span>
+        <span class="money" style="color: var(--brand);">{{ invoice.total_amount|money:org }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 0.3rem 0;">
+        <span>Amount Paid</span>
+        <span class="money" style="color: var(--success); font-weight: 600;">{{ invoice.paid_amount|money:org }}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; padding: 0.3rem 0; font-weight: 700; color: var(--danger);">
+        <span>Balance Remaining</span>
+        <span class="money">{{ invoice.remaining_balance|money:org }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes & Terms -->
+  {% if invoice.notes or invoice.terms %}
+  <div style="border-top: 1px solid var(--border); pt-3; font-size: 0.68rem; color: var(--text-secondary);">
+    {% if invoice.notes %}
+      <div style="margin-bottom: 0.4rem;"><strong>Payment Instructions:</strong> {{ invoice.notes }}</div>
+    {% endif %}
+    {% if invoice.terms %}
+      <div><strong>Terms & Conditions:</strong> {{ invoice.terms }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<!-- Modal: Record Customer Payment -->
+<div id="record-payment-modal" class="modal-backdrop" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="panel-title">Record Customer Payment</span>
+      <button onclick="document.getElementById('record-payment-modal').style.display='none'" class="btn-icon">×</button>
+    </div>
+    <form method="post" action="{% url 'record_payment' %}">
+      {% csrf_token %}
+      <input type="hidden" name="payment_type" value="RECEIVABLE">
+      <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Payment Amount ({{ org.currency_symbol }}) *</label>
+          <input type="number" step="0.01" name="amount" class="form-control" value="{{ invoice.remaining_balance }}" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Payment Date *</label>
+            <input type="date" name="payment_date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <select name="payment_method" class="form-select">
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Credit Card">Credit Card</option>
+              <option value="Debit Card">Debit Card</option>
+              <option value="Cash">Cash</option>
+              <option value="Check">Check</option>
+              <option value="Wire Transfer">Wire Transfer</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Transaction Reference #</label>
+          <input type="text" name="reference" class="form-control" placeholder="e.g. WIRE-982103">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="document.getElementById('record-payment-modal').style.display='none'" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Payment</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Leads &amp; Inquiries CRM — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Lead Management &amp; Demo Requests CRM</h1>
+        <p class="page-subtitle">Track incoming Contact leads, Book Demo requests, Free Trial signups, and Newsletter subscribers.</p>
+    </div>
+    <a href="{% url 'website_cms:newsletter_export' %}" class="btn-cms btn-primary">📥 Export Newsletter Subscribers (CSV)</a>
+</div>
+
+<div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{% url 'website_cms:leads_list' %}" class="btn-cms btn-outline btn-sm {% if not active_type %}btn-primary{% endif %}">All Leads</a>
+    <a href="{% url 'website_cms:leads_list' %}?type=contact" class="btn-cms btn-outline btn-sm {% if active_type == 'contact' %}btn-primary{% endif %}">Contact Requests</a>
+    <a href="{% url 'website_cms:leads_list' %}?type=demo" class="btn-cms btn-outline btn-sm {% if active_type == 'demo' %}btn-primary{% endif %}">Demo Requests</a>
+    <a href="{% url 'website_cms:leads_list' %}?type=trial" class="btn-cms btn-outline btn-sm {% if active_type == 'trial' %}btn-primary{% endif %}">Free Trial Signups</a>
+</div>
+
+<!-- SECTION 1: UNIFIED CRM LEADS TABLE -->
+<div class="cms-table-card" style="margin-bottom: 2rem;">
+    <div style="padding: 1.25rem; border-bottom: 1px solid var(--cms-border);">
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: #ffffff;">📥 Website Contact &amp; CRM Leads</h3>
+    </div>
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Phone / Location</th>
+                    <th>Product / Service</th>
+                    <th>Message / Notes</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Direct Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lead in leads %}
+                <tr>
+                    <td>
+                        <span class="badge {% if lead.lead_type == 'demo' %}badge-warning{% elif lead.lead_type == 'trial' %}badge-info{% else %}badge-success{% endif %}">
+                            {{ lead.get_lead_type_display }}
+                        </span>
+                    </td>
+                    <td><strong>{{ lead.name }}</strong></td>
+                    <td><a href="mailto:{{ lead.email }}?subject=Milda%20Data%20Response%20-%20{{ lead.product_or_service|urlencode }}" style="color: #38bdf8; font-weight: 600;">✉️ {{ lead.email }}</a></td>
+                    <td>{{ lead.phone|default:'-' }}<br><small style="color: var(--cms-muted);">{{ lead.company|default:'' }}</small></td>
+                    <td><strong>{{ lead.product_or_service|default:'General' }}</strong></td>
+                    <td>
+                        <div style="max-width: 240px; font-size: 0.82rem; color: #cbd5e1; white-space: pre-line; word-break: break-word;">
+                            {{ lead.message|default:'No message text'|truncatewords:15 }}
+                        </div>
+                    </td>
+                    <td><span class="badge badge-info">{{ lead.get_status_display }}</span></td>
+                    <td>{{ lead.created_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <a href="mailto:{{ lead.email }}?subject=Milda%20Data%20Inquiry%20Response&body=Hi%20{{ lead.name|urlencode }},%0A%0AThank%20you%20for%20reaching%20out%20to%20Milda%20Data." class="btn-cms btn-primary btn-sm" style="text-align: center; background: #2563eb; color: #ffffff;">✉️ Direct Email</a>
+                            <a href="{% url 'website_cms:lead_detail' lead.pk %}" class="btn-cms btn-outline btn-sm" style="text-align: center;">Manage Notes</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" style="text-align: center; color: var(--cms-muted);">No website contact leads recorded yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- SECTION 2: PRODUCT DEMO REQUESTS TABLE (DemoLead) -->
+<div class="cms-table-card">
+    <div style="padding: 1.25rem; border-bottom: 1px solid var(--cms-border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.15rem; color: #fbbf24;">⚡ Book Demo Requests (Product Modals)</h3>
+        <span class="badge badge-warning">{{ demo_leads_legacy|length }} Total Bookings</span>
+    </div>
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Product Requested</th>
+                    <th>Customer Name</th>
+                    <th>Email Address</th>
+                    <th>Phone / WhatsApp</th>
+                    <th>Location / Place</th>
+                    <th>Business Notes / Message</th>
+                    <th>Submitted Date</th>
+                    <th>Direct Connect</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for demo in demo_leads_legacy %}
+                <tr>
+                    <td><span class="badge badge-warning" style="font-size: 0.78rem;">{{ demo.product_name }}</span></td>
+                    <td><strong>{{ demo.full_name }}</strong></td>
+                    <td><a href="mailto:{{ demo.email }}?subject=Milda%20Data%20Demo%20Follow-up%20-%20{{ demo.product_name|urlencode }}" style="color: #38bdf8; font-weight: 600;">✉️ {{ demo.email }}</a></td>
+                    <td><strong>{{ demo.phone }}</strong></td>
+                    <td>{{ demo.place }}</td>
+                    <td>
+                        <div style="max-width: 280px; font-size: 0.84rem; color: #f1f5f9; background: #0f172a; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid #334155; white-space: pre-line; word-break: break-word;">
+                            {{ demo.notes|default:'No specific requirements noted.' }}
+                        </div>
+                    </td>
+                    <td><code>{{ demo.created_at|date:"M d, Y H:i IST" }}</code></td>
+                    <td>
+                        <a href="mailto:{{ demo.email }}?subject=Milda%20Data%20Demo%20Follow-up%20-%20{{ demo.product_name|urlencode }}&body=Hi%20{{ demo.full_name|urlencode }},%0A%0AThank%20you%20for%20booking%20a%20demo%20for%20{{ demo.product_name|urlencode }}.%20We%20would%20love%20to%20connect%20with%20you." class="btn-cms btn-primary btn-sm" style="white-space: nowrap; background: #2563eb; color: #ffffff;">✉️ Email Client</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" style="text-align: center; color: var(--cms-muted);">No Book Demo submissions received yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

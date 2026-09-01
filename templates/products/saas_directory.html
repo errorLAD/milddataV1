@@ -1,0 +1,306 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}SaaS Applications Directory — Milda Data{% endblock %}
+
+{% block content %}
+<div class="saas-dir-page">
+<style>
+    .saas-dir-page {
+        --ink: #0b0f1a;
+        --ink-soft: #565d74;
+        --paper: #f7f7f3;
+        --surface: #ffffff;
+        --indigo: #3730a3;
+        --indigo-bright: #4f46e5;
+        --marigold: #d98e2b;
+        --sindoor: #b5451f;
+        --moss: #3f7a5c;
+        --line: rgba(11, 15, 26, 0.09);
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        background: var(--paper);
+        color: var(--ink);
+        padding-bottom: 5rem;
+    }
+
+    .saas-dir-page * { box-sizing: border-box; }
+
+    .saas-hero {
+        background: var(--ink);
+        color: #f3f4f8;
+        padding: 4rem 1.5rem 3.5rem;
+        text-align: center;
+        border-bottom: 3px solid var(--marigold);
+    }
+    .saas-hero .container {
+        max-width: 960px;
+        margin: 0 auto;
+    }
+    .saas-hero .eyebrow {
+        display: inline-block;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.78rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--marigold);
+        margin-bottom: 0.8rem;
+    }
+    .saas-hero h1 {
+        font-family: 'Outfit', sans-serif;
+        font-size: clamp(2.2rem, 4.5vw, 3.2rem);
+        font-weight: 700;
+        margin: 0 0 1rem;
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        line-height: 1.15;
+    }
+    .saas-hero p {
+        font-size: 1.1rem;
+        color: #9aa1b8;
+        max-width: 650px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .saas-controls {
+        max-width: 1180px;
+        margin: 2.5rem auto 2rem;
+        padding: 0 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.2rem;
+    }
+
+    .saas-search-form {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-grow: 1;
+        max-width: 420px;
+    }
+    .saas-search-input {
+        width: 100%;
+        padding: 0.65rem 1rem;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font-size: 0.92rem;
+        outline: none;
+        background: var(--surface);
+        transition: border-color 0.15s ease;
+    }
+    .saas-search-input:focus {
+        border-color: var(--indigo-bright);
+    }
+
+    .saas-grid {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.75rem;
+    }
+
+    .saas-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1.8rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        position: relative;
+    }
+    .saas-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(11, 15, 26, 0.07);
+        border-color: var(--indigo-bright);
+    }
+
+    .saas-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.8rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .saas-category-badge {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--indigo-bright);
+        background: rgba(79, 70, 229, 0.08);
+        padding: 0.3rem 0.65rem;
+        border-radius: 6px;
+    }
+
+    .saas-status-badge {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        padding: 0.25rem 0.55rem;
+        border-radius: 4px;
+    }
+    .saas-status-badge.active {
+        background: rgba(63, 122, 92, 0.12);
+        color: var(--moss);
+    }
+    .saas-status-badge.coming-soon {
+        background: rgba(217, 142, 43, 0.15);
+        color: var(--sindoor);
+    }
+
+    .saas-card h2 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        margin: 0.5rem 0 0.6rem;
+        color: var(--ink) !important;
+        -webkit-text-fill-color: var(--ink) !important;
+        line-height: 1.3;
+    }
+
+    .saas-card p {
+        font-size: 0.94rem;
+        color: var(--ink-soft);
+        line-height: 1.6;
+        margin: 0 0 1.5rem;
+        flex-grow: 1;
+    }
+
+    .saas-price-tag {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 1.2rem;
+    }
+
+    .saas-card-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .saas-btn {
+        flex: 1;
+        text-align: center;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+    }
+
+    .saas-btn-primary {
+        background: var(--ink);
+        color: #ffffff;
+        border: 1px solid var(--ink);
+    }
+    .saas-btn-primary:hover {
+        background: var(--indigo-bright);
+        border-color: var(--indigo-bright);
+        color: #ffffff;
+    }
+
+    .saas-btn-secondary {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--line);
+    }
+    .saas-btn-secondary:hover {
+        border-color: var(--ink);
+        background: rgba(11, 15, 26, 0.03);
+    }
+
+    .saas-btn-disabled {
+        background: #e5e7eb;
+        color: #9ca3af;
+        border: 1px solid #e5e7eb;
+        cursor: not-allowed;
+    }
+
+    .saas-empty {
+        max-width: 600px;
+        margin: 4rem auto;
+        text-align: center;
+        padding: 3rem 1.5rem;
+        background: var(--surface);
+        border: 1px dashed var(--line);
+        border-radius: 12px;
+    }
+
+    @media (max-width: 768px) {
+        .saas-hero { padding: 3rem 1.25rem 2.5rem; }
+        .saas-controls { flex-direction: column; align-items: stretch; }
+        .saas-search-form { max-width: none; }
+        .saas-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<section class="saas-hero">
+    <div class="container">
+        <span class="eyebrow">Milda Data SaaS Products</span>
+        <h1>Enterprise &amp; Business SaaS Applications</h1>
+        <p>Explore production-ready SaaS tools built for payments, vendor onboarding, fleet management, machinery, and business operations.</p>
+    </div>
+</section>
+
+<div class="saas-controls">
+    <form method="get" class="saas-search-form">
+        <input type="text" name="q" value="{{ search_query }}" placeholder="Search SaaS products..." class="saas-search-input">
+        <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.1rem; font-size: 0.88rem;">Search</button>
+    </form>
+</div>
+
+{% if products %}
+<div class="saas-grid">
+    {% for product in products %}
+    <article class="saas-card">
+        <div>
+            <div class="saas-card-header">
+                <span class="saas-category-badge">{{ product.category }}</span>
+                {% if product.status == 'active' %}
+                    <span class="saas-status-badge active">Active</span>
+                {% else %}
+                    <span class="saas-status-badge coming-soon">Coming Soon</span>
+                {% endif %}
+            </div>
+            <h2>{{ product.name }}</h2>
+            <p>{{ product.description }}</p>
+        </div>
+        <div>
+            <div class="saas-price-tag">{{ product.display_price }}</div>
+            <div class="saas-card-actions">
+                <a href="{% url 'products:saas_detail' product.slug %}" class="saas-btn saas-btn-secondary">Overview</a>
+                {% if product.status == 'active' %}
+                    <a href="{% url 'products:saas_launch' product.slug %}" class="saas-btn saas-btn-primary">Launch App →</a>
+                {% else %}
+                    <span class="saas-btn saas-btn-disabled">Coming Soon</span>
+                {% endif %}
+            </div>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<div class="saas-empty">
+    <h3>No SaaS products match your search.</h3>
+    <p>Try searching for a different term or browse our complete product list.</p>
+    <a href="{% url 'products:saas_directory' %}" class="btn btn-secondary" style="margin-top: 1rem;">View All Products</a>
+</div>
+{% endif %}
+
+</div>
+{% endblock %}

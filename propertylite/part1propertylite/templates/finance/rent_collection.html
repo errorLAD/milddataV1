@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Rent Collection | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Rent Collection & Invoicing</h1>
+    <p class="kp-page-subtitle">Track rent due, log cash/ACH payments, and monitor overdue balances.</p>
+  </div>
+</div>
+
+<!-- 4 Financial Summary Cards -->
+<div class="kp-metrics-grid mb-3">
+  <div class="kp-card kp-hero-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label text-primary">Total Expected Rent</div>
+      <div class="kp-metric-number text-primary">{{ current_org.currency_symbol|default:"$" }}{{ expected|intcomma }}</div>
+      <div class="kp-metric-subtext">Sum of current invoice cycle</div>
+    </div>
+  </div>
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label">Rent Collected</div>
+      <div class="kp-metric-number text-success">{{ current_org.currency_symbol|default:"$" }}{{ collected|intcomma }}</div>
+      <div class="kp-metric-subtext">Received payments</div>
+    </div>
+  </div>
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label">Outstanding Balance</div>
+      <div class="kp-metric-number">{{ current_org.currency_symbol|default:"$" }}{{ outstanding|intcomma }}</div>
+      <div class="kp-metric-subtext">Pending collection</div>
+    </div>
+  </div>
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label text-danger">Overdue Rent</div>
+      <div class="kp-metric-number text-danger">{{ current_org.currency_symbol|default:"$" }}{{ overdue|intcomma }}</div>
+      <div class="kp-metric-subtext">Requires follow-up</div>
+    </div>
+  </div>
+</div>
+
+<!-- Invoices Table Panel -->
+<div class="kp-panel mb-3">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Rent Invoices</h3>
+  </div>
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Tenant</th>
+          <th>Property & Unit</th>
+          <th>Due Date</th>
+          <th>Total Due</th>
+          <th>Amount Paid</th>
+          <th>Status</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td class="fw-semibold">#{{ inv.invoice_number }}</td>
+          <td class="fw-semibold">{{ inv.tenant.get_full_name }}</td>
+          <td>Unit {{ inv.unit.unit_number }} ({{ inv.property.name }})</td>
+          <td>
+            <span class="{% if inv.status == 'OVERDUE' %}text-danger fw-bold{% endif %}">
+              {{ inv.due_date }}
+            </span>
+          </td>
+          <td class="tabular-nums fw-semibold">{{ current_org.currency_symbol|default:"$" }}{{ inv.total_due|intcomma }}</td>
+          <td class="tabular-nums text-success">{{ current_org.currency_symbol|default:"$" }}{{ inv.total_paid|intcomma }}</td>
+          <td>
+            <span class="kp-status-badge {% if inv.status == 'PAID' %}kp-status-success{% elif inv.status == 'OVERDUE' %}kp-status-danger{% else %}kp-status-warning{% endif %}">
+              <span class="dot"></span> {{ inv.get_status_display }}
+            </span>
+          </td>
+          <td class="text-end">
+            {% if inv.status != 'PAID' %}
+            <a href="{% url 'payment_record' invoice_pk=inv.id %}" class="kp-btn kp-btn-primary py-0.5 px-2">Record Payment</a>
+            {% else %}
+            <span class="text-muted fs-8"><i class="bi bi-check-circle text-success me-1"></i> Paid</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center py-4 text-muted">No rent invoices generated.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

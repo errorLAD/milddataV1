@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up — Milda Data{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="form-card">
+            <h1 style="text-align: center; color: var(--color-primary); margin: 0 0 0.5rem;">Create Account</h1>
+            <p style="text-align: center; color: var(--color-muted); margin: 0 0 1.5rem;">
+                Sign up to access products and full features.
+            </p>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+                {% endif %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="form-error">{{ field.errors.0 }}</div>
+                    {% endif %}
+                    {% if field.help_text %}
+                    <div style="font-size: 0.85rem; color: var(--color-muted); margin-top: 0.25rem;">{{ field.help_text|safe }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+            </form>
+
+            <div style="margin: 1.5rem 0; text-align: center; position: relative;">
+                <hr style="border: 0; border-top: 1px solid #e5e7eb;">
+                <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #ffffff; padding: 0 10px; font-size: 0.8rem; color: #6b7280; font-family: monospace; text-transform: uppercase;">Or</span>
+            </div>
+
+            <a href="{% url 'accounts:guest_login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" class="btn btn-secondary btn-block" style="text-align: center; display: block; border-color: #6366f1; color: #4f46e5; font-weight: 700;">
+                ⚡ Continue as Guest (Public Preview)
+            </a>
+
+            <p style="text-align: center; margin-top: 1.25rem; color: var(--color-muted); font-size: 0.95rem;">
+                Already have an account? <a href="{% url 'accounts:login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" style="color: var(--color-accent);">Log in</a>
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

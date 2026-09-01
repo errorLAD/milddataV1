@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Dispatch Sales Blast | AI Sales Agent | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-send-fill text-primary me-2"></i> Dispatch WhatsApp Sales Blast</h3>
+        <p class="text-muted mb-0 fs-7">Send targeted product promotions on WhatsApp. AI automatically handles incoming customer replies.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'sales_agent:blast_history' %}" class="btn btn-light border btn-sm">
+            <i class="bi bi-clock-history me-1"></i> Blast History
+        </a>
+        <a href="{% url 'sales_agent:dashboard' %}" class="btn btn-light border btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-8">
+        <div class="card card-custom p-4">
+            <form method="post" action="{% url 'sales_agent:send_blast' %}">
+                {% csrf_token %}
+
+                <!-- Product Selection -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-dark fs-6"><i class="bi bi-box-seam me-1 text-primary"></i> 1. Select Product to Promote *</label>
+                    {{ form.product }}
+                    <small class="text-muted fs-8">Price and stock count will be pulled dynamically from the database.</small>
+                </div>
+
+                <!-- Template Selection -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-dark fs-6"><i class="bi bi-whatsapp me-1 text-success"></i> 2. Select Message Template *</label>
+                    {{ form.template }}
+                    <small class="text-muted fs-8">Supports placeholders <code>{name}</code>, <code>{product}</code>, <code>{price}</code> which are filled per-recipient at send time.</small>
+                </div>
+
+                <!-- Custom Message Override -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-dark fs-6">Custom Message Override (Optional)</label>
+                    {{ form.custom_message }}
+                </div>
+
+                <!-- Recipient Target Selection -->
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-dark fs-6"><i class="bi bi-people me-1 text-info"></i> 3. Select Target Recipients</label>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="recipient_target" id="target_all" value="all" checked>
+                        <label class="form-check-label fw-semibold text-dark" for="target_all">
+                            All Opted-in Marketing Customers ({{ customers|length }} customers)
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="recipient_target" id="target_selected" value="selected">
+                        <label class="form-check-label fw-semibold text-dark" for="target_selected">
+                            Select Specific Customers
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Customer Selection Checkboxes (Hidden by default unless selected) -->
+                <div id="customer-selection-box" class="card bg-light p-3 mb-4 border" style="display: none; max-height: 250px; overflow-y: auto;">
+                    <h6 class="fw-bold text-dark fs-7 mb-2">Select Recipients:</h6>
+                    {% for cust in customers %}
+                    <div class="form-check mb-1">
+                        <input class="form-check-input" type="checkbox" name="selected_customers" value="{{ cust.id }}" id="cust_{{ cust.id }}">
+                        <label class="form-check-label fs-7" for="cust_{{ cust.id }}">
+                            <strong>{{ cust.name }}</strong> ({{ cust.phone }})
+                        </label>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted fs-8 mb-0">No customers found with WhatsApp marketing opt-in.</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Anti-Spam Protection Box -->
+                <div class="alert alert-info border-info d-flex align-items-center gap-2 py-2.5 px-3 fs-7 mb-4">
+                    <i class="bi bi-shield-lock-fill fs-5 text-info"></i>
+                    <div>
+                        <strong>Anti-Spam Hygiene Active:</strong> Re-sending a blast for the same product to the same customer within 24 hours will be automatically skipped to protect customer relationships.
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary-custom btn-lg w-100 py-2.5 shadow-sm fw-bold">
+                    <i class="bi bi-send-fill me-2"></i> Dispatch WhatsApp Sales Blast Now
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Info Column -->
+    <div class="col-12 col-lg-4">
+        <div class="card card-custom p-4 bg-light">
+            <h6 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle me-1 text-primary"></i> How Sales Blasts Work</h6>
+            <ol class="fs-7 text-secondary ps-3 mb-0">
+                <li class="mb-2"><strong>Personalized Delivery:</strong> Each recipient receives a customized message with their name and exact database product price.</li>
+                <li class="mb-2"><strong>Automated Inbound AI:</strong> Replies to this blast are automatically routed to the AI Sales Agent.</li>
+                <li class="mb-2"><strong>Draft Orders:</strong> If a customer replies wanting to buy, the AI creates a Draft Order for your 1-click approval.</li>
+                <li><strong>Owner Control:</strong> No sale is ever finalized without your explicit approval.</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const radioAll = document.getElementById('target_all');
+    const radioSelected = document.getElementById('target_selected');
+    const box = document.getElementById('customer-selection-box');
+
+    function toggleBox() {
+        box.style.display = radioSelected.checked ? 'block' : 'none';
+    }
+
+    radioAll.addEventListener('change', toggleBox);
+    radioSelected.addEventListener('change', toggleBox);
+});
+</script>
+{% endblock %}

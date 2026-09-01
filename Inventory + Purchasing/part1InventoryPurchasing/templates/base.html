@@ -1,0 +1,132 @@
+{% load locale_tags static %}
+<!DOCTYPE html>
+<html lang="{{ org.language|default:'en' }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>{% block title %}StockFlow{% endblock %} — Simple International Inventory & Invoicing OS</title>
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="{% static 'pwa/manifest.json' %}">
+  <meta name="theme-color" content="#2451FF">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <!-- Custom Design System CSS -->
+  <link rel="stylesheet" href="{% static 'css/stockflow.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+  <!-- Mobile Off-Canvas Drawer Navigation -->
+  <div id="mobile-drawer-backdrop" class="mobile-drawer-backdrop" onclick="toggleMobileDrawer()"></div>
+
+  <!-- StockFlow AI Copilot Drawer Component -->
+  {% include "includes/ai_copilot.html" %}
+
+  <aside id="mobile-drawer" class="mobile-drawer">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 0.8rem; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border);">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <div class="brand-icon" style="width: 30px; height: 30px; background: var(--brand); color: #fff; border-radius: 8px; font-weight: 700; display: flex; align-items: center; justify-content: center;">S</div>
+        <span style="font-weight: 700; font-size: 1rem;">StockFlow</span>
+      </div>
+      <button onclick="toggleMobileDrawer()" class="btn-icon" aria-label="Close Drawer">×</button>
+    </div>
+
+    <nav class="sidebar-nav" style="display: flex; flex-direction: column; gap: 0.3rem;">
+      <a href="{% url 'dashboard' %}" class="nav-link-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Overview</a>
+      <div class="nav-section-label">INVENTORY</div>
+      <a href="{% url 'product_list' %}" class="nav-link-item {% if 'products' in request.path %}active{% endif %}">Products</a>
+      <a href="{% url 'stock_movements' %}" class="nav-link-item {% if 'movements' in request.path %}active{% endif %}">Stock Movements</a>
+      <a href="{% url 'warehouse_list' %}" class="nav-link-item {% if 'warehouses' in request.path %}active{% endif %}">Warehouses</a>
+
+      <div class="nav-section-label">PURCHASING</div>
+      <a href="{% url 'supplier_list' %}" class="nav-link-item {% if 'suppliers' in request.path %}active{% endif %}">Suppliers</a>
+      <a href="{% url 'po_list' %}" class="nav-link-item {% if 'pos' in request.path %}active{% endif %}">Purchase Orders</a>
+      <a href="{% url 'payables' %}" class="nav-link-item {% if 'payables' in request.path %}active{% endif %}">Bills & Payables</a>
+
+      <div class="nav-section-label">SALES & INVOICES</div>
+      <a href="{% url 'customer_list' %}" class="nav-link-item {% if 'customers' in request.path %}active{% endif %}">Customers</a>
+      <a href="{% url 'quote_list' %}" class="nav-link-item {% if 'quotes' in request.path %}active{% endif %}">Quotes</a>
+      <a href="{% url 'invoice_list' %}" class="nav-link-item {% if 'invoices' in request.path %}active{% endif %}">Invoices</a>
+      <a href="{% url 'receivables' %}" class="nav-link-item {% if 'receivables' in request.path %}active{% endif %}">Receivables</a>
+
+      <div class="nav-section-label">FINANCE & REPORTS</div>
+      <a href="{% url 'profitability' %}" class="nav-link-item {% if 'profitability' in request.path %}active{% endif %}">Profitability</a>
+      <a href="{% url 'reports_index' %}" class="nav-link-item {% if 'reports' in request.path %}active{% endif %}">Reports</a>
+      <a href="{% url 'import_csv' %}" class="nav-link-item {% if 'import' in request.path %}active{% endif %}">CSV Import</a>
+      <a href="{% url 'settings' %}" class="nav-link-item {% if 'settings' in request.path %}active{% endif %}">Settings</a>
+    </nav>
+  </aside>
+
+  <div class="app-wrapper">
+    <!-- Desktop Sidebar -->
+    {% include "includes/sidebar.html" %}
+
+    <!-- Main Content Column -->
+    <div class="app-main">
+      <!-- Top Header -->
+      {% include "includes/header.html" %}
+
+      <!-- Messages / Toast Alerts -->
+      {% if messages %}
+        <div style="padding: 0.8rem 0.85rem 0 0.85rem;">
+          {% for message in messages %}
+            <div class="panel" style="margin-bottom: 0.5rem; padding: 0.6rem 0.85rem; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid {% if message.tags == 'error' %}var(--danger){% elif message.tags == 'success' %}var(--success){% else %}var(--brand){% endif %}; font-size: 0.76rem;">
+              <span>{{ message }}</span>
+              <button onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer; font-weight:bold; color:var(--text-tertiary);">×</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Content Area -->
+      <main class="app-content">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Nav -->
+  {% include "includes/mobile_nav.html" %}
+
+  <!-- Global Barcode Scanner Modal -->
+  <div id="barcode-scanner-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="panel-title">Camera Barcode Scanner</span>
+        <button onclick="closeBarcodeScannerModal()" class="btn-icon">×</button>
+      </div>
+      <div class="modal-body text-center">
+        <video id="barcode-video" style="width: 100%; max-height: 220px; background: #000; border-radius: 8px; margin-bottom: 0.8rem;"></video>
+        <div>
+          <label class="form-label">Or enter SKU / Barcode manually:</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="manual-barcode-input" class="form-control" placeholder="e.g. WR-6000 or 880192837101" inputmode="numeric">
+            <button onclick="triggerManualBarcodeLookup()" class="btn btn-primary">Lookup</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button onclick="closeBarcodeScannerModal()" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'js/stockflow.js' %}"></script>
+  <script>
+    function toggleMobileDrawer() {
+      const drawer = document.getElementById('mobile-drawer');
+      const backdrop = document.getElementById('mobile-drawer-backdrop');
+      if (drawer && backdrop) {
+        drawer.classList.toggle('active');
+        backdrop.classList.toggle('active');
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register("{% static 'pwa/sw.js' %}");
+    }
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Invoice - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Create Invoice</h1>
+        <div class="page-subtitle">Generate customer invoice with line items</div>
+    </div>
+</div>
+
+<div class="card-panel" style="max-width: 750px;">
+    <div class="panel-header">
+        <div class="panel-title">Invoice Details</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Customer</label>
+                    <select name="customer_id" class="form-select" required>
+                        <option value="">Select Customer</option>
+                        {% for c in customers %}
+                        <option value="{{ c.id }}">{{ c.company_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Invoice Date</label>
+                    <input type="date" name="date" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Due Date</label>
+                <input type="date" name="due_date" class="form-input" required>
+            </div>
+
+            <div style="font-weight: 650; font-size: 0.75rem; margin: 1rem 0 0.5rem 0;">Line Items</div>
+            <div id="invoiceItems">
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <select name="product_id" class="form-select" required>
+                        <option value="">Select Product / Service</option>
+                        {% for p in products %}
+                        <option value="{{ p.id }}">{{ p.name }} (Price: {{ currency_symbol }}{{ p.selling_price }})</option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" name="quantity" class="form-input" value="1" placeholder="Qty">
+                    <input type="number" step="0.01" name="unit_price" class="form-input" value="100.00" placeholder="Price">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-saas btn-primary" style="margin-top: 1rem;">Save & Generate Invoice</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

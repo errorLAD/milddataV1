@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Suppliers - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Suppliers</h1>
+        <div class="page-subtitle">Manage vendors, purchasing terms, and contact profiles</div>
+    </div>
+    <div>
+        <a href="{% url 'supplier_create' %}" class="btn-saas btn-primary">+ Add Supplier</a>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Supplier Directory</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Company Name</th>
+                    <th>Contact Person</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Country</th>
+                    <th>Payment Terms</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in suppliers %}
+                <tr>
+                    <td style="font-weight: 650;">
+                        <a href="{% url 'supplier_detail' s.id %}" style="color: var(--text-primary); text-decoration: none;">{{ s.company_name }}</a>
+                    </td>
+                    <td>{{ s.contact_person|default:"-" }}</td>
+                    <td>{{ s.email|default:"-" }}</td>
+                    <td>{{ s.phone|default:"-" }}</td>
+                    <td>{{ s.country }}</td>
+                    <td><span class="badge-pill badge-info">{{ s.payment_terms }}</span></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-tertiary);">No suppliers created.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

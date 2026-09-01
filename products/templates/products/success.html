@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Successful — Mithila AI{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <div class="success-card">
+            <div class="success-icon">✅</div>
+            <h1 style="color: var(--color-primary); margin: 0 0 0.5rem;">Payment Successful!</h1>
+            <p style="color: var(--color-muted);">Thank you for purchasing <strong>{{ order.product.name }}</strong>.</p>
+            <p style="font-size: 0.9rem; color: var(--color-muted);">
+                Order #{{ order.pk }} &middot; {{ order.customer_email }}
+            </p>
+
+            {% if order.product.access_info %}
+            <div class="access-info">
+                <strong>Access Information</strong>
+                <p style="margin: 0.5rem 0 0;">{{ order.product.access_info|linebreaks }}</p>
+            </div>
+            {% else %}
+            <div class="access-info">
+                <strong>What's Next?</strong>
+                <p style="margin: 0.5rem 0 0;">We've sent access details to <strong>{{ order.customer_email }}</strong>. If you don't receive them within a few minutes, please contact support.</p>
+            </div>
+            {% endif %}
+
+            <a href="{% url 'products:catalog' %}" class="btn btn-secondary" style="margin-top: 1.5rem;">Back to Catalog</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

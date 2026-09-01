@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Purchase Order {{ po.po_number }} — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.6rem;">
+      <h1 class="page-title">{{ po.po_number }}</h1>
+      <span class="badge badge-info">{{ po.get_status_display }}</span>
+    </div>
+    <p class="page-subtitle">Supplier: <strong>{{ po.supplier.company_name }}</strong> • Warehouse: {{ po.warehouse.name }} ({{ po.warehouse.code }}) • Order Date: {{ po.order_date|date_fmt:org }}</p>
+  </div>
+  <div class="page-actions">
+    {% if po.status == 'DRAFT' %}
+      <form method="post" action="{% url 'po_status_update' po.id %}" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="SENT">
+        <button type="submit" class="btn btn-secondary">Mark Sent</button>
+      </form>
+      <form method="post" action="{% url 'po_status_update' po.id %}" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="APPROVED">
+        <button type="submit" class="btn btn-primary">Approve PO</button>
+      </form>
+    {% elif po.status == 'SENT' %}
+      <form method="post" action="{% url 'po_status_update' po.id %}" style="display:inline;">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="APPROVED">
+        <button type="submit" class="btn btn-primary">Approve PO</button>
+      </form>
+    {% endif %}
+
+    {% if po.status == 'APPROVED' or po.status == 'PARTIALLY_RECEIVED' %}
+      <a href="{% url 'goods_receipt' po.id %}" class="btn btn-primary">Receive Goods</a>
+    {% endif %}
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.2rem;">
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Purchased Items</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>SKU</th>
+              <th>Ordered</th>
+              <th>Received</th>
+              <th>Unit Cost</th>
+              <th style="text-align: right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in po.items.all %}
+            <tr>
+              <td style="font-weight: 650;">{{ item.product.name }}</td>
+              <td class="tabular-nums">{{ item.product.sku }}</td>
+              <td class="tabular-nums">{{ item.quantity }}</td>
+              <td class="tabular-nums" style="font-weight: 700; color: {% if item.received_quantity >= item.quantity %}var(--success){% else %}var(--warning){% endif %};">
+                {{ item.received_quantity }} / {{ item.quantity }}
+              </td>
+              <td class="money">{{ item.unit_cost|money:org }}</td>
+              <td class="money" style="text-align: right; font-weight: 700;">{{ item.total|money:org }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Goods Receipts Log -->
+    {% if goods_receipts %}
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Goods Received Receipts (GRN)</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>GRN #</th>
+              <th>Date</th>
+              <th>Received By</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for gr in goods_receipts %}
+            <tr>
+              <td style="font-weight: 650; color: var(--brand);">{{ gr.receipt_number }}</td>
+              <td>{{ gr.receipt_date|date_fmt:org }}</td>
+              <td>{{ gr.received_by.username|default:'System' }}</td>
+              <td>{{ gr.notes|default:'—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Order Summary</span>
+      </div>
+      <div class="panel-body">
+        <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border);">
+          <span>Subtotal</span>
+          <span class="money" style="font-weight: 650;">{{ po.subtotal|money:org }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border);">
+          <span>{{ org.tax_name }} ({{ org.tax_rate }}%)</span>
+          <span class="money">{{ po.tax_amount|money:org }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; padding: 0.6rem 0; font-size: 0.9rem; font-weight: 700;">
+          <span>Grand Total</span>
+          <span class="money" style="color: var(--brand);">{{ po.total_amount|money:org }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Supplier Details</span>
+      </div>
+      <div class="panel-body" style="font-size: 0.7rem;">
+        <div style="font-weight: 700; margin-bottom: 0.2rem;">{{ po.supplier.company_name }}</div>
+        <div>Contact: {{ po.supplier.contact_person|default:'N/A' }}</div>
+        <div>Email: {{ po.supplier.email }}</div>
+        <div>Country: {{ po.supplier.country }}</div>
+        <div style="margin-top: 0.4rem; color: var(--text-tertiary);">Terms: {{ po.payment_terms }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

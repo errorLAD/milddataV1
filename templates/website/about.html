@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}About Us — Milda Data Enterprise{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 0 3rem; background: #0f172a; color: #ffffff;">
+    <div class="container" style="text-align: center; max-width: 800px;">
+        <span style="display: inline-block; background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px 12px; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem;">About Milda Data</span>
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; margin-bottom: 1rem;">Engineering Next-Gen SaaS &amp; AI Tools</h1>
+        <p style="font-size: 1.15rem; color: #94a3b8; line-height: 1.6;">We build high-availability cloud software and regional language AI data solutions for modern enterprise operations.</p>
+    </div>
+</section>
+
+<!-- Stats Grid -->
+<section style="padding: 3rem 0; background: #1e293b; color: #ffffff; border-bottom: 1px solid #334155;">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; text-align: center;">
+            {% for s in stats %}
+            <div>
+                <div style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 800; color: #38bdf8;">{{ s.number }}</div>
+                <div style="font-size: 0.9rem; font-weight: 600; color: #cbd5e1;">{{ s.label }}</div>
+            </div>
+            {% empty %}
+            <div><div style="font-size: 2.5rem; font-weight: 800;">10+</div><div>SaaS Tools</div></div>
+            <div><div style="font-size: 2.5rem; font-weight: 800;">5+</div><div>Industries</div></div>
+            <div><div style="font-size: 2.5rem; font-weight: 800;">50+</div><div>Enterprise Features</div></div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Team Members -->
+<section style="padding: 4rem 0; background: #ffffff;">
+    <div class="container">
+        <h2 style="font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 700; text-align: center; margin-bottom: 2.5rem; color: #0f172a;">Leadership &amp; Engineering Team</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 2rem;">
+            {% for m in team_members %}
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.75rem; text-align: center;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: #3b82f6; color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; margin: 0 auto 1rem;">
+                    {{ m.name|slice:":1" }}
+                </div>
+                <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.2rem; font-weight: 700; color: #0f172a; margin-bottom: 0.25rem;">{{ m.name }}</h3>
+                <div style="font-size: 0.84rem; font-weight: 600; color: #2563eb; margin-bottom: 0.75rem;">{{ m.role }}</div>
+                <p style="font-size: 0.88rem; color: #475569; line-height: 1.5;">{{ m.bio }}</p>
+            </div>
+            {% empty %}
+            <p style="grid-column: 1 / -1; text-align: center; color: #64748b;">Milda Data core team details available upon request.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

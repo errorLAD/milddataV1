@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Billing & Subscriptions{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h1 class="page-title mb-0">Subscription & Billing Management</h1>
+    <p class="page-subtitle mb-0">Manage SaaS plan, vehicle quota limits, and invoice history</p>
+  </div>
+</div>
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-6">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Active SaaS Plan</h3>
+        <span class="status-pill success"><span class="status-dot"></span> {{ sub.status }}</span>
+      </div>
+      <div class="kp-panel-body">
+        <h2 class="metric-val text-primary mb-1">{{ sub.plan_name }}</h2>
+        <p class="text-secondary" style="font-size: 0.72rem;">${{ sub.monthly_price }} / month billed monthly</p>
+        <hr>
+        <ul class="list-unstyled mb-3" style="font-size: 0.72rem;">
+          <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Up to {{ org.max_vehicles }} Vehicles & Heavy Machines</li>
+          <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Up to {{ org.max_users }} Dispatch & Admin Users</li>
+          <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> Real-time Telemetry & Route Playback</li>
+          <li class="py-1"><i class="fa-solid fa-check text-success me-2"></i> AI Fleet Assistant Copilot</li>
+        </ul>
+        <button class="btn-kp btn-kp-primary">Upgrade Plan</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Invoice History</h3>
+      </div>
+      <div class="table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Invoice Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th class="text-end">Receipt</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="num">2026-08-01</td>
+              <td class="num fw-bold">${{ sub.monthly_price }}</td>
+              <td><span class="status-pill success"><span class="status-dot"></span> Paid</span></td>
+              <td class="text-end"><button class="btn-kp btn-kp-secondary p-1"><i class="fa-solid fa-download"></i></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

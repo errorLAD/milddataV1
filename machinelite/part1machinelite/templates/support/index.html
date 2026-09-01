@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Help & Support Center — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Help Center & Technical Support</h1>
+    <p class="kp-page-subtitle">Documentation, equipment management guide, FAQs, and ticket support.</p>
+  </div>
+</div>
+
+<div class="kp-row-split">
+  
+  <!-- Knowledge Base FAQs -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Frequently Asked Questions</div>
+    </div>
+    <div class="kp-panel-body" style="display: flex; flex-direction: column; gap: 0.85rem;">
+      <div>
+        <div style="font-weight: 650; font-size: 0.76rem; color: var(--brand);">How is fuel efficiency (L/Hr) calculated?</div>
+        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.25rem;">
+          Fuel efficiency is computed by dividing total refuel liters by operating hours logged since previous fill-up. If consumption exceeds baseline thresholds (>15 L/Hr), an abnormal flag is auto-triggered.
+        </div>
+      </div>
+      
+      <div>
+        <div style="font-weight: 650; font-size: 0.76rem; color: var(--brand);">How do Document Expiry alerts work?</div>
+        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.25rem;">
+          Documents expiring within 30 days show a yellow warning pill. Documents past their expiration date trigger a red EXPIRED alert pill and dashboard notice.
+        </div>
+      </div>
+
+      <div>
+        <div style="font-weight: 650; font-size: 0.76rem; color: var(--brand);">How does the AI Assistant analyze my fleet?</div>
+        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.25rem;">
+          The AI Assistant queries your organization's live SQL database records in real-time to compute profit, idle machines, maintenance due, and repair-vs-replace ratios.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit Support Ticket Panel -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title"><i class="fa-solid fa-headset"></i> Submit Support Request</div>
+    </div>
+    <div class="kp-panel-body">
+      <form action="{% url 'submit_ticket' %}" method="POST">
+        {% csrf_token %}
+        <div class="kp-form-group">
+          <label class="kp-label">Issue Category</label>
+          <select name="category" class="kp-select">
+            <option value="technical">Technical / Bug Report</option>
+            <option value="billing">Billing & Subscription Query</option>
+            <option value="feature">Feature Request</option>
+          </select>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Subject</label>
+          <input type="text" name="subject" class="kp-input" placeholder="e.g. Issue logging meter for Excavator #04" required>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Description</label>
+          <textarea name="description" class="kp-textarea" rows="4" placeholder="Describe the issue in detail..." required></textarea>
+        </div>
+        <button type="submit" class="kp-btn kp-btn-primary" style="width: 100%; justify-content: center;">
+          Submit Technical Ticket
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

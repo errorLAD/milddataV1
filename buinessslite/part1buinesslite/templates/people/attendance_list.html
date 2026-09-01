@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Employee Attendance</h1>
+        <div class="page-subtitle">Daily attendance tracking for {{ target_date }}</div>
+    </div>
+    <div>
+        <form method="GET" style="display: flex; gap: 0.4rem;">
+            <input type="date" name="date" class="form-input" value="{{ target_date|date:'Y-m-d' }}">
+            <button type="submit" class="btn-saas btn-secondary">Filter Date</button>
+        </form>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Mark Attendance: {{ target_date }}</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="table-responsive">
+                <table class="saas-table">
+                    <thead>
+                        <tr>
+                            <th>Employee Name</th>
+                            <th>Job Title</th>
+                            <th>Status</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in emp_attendance %}
+                        <tr>
+                            <td style="font-weight: 650;">{{ item.employee.name }}</td>
+                            <td>{{ item.employee.job_title }}</td>
+                            <td>
+                                <select name="status_{{ item.employee.id }}" class="form-select" style="max-width: 140px;">
+                                    {% for val, label in statuses %}
+                                    <option value="{{ val }}" {% if item.status == val %}selected{% endif %}>{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" name="notes_{{ item.employee.id }}" class="form-input" value="{{ item.notes }}" placeholder="Optional notes...">
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <button type="submit" class="btn-saas btn-primary" style="margin-top: 1rem;">Save Attendance</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

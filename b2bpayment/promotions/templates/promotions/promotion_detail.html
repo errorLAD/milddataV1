@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ promotion.name }} | Promotion Details{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-megaphone text-primary me-2"></i> {{ promotion.name }}</h3>
+        <p class="text-muted mb-0 fs-7">Offer Title: <strong>{{ promotion.title }}</strong></p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+        <a href="{% url 'promotions:send' promotion.pk %}" class="btn btn-success btn-sm fw-bold">
+            <i class="bi bi-whatsapp me-1"></i> Send via WhatsApp
+        </a>
+        <a href="{% url 'promotions:edit' promotion.pk %}" class="btn btn-light border btn-sm">
+            <i class="bi bi-pencil me-1"></i> Edit Text
+        </a>
+        <a href="{% url 'promotions:list' %}" class="btn btn-outline-secondary btn-sm">
+            Back to Promotions
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Promotional Text Message Card -->
+    <div class="col-12 col-lg-6">
+        <div class="card card-custom p-4 border-0 shadow-sm h-100">
+            <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom"><i class="bi bi-chat-left-text text-primary me-2"></i> Promotional WhatsApp Message</h6>
+            <div class="p-3 bg-light rounded border text-dark font-monospace fs-7 white-space-pre-line mb-3">
+*{{ promotion.title }}*
+
+{{ promotion.message }}
+            </div>
+
+            <div class="row g-2 fs-8 text-muted">
+                <div class="col-6">Status: <strong class="text-dark">{{ promotion.status }}</strong></div>
+                <div class="col-6">Valid: <strong>{{ promotion.start_date|date:"d M"|default:"Now" }} - {{ promotion.end_date|date:"d M Y"|default:"Ongoing" }}</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Poster Images Card (Max 2 Rules) -->
+    <div class="col-12 col-lg-6">
+        <div class="card card-custom p-4 border-0 shadow-sm h-100">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                <h6 class="fw-bold text-dark mb-0"><i class="bi bi-images text-primary me-2"></i> Poster Images ({{ images.count }}/2)</h6>
+                <small class="text-muted fs-8">Max 2 images per promotion.</small>
+            </div>
+
+            <!-- Upload Rule Alert -->
+            {% if images.count >= 2 %}
+            <div class="alert alert-info py-2 px-3 fs-8 mb-3 border-0 shadow-sm">
+                <i class="bi bi-info-circle me-1"></i> Maximum 2 poster images reached. <strong>Delete an existing image</strong> to upload another.
+            </div>
+            {% endif %}
+
+            <!-- Images Preview Grid -->
+            <div class="row g-3 mb-3">
+                {% for img in images %}
+                <div class="col-6">
+                    <div class="card p-2 border text-center shadow-sm">
+                        <img src="{{ img.image.url }}" class="img-fluid rounded mb-2" style="max-height: 180px; object-fit: contain;" alt="Poster Image {{ forloop.counter }}">
+                        <div class="d-flex align-items-center justify-content-between px-1">
+                            <small class="fw-bold text-muted fs-8">Poster {{ forloop.counter }}</small>
+                            <form method="post" action="{% url 'promotions:image_delete' img.pk %}" onsubmit="return confirm('Delete Poster {{ forloop.counter }}?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2 fs-8">
+                                    <i class="bi bi-trash"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-4 text-muted bg-light rounded border">
+                    <i class="bi bi-image display-5 d-block mb-2"></i>
+                    No poster images uploaded yet. You can still send text-only promotions via WhatsApp.
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Upload Form if slots available -->
+            {% if can_upload %}
+            <form method="post" action="{% url 'promotions:edit' promotion.pk %}" enctype="multipart/form-data" class="p-3 bg-light rounded border">
+                {% csrf_token %}
+                <label class="form-label fw-semibold fs-7 mb-1"><i class="bi bi-cloud-upload me-1"></i> Upload Poster Image (PNG/JPG)</label>
+                <div class="input-group">
+                    <input type="file" name="images" class="form-control fs-7" accept="image/*" required>
+                    <button type="submit" class="btn btn-primary-custom btn-sm">Upload Poster</button>
+                </div>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

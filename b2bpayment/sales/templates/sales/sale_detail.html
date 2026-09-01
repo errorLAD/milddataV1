@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}Invoice #{{ sale.invoice_number }} | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-12 col-lg-8">
+        <div class="card card-custom p-4 p-md-5 shadow-lg border-0">
+            <!-- Header -->
+            <div class="d-flex align-items-center justify-content-between pb-4 mb-4 border-bottom">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="brand-badge" style="width: 48px; height: 48px; font-size: 1.3rem;">U</div>
+                    <div>
+                        <h4 class="fw-bold text-dark mb-0">{{ current_business.name }}</h4>
+                        <small class="text-muted">{{ current_business.phone }} | GSTIN: {{ current_business.gstin|default:"N/A" }}</small>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-primary fs-6 px-3 py-1.5 mb-1">INVOICE</span>
+                    <div class="fw-bold text-dark fs-5">#{{ sale.invoice_number }}</div>
+                    <small class="text-muted">{{ sale.sale_date|date:"d M Y, h:i A" }}</small>
+                </div>
+            </div>
+
+            <!-- Billed To -->
+            <div class="row mb-4">
+                <div class="col-6">
+                    <h6 class="fw-bold text-secondary fs-8 text-uppercase">Billed To:</h6>
+                    <div class="fw-bold text-dark fs-6">{{ sale.customer.name }}</div>
+                    <div class="text-muted fs-7"><i class="bi bi-telephone"></i> {{ sale.customer.phone }}</div>
+                    {% if sale.customer.address %}<div class="text-muted fs-7">{{ sale.customer.address }}</div>{% endif %}
+                </div>
+                <div class="col-6 text-end">
+                    <h6 class="fw-bold text-secondary fs-8 text-uppercase">Payment Info:</h6>
+                    <div class="fw-semibold text-dark fs-7">Method: {{ sale.payment_method }}</div>
+                    {% if sale.udhaar_amount > 0 %}
+                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-7 mt-1 px-3 py-1 fw-bold">
+                        Udhaar: {{ sale.udhaar_amount|inr }}
+                    </span>
+                    {% else %}
+                    <span class="badge bg-success-subtle text-success border border-success-subtle fs-7 mt-1 px-3 py-1 fw-bold">
+                        FULLY PAID
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Line Items Table -->
+            <div class="table-responsive mb-4">
+                <table class="table align-middle">
+                    <thead class="table-light fs-8 text-uppercase">
+                        <tr>
+                            <th>Item Description</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Unit Price</th>
+                            <th class="text-end">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in sale.items.all %}
+                        <tr>
+                            <td class="fw-semibold text-dark">{{ item.product_name }}</td>
+                            <td class="text-center">{{ item.quantity }}</td>
+                            <td class="text-end">{{ item.unit_price|inr }}</td>
+                            <td class="text-end fw-bold">{{ item.subtotal|inr }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No itemized details.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totals -->
+            <div class="row justify-content-end mb-4">
+                <div class="col-6 col-md-5">
+                    <div class="d-flex justify-content-between mb-2 fs-7">
+                        <span class="text-secondary">Gross Amount:</span>
+                        <span>{{ sale.total_amount|inr }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2 fs-7">
+                        <span class="text-secondary">Amount Paid:</span>
+                        <span class="text-success fw-bold">{{ sale.paid_amount|inr }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between fs-6 pt-2 border-top fw-bold text-dark">
+                        <span>Balance Udhaar:</span>
+                        <span class="{% if sale.udhaar_amount > 0 %}text-danger{% else %}text-muted{% endif %}">
+                            {{ sale.udhaar_amount|inr }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                <a href="{% url 'sales:list' %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back to Sales</a>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'sales:pdf_invoice' sale.pk %}" class="btn btn-outline-primary btn-sm" target="_blank">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF Invoice
+                    </a>
+                    <button onclick="window.print();" class="btn btn-primary-custom btn-sm"><i class="bi bi-printer me-1"></i> Print Invoice</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

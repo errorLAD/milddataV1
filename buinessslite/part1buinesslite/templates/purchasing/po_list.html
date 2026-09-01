@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Purchase Orders - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Purchase Orders</h1>
+        <div class="page-subtitle">Track supplier orders, expected deliveries, and goods receipts</div>
+    </div>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="{% url 'po_create' %}?filter=low_stock" class="btn-saas btn-secondary">⚡ Auto-Draft PO for Low Stock Items</a>
+        <a href="{% url 'po_create' %}" class="btn-saas btn-primary">+ Create Purchase Order</a>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Purchase Orders List</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>PO Number</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th>Expected Delivery</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for po in orders %}
+                <tr>
+                    <td style="font-weight: 650;">
+                        <a href="{% url 'po_detail' po.id %}" style="color: var(--text-primary); text-decoration: none;">{{ po.po_number }}</a>
+                    </td>
+                    <td>{{ po.supplier.company_name }}</td>
+                    <td>{{ po.date }}</td>
+                    <td>{{ po.expected_delivery|default:"-" }}</td>
+                    <td>
+                        {% if po.status == 'COMPLETED' %}
+                        <span class="badge-pill badge-success">Completed</span>
+                        {% elif po.status == 'PARTIAL' %}
+                        <span class="badge-pill badge-warning">Partial</span>
+                        {% else %}
+                        <span class="badge-pill badge-info">{{ po.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="num" style="font-weight: 700;">{{ currency_symbol }}{{ po.total_amount|floatformat:2 }}</td>
+                    <td>
+                        {% if po.status != 'COMPLETED' and po.status != 'CANCELLED' %}
+                        <a href="{% url 'receive_goods' po.id %}" class="btn-saas btn-secondary" style="padding: 0.2rem 0.4rem; font-size: 0.65rem;">Receive Goods</a>
+                        {% else %}
+                        <span style="font-size: 0.65rem; color: var(--text-tertiary);">Received</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-tertiary);">No purchase orders found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendar - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Business Calendar</h1>
+        <div class="page-subtitle">Unified view of employee leave, tasks, invoice due dates, and reminders</div>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Scheduled Business Events</div>
+    </div>
+    <div class="panel-body">
+        {% if events %}
+            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                {% for ev in events %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.8rem; background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                    <div style="font-weight: 650; font-size: 0.75rem;">
+                        <span class="badge-pill badge-info" style="margin-right: 0.4rem;">{{ ev.type }}</span>
+                        {{ ev.title }}
+                    </div>
+                    <div style="font-size: 0.7rem; font-weight: 700; color: var(--brand);">
+                        📅 {{ ev.date }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="padding: 1rem; text-align: center; color: var(--text-tertiary);">No upcoming events.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

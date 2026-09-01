@@ -1,0 +1,688 @@
+{% extends "base.html" %}
+{% load localization_tags %}
+
+{% block title %}Collections Workspace | NextSlot{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* KarobarPlus / NextSlot Light Enterprise SaaS Design System */
+    :root {
+        --bg: #F7F8FA;
+        --surface: #FFFFFF;
+        --surface-alt: #FAFAFB;
+        --border: #E4E7EC;
+        --border-strong: #D0D5DD;
+        --text-primary: #101828;
+        --text-secondary: #475467;
+        --text-tertiary: #98A2B3;
+        --brand: #2451FF;
+        --brand-dark: #1939B7;
+        --brand-soft: #EEF2FF;
+        --brand-soft-border: #D6E0FF;
+        --success: #067647;
+        --success-soft: #ECFDF3;
+        --success-border: #ABEFC6;
+        --danger: #B42318;
+        --danger-soft: #FEF3F2;
+        --danger-border: #FECDCA;
+        --warning: #B54708;
+        --warning-soft: #FFFAEB;
+        --warning-border: #FEDF89;
+        --info: #175CD3;
+        --info-soft: #EFF8FF;
+        --info-border: #B2DDFF;
+        --whatsapp: #128C7E;
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 14px;
+        --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+        --shadow-sm: 0 2px 4px rgba(16, 24, 40, 0.06);
+    }
+
+    body {
+        background-color: var(--bg);
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Page Header */
+    .kp-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 9px;
+        border-radius: 9999px;
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        background: var(--brand-soft);
+        color: var(--brand-dark);
+        border: 1px solid var(--brand-soft-border);
+    }
+
+    .kp-page-title {
+        font-size: 1.02rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+    }
+
+    .kp-page-sub {
+        font-size: 0.72rem;
+        color: var(--text-secondary);
+    }
+
+    /* Buttons */
+    .btn-kp-primary {
+        background: var(--brand);
+        color: #FFFFFF;
+        border: 1px solid var(--brand-dark);
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        padding: 0.32rem 0.65rem;
+        font-size: 0.7rem;
+        box-shadow: var(--shadow-xs);
+        transition: background 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        text-decoration: none;
+    }
+    .btn-kp-primary:hover { background: var(--brand-dark); color: #fff; }
+
+    .btn-kp-whatsapp {
+        background: var(--surface);
+        color: var(--whatsapp);
+        border: 1px solid var(--success-border);
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        padding: 0.32rem 0.65rem;
+        font-size: 0.7rem;
+        box-shadow: var(--shadow-xs);
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .btn-kp-whatsapp:hover { background: var(--success); color: #FFFFFF; border-color: var(--success); }
+
+    .btn-kp-secondary {
+        background: var(--surface);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        padding: 0.32rem 0.65rem;
+        font-size: 0.7rem;
+        box-shadow: var(--shadow-xs);
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        text-decoration: none;
+    }
+    .btn-kp-secondary:hover { background: var(--surface-alt); color: var(--text-primary); border-color: var(--border-strong); }
+
+    /* Metric Grid */
+    .kp-metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.875rem;
+    }
+    @media (max-width: 1200px) { .kp-metric-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 576px) { .kp-metric-grid { grid-template-columns: 1fr; } }
+
+    .kp-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 1rem 1.1rem;
+        box-shadow: var(--shadow-xs);
+        transition: border-color 0.15s ease;
+    }
+    .kp-card:hover { border-color: var(--border-strong); }
+
+    .kp-hero-card {
+        background: linear-gradient(180deg, #F5F7FF 0%, #FFFFFF 100%);
+        border: 1px solid var(--brand-soft-border);
+    }
+    .kp-hero-card .hero-label {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--brand-dark);
+    }
+    .kp-hero-card .hero-value {
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+        margin: 0.2rem 0;
+        font-feature-settings: "tnum";
+    }
+    .kp-hero-card .hero-sub { font-size: 0.66rem; color: var(--text-secondary); }
+
+    .kp-metric-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .kp-metric-label {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-tertiary);
+    }
+    .kp-metric-number {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.02em;
+        margin: 0.2rem 0;
+        font-feature-settings: "tnum";
+    }
+    .kp-metric-sub {
+        font-size: 0.66rem;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    /* Panels & Tables */
+    .kp-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+        overflow: hidden;
+    }
+
+    .kp-panel-header {
+        background: var(--surface-alt);
+        border-bottom: 1px solid var(--border);
+        padding: 0.9rem 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .kp-panel-title {
+        font-size: 0.8rem;
+        font-weight: 650;
+        color: var(--text-primary);
+        margin: 0;
+    }
+    .kp-panel-desc {
+        font-size: 0.68rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    /* Tabs */
+    .kp-nav-tabs {
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+        padding: 0 1.1rem;
+        display: flex;
+        gap: 0.25rem;
+        overflow-x: auto;
+    }
+    .kp-nav-link {
+        color: var(--text-secondary);
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 0.65rem 0.85rem;
+        text-decoration: none;
+        border-bottom: 2.5px solid transparent;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+    .kp-nav-link:hover { color: var(--text-primary); }
+    .kp-nav-link.active {
+        color: var(--brand);
+        border-bottom-color: var(--brand);
+        background: transparent;
+    }
+
+    /* Status Pills */
+    .kp-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 9999px;
+        padding: 2px 8px 2px 6px;
+        font-size: 0.6rem;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+    .kp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    .kp-pill.urgent { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger-border); }
+    .kp-pill.urgent .kp-dot { background: var(--danger); }
+
+    .kp-pill.high { background: var(--warning-soft); color: var(--warning); border: 1px solid var(--warning-border); }
+    .kp-pill.high .kp-dot { background: var(--warning); }
+
+    .kp-pill.normal { background: var(--info-soft); color: var(--info); border: 1px solid var(--info-border); }
+    .kp-pill.normal .kp-dot { background: var(--info); }
+
+    .kp-pill.success { background: var(--success-soft); color: var(--success); border: 1px solid var(--success-border); }
+    .kp-pill.success .kp-dot { background: var(--success); }
+
+    .kp-pill.neutral { background: var(--surface-alt); color: var(--text-tertiary); border: 1px solid var(--border); }
+    .kp-pill.neutral .kp-dot { background: var(--text-tertiary); }
+
+    /* Tables */
+    .kp-table {
+        width: 100%;
+        margin-bottom: 0;
+        border-collapse: collapse;
+    }
+    .kp-table th {
+        font-size: 0.58rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-tertiary);
+        background: var(--surface-alt);
+        border-bottom: 1px solid var(--border);
+        padding: 0.6rem 0.9rem;
+        white-space: nowrap;
+    }
+    .kp-table td {
+        padding: 0.55rem 0.9rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-primary);
+        vertical-align: middle;
+        font-size: 0.72rem;
+        font-feature-settings: "tnum";
+    }
+    .kp-table tbody tr:hover { background-color: var(--surface-alt); }
+    .kp-table tbody tr:last-child td { border-bottom: none; }
+
+    .kp-icon-action {
+        width: 27px;
+        height: 27px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        color: var(--text-secondary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+    .kp-icon-action:hover { background: var(--surface-alt); color: var(--text-primary); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2.5">
+
+    <!-- Page Header Row -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+        <div>
+            <div class="kp-eyebrow mb-1">
+                <i class="bi bi-shield-check"></i> Accounts Receivable Assistant
+            </div>
+            <h1 class="kp-page-title mb-0">B2B Payment Collections</h1>
+            <p class="kp-page-sub mb-0">Track overdue accounts, dispatch payment reminders, manage promises to pay, and accelerate cash collection.</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <button type="button" class="btn-kp-whatsapp" data-bs-toggle="modal" data-bs-target="#bulkReminderModal">
+                <i class="bi bi-whatsapp"></i>
+                <span>Send All Reminders</span>
+            </button>
+            <a href="{% url 'collections:reminder_rules' %}" class="btn-kp-secondary">
+                <i class="bi bi-alarm"></i>
+                <span>Reminder Cadence</span>
+            </a>
+            <a href="{% url 'sales:create' %}" class="btn-kp-primary">
+                <i class="bi bi-plus-lg"></i>
+                <span>New Invoice</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- 4-Column Metric Grid -->
+    <div class="kp-metric-grid mb-3">
+        <!-- Hero Card: Total Outstanding -->
+        <div class="kp-card kp-hero-card">
+            <div class="kp-metric-top">
+                <span class="hero-label">Total Outstanding AR</span>
+                <span class="kp-icon-action"><i class="bi bi-cash-stack"></i></span>
+            </div>
+            <div class="hero-value">{{ total_outstanding|money:business_currency_symbol }}</div>
+            <div class="hero-sub"><i class="bi bi-people-fill me-1"></i> {{ counts.all }} active account{{ counts.all|pluralize }}</div>
+        </div>
+
+        <!-- Overdue -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label text-danger">Overdue Amount</span>
+                <span class="kp-pill urgent"><span class="kp-dot"></span>Overdue</span>
+            </div>
+            <div class="kp-metric-number text-danger">{{ overdue_amount|money:business_currency_symbol }}</div>
+            <div class="kp-metric-sub text-danger"><i class="bi bi-clock-history"></i> {{ counts.overdue }} account{{ counts.overdue|pluralize }} past due</div>
+        </div>
+
+        <!-- Due Today -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label text-info">Due Today</span>
+                <span class="kp-pill normal"><span class="kp-dot"></span>Today</span>
+            </div>
+            <div class="kp-metric-number text-info">{{ due_today_amount|money:business_currency_symbol }}</div>
+            <div class="kp-metric-sub"><i class="bi bi-alarm"></i> {{ counts.due_today }} maturing account{{ counts.due_today|pluralize }}</div>
+        </div>
+
+        <!-- Promised -->
+        <div class="kp-card">
+            <div class="kp-metric-top">
+                <span class="kp-metric-label text-success">Promised Payments</span>
+                <span class="kp-pill success"><span class="kp-dot"></span>Promised</span>
+            </div>
+            <div class="kp-metric-number text-success">{{ promised_amount|money:business_currency_symbol }}</div>
+            <div class="kp-metric-sub"><i class="bi bi-handshake"></i> {{ counts.promise }} commitment{{ counts.promise|pluralize }}</div>
+        </div>
+    </div>
+
+    <!-- Main Workspace Table Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title">Accounts Receivable Register</h2>
+                <p class="kp-panel-desc">All open customer balances prioritized by risk level and follow-up deadlines.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'collections:reports' %}" class="btn-kp-secondary">
+                    <i class="bi bi-bar-chart-line"></i>
+                    <span>Aging Reports</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="kp-nav-tabs">
+            <a href="?tab=all" class="kp-nav-link {% if tab == 'all' or not tab %}active{% endif %}">
+                All Accounts <span class="badge bg-light text-dark border ms-1 fs-9">{{ counts.all }}</span>
+            </a>
+            <a href="?tab=due_today" class="kp-nav-link {% if tab == 'due_today' %}active{% endif %}">
+                Due Today <span class="badge bg-info-subtle text-info border border-info-subtle ms-1 fs-9">{{ counts.due_today }}</span>
+            </a>
+            <a href="?tab=overdue" class="kp-nav-link {% if tab == 'overdue' %}active{% endif %}">
+                Overdue <span class="badge bg-danger-subtle text-danger border border-danger-subtle ms-1 fs-9">{{ counts.overdue }}</span>
+            </a>
+            <a href="?tab=upcoming" class="kp-nav-link {% if tab == 'upcoming' %}active{% endif %}">
+                Upcoming <span class="badge bg-light text-dark border ms-1 fs-9">{{ counts.upcoming }}</span>
+            </a>
+            <a href="?tab=promise" class="kp-nav-link {% if tab == 'promise' %}active{% endif %}">
+                Promises <span class="badge bg-success-subtle text-success border border-success-subtle ms-1 fs-9">{{ counts.promise }}</span>
+            </a>
+            <a href="?tab=missed" class="kp-nav-link {% if tab == 'missed' %}active{% endif %}">
+                Missed Promises <span class="badge bg-warning-subtle text-warning border border-warning-subtle ms-1 fs-9">{{ counts.missed }}</span>
+            </a>
+            <a href="?tab=paid" class="kp-nav-link {% if tab == 'paid' %}active{% endif %}">
+                Paid Invoices <span class="badge bg-light text-muted border ms-1 fs-9">{{ counts.paid }}</span>
+            </a>
+        </div>
+
+        <!-- Table -->
+        <div class="table-responsive">
+            <table class="kp-table">
+                <thead>
+                    <tr>
+                        <th style="min-width: 170px;">Customer</th>
+                        <th style="min-width: 120px;">Outstanding</th>
+                        <th style="min-width: 130px;">Due Date / Aging</th>
+                        <th style="min-width: 140px;">Promise Status</th>
+                        <th style="min-width: 90px;">Priority Risk</th>
+                        <th class="text-end" style="min-width: 170px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in records %}
+                    <tr>
+                        <!-- Customer -->
+                        <td>
+                            <div class="fw-bold text-dark">{{ item.customer.name }}</div>
+                            <div class="text-muted fs-9" style="font-size: 0.68rem;">
+                                <i class="bi bi-telephone text-primary me-0.5"></i>{{ item.customer.phone }}
+                            </div>
+                        </td>
+
+                        <!-- Outstanding Amount -->
+                        <td>
+                            <div class="fw-bold text-dark">{{ item|money_record:item.remaining_amount }}</div>
+                            {% if item.paid_amount > 0 %}
+                            <div class="text-muted fs-9" style="font-size: 0.66rem;">Paid: {{ item|money_record:item.paid_amount }}</div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Due Date / Aging -->
+                        <td>
+                            {% if item.days_overdue > 0 %}
+                                <span class="kp-pill urgent"><span class="kp-dot"></span>{{ item.days_overdue }}d overdue</span>
+                            {% elif item.due_date == today %}
+                                <span class="kp-pill normal"><span class="kp-dot"></span>Due today</span>
+                            {% else %}
+                                <span class="kp-pill neutral"><span class="kp-dot"></span>Due: {{ item.due_date|date:"d M Y" }}</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Promise Status -->
+                        <td>
+                            {% if item.status == 'Payment Promised' %}
+                                <span class="kp-pill success"><span class="kp-dot"></span>Promised: {{ item.promised_date|date:"d M" }}</span>
+                                {% if item.promised_amount %}
+                                <div class="text-muted fs-9 mt-0.5" style="font-size: 0.66rem;">Amt: {{ item|money_record:item.promised_amount }}</div>
+                                {% endif %}
+                            {% elif item.promise_broken %}
+                                <span class="kp-pill urgent"><span class="kp-dot"></span>Promise Missed</span>
+                            {% else %}
+                                <span class="text-muted fs-9">—</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Priority Risk Badge -->
+                        <td>
+                            {% if item.priority.level == 'Urgent' %}
+                                <span class="kp-pill urgent"><span class="kp-dot"></span>Urgent</span>
+                            {% elif item.priority.level == 'High' %}
+                                <span class="kp-pill high"><span class="kp-dot"></span>High</span>
+                            {% elif item.priority.level == 'Normal' %}
+                                <span class="kp-pill normal"><span class="kp-dot"></span>Normal</span>
+                            {% else %}
+                                <span class="kp-pill neutral"><span class="kp-dot"></span>Low</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="text-end">
+                            <div class="d-flex align-items-center justify-content-end gap-1">
+                                <!-- Send WhatsApp Reminder -->
+                                <button type="button" class="btn-kp-whatsapp py-0.5 px-2"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#reminderModal"
+                                        data-action="{% url 'collections:send_reminder' item.pk %}"
+                                        data-name="{{ item.customer.name }}"
+                                        data-phone="{{ item.customer.phone }}"
+                                        data-remaining="{{ item.remaining_amount }}"
+                                        data-due="{{ item.due_date|date:'Y-m-d' }}"
+                                        title="Send WhatsApp Reminder">
+                                    <i class="bi bi-whatsapp"></i> Remind
+                                </button>
+
+                                <!-- Set Promise -->
+                                <button type="button" class="btn-kp-secondary py-0.5 px-1.5"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#promiseModal"
+                                        data-action="{% url 'collections:set_promise' item.pk %}"
+                                        data-name="{{ item.customer.name }}"
+                                        data-remaining="{{ item.remaining_amount }}"
+                                        title="Record Promise">
+                                    <i class="bi bi-handshake"></i>
+                                </button>
+
+                                <!-- View Customer Profile -->
+                                <a href="{% url 'customers:detail' item.customer.pk %}" class="kp-icon-action" title="View Profile">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            <i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>
+                            <div class="fw-bold text-dark fs-8">No collections matching this filter.</div>
+                            <div class="fs-9">All customer accounts are in good standing under this view.</div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modals -->
+<!-- Single WhatsApp Reminder Modal -->
+<div class="modal fade" id="reminderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <form method="post" id="reminderForm" action="">
+                {% csrf_token %}
+                <div class="modal-header bg-light border-bottom py-3">
+                    <h6 class="modal-title fw-bold text-dark fs-7" id="reminderModalTitle"><i class="bi bi-whatsapp text-success me-1"></i>Send Payment Reminder</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="p-3 bg-light rounded-3 mb-3 border fs-8">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Customer:</span>
+                            <strong id="modalCustomerName" class="text-dark"></strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-1">
+                            <span class="text-muted">Phone:</span>
+                            <span id="modalCustomerPhone" class="text-dark font-monospace"></span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Outstanding:</span>
+                            <strong id="modalOutstanding" class="text-danger"></strong>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold fs-8 text-dark">Reminder Message</label>
+                        <textarea name="custom_message" id="modalMessage" class="form-control fs-8" rows="4"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top py-2 px-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary fs-8" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-success fs-8 fw-bold px-3"><i class="bi bi-whatsapp me-1"></i>Send Reminder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Promise to Pay Modal -->
+<div class="modal fade" id="promiseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <form method="post" id="promiseForm" action="">
+                {% csrf_token %}
+                <div class="modal-header bg-light border-bottom py-3">
+                    <h6 class="modal-title fw-bold text-dark fs-7"><i class="bi bi-handshake text-primary me-1"></i>Record Promise to Pay</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="p-3 bg-light rounded-3 mb-3 border fs-8">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Customer:</span>
+                            <strong id="promiseCustomerName" class="text-dark"></strong>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span class="text-muted">Outstanding Balance:</span>
+                            <strong id="promiseOutstanding" class="text-danger"></strong>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold fs-8 text-dark">Promised Payment Date *</label>
+                        <input type="date" name="promised_date" class="form-control fs-8" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold fs-8 text-dark">Promised Amount</label>
+                        <input type="number" step="0.01" name="promised_amount" id="promiseAmountInput" class="form-control fs-8">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top py-2 px-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary fs-8" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-primary fs-8 fw-bold px-3">Save Promise</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Reminders Modal -->
+<div class="modal fade" id="bulkReminderModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <form method="post" action="{% url 'collections:bulk_remind' %}">
+                {% csrf_token %}
+                <div class="modal-header bg-light border-bottom py-3">
+                    <h6 class="modal-title fw-bold text-dark fs-7"><i class="bi bi-whatsapp text-success me-1"></i>Bulk WhatsApp Reminders</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted fs-8 mb-3">Send WhatsApp collection reminders to all overdue parties currently needing follow-up.</p>
+                    <div class="p-3 bg-warning-subtle text-warning-emphasis rounded-3 fs-8 mb-3 border border-warning-subtle">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Reminders will be dispatched sequentially to respect messaging API limits.
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-top py-2 px-3">
+                    <button type="button" class="btn btn-sm btn-outline-secondary fs-8" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-sm btn-success fs-8 fw-bold px-3"><i class="bi bi-whatsapp me-1"></i>Send All Reminders</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reminderModal = document.getElementById('reminderModal');
+    if (reminderModal) {
+        reminderModal.addEventListener('show.bs.modal', function(e) {
+            const btn = e.relatedTarget;
+            document.getElementById('reminderForm').action = btn.getAttribute('data-action');
+            document.getElementById('modalCustomerName').textContent = btn.getAttribute('data-name');
+            document.getElementById('modalCustomerPhone').textContent = btn.getAttribute('data-phone');
+            document.getElementById('modalOutstanding').textContent = '{{ business_currency_symbol }}' + parseFloat(btn.getAttribute('data-remaining')).toLocaleString();
+            document.getElementById('modalMessage').value = `Dear ${btn.getAttribute('data-name')}, your outstanding payment of {{ business_currency_symbol }}${parseFloat(btn.getAttribute('data-remaining')).toLocaleString()} is due. Please process your payment at your earliest convenience. Thank you!`;
+        });
+    }
+
+    const promiseModal = document.getElementById('promiseModal');
+    if (promiseModal) {
+        promiseModal.addEventListener('show.bs.modal', function(e) {
+            const btn = e.relatedTarget;
+            document.getElementById('promiseForm').action = btn.getAttribute('data-action');
+            document.getElementById('promiseCustomerName').textContent = btn.getAttribute('data-name');
+            document.getElementById('promiseOutstanding').textContent = '{{ business_currency_symbol }}' + parseFloat(btn.getAttribute('data-remaining')).toLocaleString();
+            document.getElementById('promiseAmountInput').value = btn.getAttribute('data-remaining');
+        });
+    }
+});
+</script>
+{% endblock %}

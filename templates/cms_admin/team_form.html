@@ -1,0 +1,71 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}{% if member %}Edit Team Member — {{ member.name }}{% else %}Add Team Member{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{% if member %}Edit Team Member: {{ member.name }}{% else %}Add Team Member{% endif %}</h1>
+        <p class="page-subtitle">Configure public staff details and social profiles.</p>
+    </div>
+    <a href="{% url 'website_cms:team_list' %}" class="btn-cms btn-outline">&larr; Back to Team</a>
+</div>
+
+<div class="cms-form-card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                {{ form.name }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Role / Designation</label>
+                {{ form.role }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Biography</label>
+            {{ form.bio }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Photo URL</label>
+                {{ form.photo_url }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Public Email</label>
+                {{ form.public_email }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Sort Order</label>
+                {{ form.sort_order }}
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">LinkedIn Profile URL</label>
+                {{ form.linkedin_url }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Twitter / X URL</label>
+                {{ form.twitter_url }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">GitHub URL</label>
+                {{ form.github_url }}
+            </div>
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+            {{ form.is_active }}
+            <label class="form-label" style="margin: 0;">Show on Public Team / About Page</label>
+        </div>
+
+        <button type="submit" class="btn-cms btn-primary" style="margin-top: 1rem;">Save Team Member</button>
+    </form>
+</div>
+{% endblock %}

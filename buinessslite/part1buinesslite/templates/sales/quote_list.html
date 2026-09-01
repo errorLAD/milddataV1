@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Quotes - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Quotes & Proposals</h1>
+        <div class="page-subtitle">Create price estimates and convert to sales orders</div>
+    </div>
+    <div>
+        <a href="{% url 'quote_create' %}" class="btn-saas btn-primary">+ Create Quote</a>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Quotes List</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Quote Number</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                    <th>Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for q in quotes %}
+                <tr>
+                    <td style="font-weight: 650;">{{ q.quote_number }}</td>
+                    <td>{{ q.customer.company_name }}</td>
+                    <td>{{ q.date }}</td>
+                    <td>{{ q.expiry_date|default:"-" }}</td>
+                    <td><span class="badge-pill badge-info">{{ q.status }}</span></td>
+                    <td class="num" style="font-weight: 700;">{{ currency_symbol }}{{ q.total_amount|floatformat:2 }}</td>
+                    <td>
+                        {% if q.status != 'CONVERTED' %}
+                        <a href="{% url 'convert_quote_to_order' q.id %}" class="btn-saas btn-secondary" style="padding: 0.2rem 0.4rem; font-size: 0.65rem;">Convert to Order</a>
+                        {% else %}
+                        <span style="font-size: 0.65rem; color: var(--text-tertiary);">Converted</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-tertiary);">No quotes created.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Admin Dashboard — Milda Data CMS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Executive Dashboard</h1>
+        <p class="page-subtitle">Real-time platform metrics, website content control, and lead management overview.</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="{% url 'website_cms:blog_create' %}" class="btn-cms btn-primary">+ Add Article</a>
+        <a href="{% url 'website_cms:service_create' %}" class="btn-cms btn-outline">+ Add Service</a>
+        <a href="{% url 'website_cms:project_create' %}" class="btn-cms btn-outline">+ Add Project</a>
+    </div>
+</div>
+
+<!-- Metrics Cards Grid -->
+<div class="metrics-grid">
+    <div class="metric-card">
+        <span class="metric-label">Total Products</span>
+        <div class="metric-value">{{ total_products }}</div>
+        <span class="metric-sub">🚀 {{ active_products }} Active | {{ saas_products_count }} SaaS Market</span>
+    </div>
+    <div class="metric-card">
+        <span class="metric-label">Company Services</span>
+        <div class="metric-value">{{ services_count }}</div>
+        <span class="metric-sub">🛠️ Configured Services</span>
+    </div>
+    <div class="metric-card">
+        <span class="metric-label">Portfolio Projects</span>
+        <div class="metric-value">{{ projects_count }}</div>
+        <span class="metric-sub">💼 Published Work</span>
+    </div>
+    <div class="metric-card">
+        <span class="metric-label">Blog Articles</span>
+        <div class="metric-value">{{ total_blog_posts }}</div>
+        <span class="metric-sub">📝 {{ blog_published }} Published | {{ blog_drafts }} Drafts</span>
+    </div>
+    <div class="metric-card">
+        <span class="metric-label">Contact Leads</span>
+        <div class="metric-value">{{ total_contact_leads }}</div>
+        <span class="metric-sub" style="color: #38bdf8;">📥 {{ new_contact_leads }} New Requests</span>
+    </div>
+    <div class="metric-card">
+        <span class="metric-label">Demo Requests</span>
+        <div class="metric-value">{{ demo_requests_count }}</div>
+        <span class="metric-sub" style="color: #fbbf24;">⚡ Live Application Demos</span>
+    </div>
+    <div class="metric-card">
+        <span class="metric-label">Trial Requests</span>
+        <div class="metric-value">{{ trial_requests_count }}</div>
+        <span class="metric-sub">🎁 Free Trial Signups</span>
+    </div>
+    <div class="metric-card">
+        <span class="metric-label">Newsletter Subs</span>
+        <div class="metric-value">{{ newsletter_subscribers_count }}</div>
+        <span class="metric-sub">📧 Active Subscribers</span>
+    </div>
+</div>
+
+<!-- Quick Shortcuts -->
+<div class="cms-form-card" style="margin-bottom: 1.75rem;">
+    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem;">⚡ Quick Action Shortcuts</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.85rem;">
+        <a href="{% url 'website_cms:homepage_admin' %}" class="btn-cms btn-outline" style="justify-content: center;">🏠 Manage Homepage</a>
+        <a href="{% url 'website_cms:products_list' %}" class="btn-cms btn-outline" style="justify-content: center;">🚀 SaaS Catalog</a>
+        <a href="{% url 'website_cms:team_create' %}" class="btn-cms btn-outline" style="justify-content: center;">👥 Add Team Member</a>
+        <a href="{% url 'website_cms:faq_create' %}" class="btn-cms btn-outline" style="justify-content: center;">❓ Add FAQ Entry</a>
+        <a href="{% url 'website_cms:media_library' %}" class="btn-cms btn-outline" style="justify-content: center;">🖼️ Media Library</a>
+        <a href="{% url 'website_cms:seo_settings_admin' %}" class="btn-cms btn-outline" style="justify-content: center;">🔍 SEO Settings</a>
+        <a href="{% url 'website_cms:site_settings_admin' %}" class="btn-cms btn-outline" style="justify-content: center;">⚙️ Site Settings</a>
+        <a href="{% url 'website_cms:newsletter_export' %}" class="btn-cms btn-outline" style="justify-content: center;">📥 Export Subscribers</a>
+    </div>
+</div>
+
+<!-- Recent Submissions & Audit Feed -->
+<div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem;">
+    <div class="cms-table-card">
+        <div style="padding: 1.25rem; border-bottom: 1px solid var(--cms-border); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.05rem;">📥 Recent Leads &amp; Inquiries</h3>
+            <a href="{% url 'website_cms:leads_list' %}" style="font-size: 0.8rem; color: var(--cms-primary); text-decoration: none;">View All &rarr;</a>
+        </div>
+        <div class="table-responsive">
+            <table class="cms-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lead in recent_leads %}
+                    <tr>
+                        <td>
+                            <span class="badge {% if lead.lead_type == 'demo' %}badge-warning{% elif lead.lead_type == 'trial' %}badge-info{% else %}badge-success{% endif %}">
+                                {{ lead.get_lead_type_display }}
+                            </span>
+                        </td>
+                        <td><strong>{{ lead.name }}</strong><br><small style="color: var(--cms-muted);">{{ lead.company|default:'' }}</small></td>
+                        <td>{{ lead.email }}</td>
+                        <td><span class="badge badge-info">{{ lead.get_status_display }}</span></td>
+                        <td>{{ lead.created_at|date:"M d, H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--cms-muted);">No recent inquiries received yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="cms-table-card">
+        <div style="padding: 1.25rem; border-bottom: 1px solid var(--cms-border); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.05rem;">📜 Recent Admin Activity</h3>
+            <a href="{% url 'website_cms:audit_logs' %}" style="font-size: 0.8rem; color: var(--cms-primary); text-decoration: none;">View Logs &rarr;</a>
+        </div>
+        <div style="padding: 1rem;">
+            {% for log in recent_audit_logs %}
+            <div style="padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.84rem;">
+                <div style="font-weight: 600; color: #ffffff;">{{ log.action }}</div>
+                <div style="display: flex; justify-content: space-between; color: var(--cms-muted); font-size: 0.76rem; margin-top: 0.2rem;">
+                    <span>👤 {{ log.user_email|default:'System' }}</span>
+                    <span>{{ log.timestamp|date:"M d, H:i" }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: var(--cms-muted); font-size: 0.85rem; text-align: center;">No administrative audit entries logged yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

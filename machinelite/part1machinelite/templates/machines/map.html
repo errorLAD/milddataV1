@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Equipment Job Site Locations & Fleet Map — Machine OS{% endblock %}
+
+{% block content %}
+<!-- Leaflet CSS & JS CDN -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Equipment Job Site Locations & Fleet Map</h1>
+    <p class="kp-page-subtitle">Overview of assigned equipment job sites, active project locations, operator deployment, and site status.</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <a href="{% url 'machine_list' %}" class="kp-btn kp-btn-secondary">
+      <i class="fa-solid fa-list"></i> List View
+    </a>
+    <a href="{% url 'machine_health_matrix' %}" class="kp-btn kp-btn-secondary">
+      <i class="fa-solid fa-heart-pulse"></i> Health Matrix
+    </a>
+  </div>
+</div>
+
+<!-- Main Fleet Map Grid Splitter -->
+<div class="kp-row-split" style="grid-template-columns: 1fr 340px;">
+  
+  <!-- Left: Interactive OpenStreetMap Container -->
+  <div class="kp-panel" style="margin-bottom: 0;">
+    <div class="kp-panel-header" style="justify-content: space-between;">
+      <div class="kp-panel-title"><i class="fa-solid fa-earth-americas" style="color: var(--brand);"></i> Active Job Site Locations Map</div>
+      <div style="display: flex; gap: 0.4rem; font-size: 0.62rem;">
+        <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Working</span>
+        <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> Idle</span>
+        <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Breakdown</span>
+        <span class="kp-badge kp-badge-brand"><span class="kp-dot"></span> On Rent</span>
+      </div>
+    </div>
+    <div id="fleet-map" style="height: 540px; width: 100%; border-radius: 0 0 var(--radius-md) var(--radius-md); z-index: 1;"></div>
+  </div>
+
+  <!-- Right: Location Sidebar -->
+  <div class="kp-panel" style="margin-bottom: 0; display: flex; flex-direction: column; height: 588px;">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Assigned Equipment Sites ({{ map_locations|length }})</div>
+    </div>
+    
+    <div class="kp-panel-body" style="flex: 1; overflow-y: auto; padding: 0.65rem;">
+      {% for loc in map_locations %}
+        <div class="kp-location-card" onclick="flyToMachine({{ loc.lat }}, {{ loc.lng }}, '{{ loc.name }}')" style="background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.6rem; margin-bottom: 0.5rem; cursor: pointer; transition: border-color 0.15s ease;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div style="font-weight: 650; font-size: 0.76rem; color: var(--brand);">{{ loc.name }}</div>
+            {% if loc.status == 'working' %}
+              <span class="kp-badge kp-badge-success" style="font-size: 0.55rem;"><span class="kp-dot"></span> Working</span>
+            {% elif loc.status == 'idle' %}
+              <span class="kp-badge kp-badge-warning" style="font-size: 0.55rem;"><span class="kp-dot"></span> Idle</span>
+            {% elif loc.status == 'breakdown' %}
+              <span class="kp-badge kp-badge-danger" style="font-size: 0.55rem;"><span class="kp-dot"></span> Down</span>
+            {% else %}
+              <span class="kp-badge kp-badge-brand" style="font-size: 0.55rem;"><span class="kp-dot"></span> {{ loc.status_label }}</span>
+            {% endif %}
+          </div>
+          
+          <div style="font-size: 0.66rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            📍 {{ loc.location_name }}
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; font-size: 0.62rem; color: var(--text-tertiary); margin-top: 0.35rem; border-top: 1px dashed var(--border); padding-top: 0.25rem;">
+            <span>Operator: <strong>{{ loc.operator_name }}</strong></span>
+            <span>Speed: <strong>{{ loc.speed }} km/h</strong></span>
+          </div>
+        </div>
+      {% empty %}
+        <div style="text-align: center; color: var(--text-tertiary); padding: 2rem; font-size: 0.72rem;">
+          No site locations assigned.
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+</div>
+
+<!-- Interactive Map Initializer JS Script -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const map = L.map('fleet-map').setView([12.9716, 77.5946], 11);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const locations = {{ map_locations|safe|default:"[]" }};
+    const markers = {};
+
+    locations.forEach(loc => {
+      let markerColor = '#2451FF';
+      if (loc.status === 'working') markerColor = '#067647';
+      if (loc.status === 'idle') markerColor = '#B54708';
+      if (loc.status === 'breakdown') markerColor = '#B42318';
+
+      const marker = L.circleMarker([loc.lat, loc.lng], {
+        color: markerColor,
+        fillColor: markerColor,
+        fillOpacity: 0.85,
+        radius: 9
+      }).addTo(map);
+
+      const popupHtml = `
+        <div style="font-family: Inter, sans-serif; font-size: 0.72rem; padding: 0.2rem;">
+          <div style="font-weight: 700; font-size: 0.8rem; color: #101828;">${loc.name}</div>
+          <div style="color: #475467; margin-bottom: 0.3rem;">Reg: ${loc.reg_number} • ${loc.category}</div>
+          <div style="font-size: 0.68rem; margin-bottom: 0.2rem;">📍 <strong>${loc.location_name}</strong></div>
+          <div style="font-size: 0.66rem; color: #475467;">
+            Operator: <strong>${loc.operator_name}</strong><br>
+            Meter: <strong>${loc.meter}</strong><br>
+            Status: <strong>${loc.status_label}</strong>
+          </div>
+          <div style="margin-top: 0.4rem;">
+            <a href="/machines/${loc.id}/" style="display: inline-block; background: #2451FF; color: #FFFFFF; padding: 0.2rem 0.5rem; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 0.64rem;">View Machine Profile</a>
+          </div>
+        </div>
+      `;
+      marker.bindPopup(popupHtml);
+      markers[loc.name] = marker;
+    });
+
+    window.flyToMachine = (lat, lng, name) => {
+      map.flyTo([lat, lng], 14, { duration: 1.2 });
+      if (markers[name]) {
+        markers[name].openPopup();
+      }
+    };
+  });
+</script>
+{% endblock %}

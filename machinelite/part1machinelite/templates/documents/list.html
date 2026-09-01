@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Document Expiry & Compliance — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Compliance Documents & Expiry Tracking</h1>
+    <p class="kp-page-subtitle">Automated monitoring for RCs, Commercial Insurance, Road Permits, PUCs, and Operator Licenses.</p>
+  </div>
+  <div>
+    <button class="kp-btn kp-btn-primary" data-modal-target="modal-add-doc">
+      <i class="fa-solid fa-plus"></i> Upload / Add Document
+    </button>
+  </div>
+</div>
+
+<!-- Metrics Bar -->
+<div class="kp-metrics-grid">
+  <div class="kp-metric-card kp-metric-card-hero">
+    <div>
+      <div class="kp-metric-label">Total Managed Compliance Documents</div>
+      <div class="kp-metric-val num-tabular">{{ total_count }} Documents</div>
+    </div>
+    <div class="kp-metric-sub">Active fleet compliance database</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Expired Documents</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--danger);">{{ expired_count }} Expired</div>
+    </div>
+    <div class="kp-metric-sub">Requires immediate renewal</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Expiring Within 30 Days</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--warning);">{{ warning_count }} Upcoming</div>
+    </div>
+    <div class="kp-metric-sub">Renewal notice period</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Valid Compliance</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--success);">{{ valid_count }} Active</div>
+    </div>
+    <div class="kp-metric-sub">Up to date</div>
+  </div>
+</div>
+
+<!-- Filters Bar -->
+<div class="kp-panel" style="margin-bottom: 0.875rem;">
+  <div class="kp-panel-body" style="padding: 0.65rem 0.9rem;">
+    <form method="GET" style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+      <div style="width: 180px;">
+        <select name="status" class="kp-select" onchange="this.form.submit()">
+          <option value="">All Statuses</option>
+          <option value="expired" {% if doc_filter == 'expired' %}selected{% endif %}>Expired Only</option>
+          <option value="warning" {% if doc_filter == 'warning' %}selected{% endif %}>Expiring Soon (30 Days)</option>
+          <option value="valid" {% if doc_filter == 'valid' %}selected{% endif %}>Valid</option>
+        </select>
+      </div>
+      <div style="width: 220px;">
+        <select name="type" class="kp-select" onchange="this.form.submit()">
+          <option value="">All Document Types</option>
+          <option value="rc" {% if doc_type == 'rc' %}selected{% endif %}>RC Certificate</option>
+          <option value="insurance" {% if doc_type == 'insurance' %}selected{% endif %}>Insurance Policy</option>
+          <option value="fitness" {% if doc_type == 'fitness' %}selected{% endif %}>Fitness Certificate</option>
+          <option value="permit" {% if doc_type == 'permit' %}selected{% endif %}>Permit</option>
+          <option value="puc" {% if doc_type == 'puc' %}selected{% endif %}>PUC</option>
+          <option value="license" {% if doc_type == 'license' %}selected{% endif %}>Operator License</option>
+        </select>
+      </div>
+      <button type="submit" class="kp-btn kp-btn-secondary">Filter</button>
+      {% if doc_filter or doc_type %}
+        <a href="{% url 'document_list' %}" class="kp-btn kp-btn-secondary">Reset</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+
+<!-- Documents Table -->
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title">Document Directory</div>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Document Title</th>
+          <th>Type</th>
+          <th>Doc / Policy Number</th>
+          <th>Target Machine / Operator</th>
+          <th>Expiry Date</th>
+          <th>Days Left</th>
+          <th>Compliance Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in documents %}
+          <tr>
+            <td style="font-weight: 650;">{{ d.title }}</td>
+            <td><span class="kp-badge kp-badge-brand">{{ d.get_doc_type_display }}</span></td>
+            <td class="num-tabular" style="font-weight: 600;">{{ d.doc_number }}</td>
+            <td>
+              {% if d.machine %}
+                <a href="{% url 'machine_detail' d.machine.pk %}" style="color: var(--brand); text-decoration: none;">
+                  {{ d.machine.name }}
+                </a>
+              {% elif d.operator %}
+                <span>Operator: {{ d.operator.name }}</span>
+              {% else %}
+                <span style="color: var(--text-tertiary);">General Enterprise</span>
+              {% endif %}
+            </td>
+            <td class="num-tabular" style="font-weight: 700;">{{ d.expiry_date }}</td>
+            <td class="num-tabular">
+              {% if d.days_remaining < 0 %}
+                <span style="color: var(--danger); font-weight: 700;">Expired {{ d.days_remaining|stringformat:"d"|slice:"1:" }} days ago</span>
+              {% else %}
+                <span>{{ d.days_remaining }} days</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if d.status_level == 'expired' %}
+                <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> EXPIRED</span>
+              {% elif d.status_level == 'warning' %}
+                <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> EXPIRING SOON</span>
+              {% else %}
+                <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> VALID</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="7" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No compliance documents match filter.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Add Document -->
+<div class="kp-modal-backdrop" id="modal-add-doc">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Add Compliance Document</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_document' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Document Title</label>
+          <input type="text" name="title" class="kp-input" placeholder="e.g. Commercial Vehicle Insurance 2026-27" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Document Type</label>
+            <select name="doc_type" class="kp-select">
+              <option value="rc">Registration (RC)</option>
+              <option value="insurance">Commercial Insurance</option>
+              <option value="fitness">Fitness Certificate</option>
+              <option value="permit">Road Goods Permit</option>
+              <option value="puc">Pollution (PUC)</option>
+              <option value="license">Operator License</option>
+            </select>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Document / Policy Number</label>
+            <input type="text" name="doc_number" class="kp-input" placeholder="e.g. POL-992104-B" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Target Equipment</label>
+            <select name="machine" class="kp-select">
+              <option value="">None / General</option>
+              {% for m in machines %}
+                <option value="{{ m.pk }}">{{ m.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Expiry Date</label>
+            <input type="date" name="expiry_date" class="kp-input" required>
+          </div>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Register Document</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

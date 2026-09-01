@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}{{ supplier.company_name }} — Supplier Detail{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ supplier.company_name }}</h1>
+    <p class="page-subtitle">Contact: {{ supplier.contact_person|default:'N/A' }} • Email: {{ supplier.email }} • Country: {{ supplier.country }} • Tax ID: {{ supplier.tax_id|default:'N/A' }}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'po_create' %}?supplier_id={{ supplier.id }}" class="btn btn-primary">+ Create Purchase Order</a>
+  </div>
+</div>
+
+<div class="metrics-grid">
+  <div class="metric-card hero-card">
+    <div class="metric-label">Total Purchases</div>
+    <div class="metric-value money">{{ supplier.total_purchases|money:org }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Outstanding Payables</div>
+    <div class="metric-value money" style="color: var(--danger);">{{ supplier.outstanding_payables|money:org }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Payment Terms</div>
+    <div class="metric-value">{{ supplier.payment_terms }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    <span class="panel-title">Purchase Orders History</span>
+  </div>
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>PO Number</th>
+          <th>Order Date</th>
+          <th>Expected Delivery</th>
+          <th>Warehouse</th>
+          <th>Status</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for po in purchase_orders %}
+        <tr>
+          <td><a href="{% url 'po_detail' po.id %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">{{ po.po_number }}</a></td>
+          <td>{{ po.order_date|date_fmt:org }}</td>
+          <td>{{ po.expected_delivery|date_fmt:org|default:'—' }}</td>
+          <td>{{ po.warehouse.code }}</td>
+          <td><span class="badge badge-info">{{ po.get_status_display }}</span></td>
+          <td class="money" style="font-weight: 650;">{{ po.total_amount|money:org }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No POs issued to this supplier yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+{% load localization_tags %}
+
+{% block title %}Record New Sale Invoice | NextSlot{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2.5">
+
+    <!-- Page Header Row -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+        <div>
+            <div class="kp-eyebrow mb-1">
+                <i class="bi bi-cart-plus"></i> Sales &amp; Invoicing Workspace
+            </div>
+            <h1 class="kp-page-title mb-0">Create Sale Invoice</h1>
+            <p class="kp-page-sub mb-0">Select line items, scan barcodes, record payments, and track credit limit warnings.</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <a href="{% url 'sales:list' %}" class="btn-kp-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Sales Register
+            </a>
+        </div>
+    </div>
+
+    <!-- Credit Limit Warning Banner -->
+    {% if overlimit_warning %}
+    <div class="kp-panel mb-3 border-warning" style="background: #FFFAEB;">
+        <div class="p-3">
+            <div class="d-flex align-items-center gap-2 mb-1.5 text-warning">
+                <i class="bi bi-exclamation-triangle-fill fs-6"></i>
+                <strong class="fs-7 text-uppercase tracking-wide">Credit Limit Exceeded Warning</strong>
+            </div>
+            <p class="mb-2 fs-8 text-secondary">
+                This transaction will increase the customer's outstanding balance to 
+                <strong class="text-danger">{{ projected_outstanding|money:business_currency_symbol }}</strong>, which exceeds their credit limit of 
+                <strong class="text-dark">{{ customer_credit_limit|money:business_currency_symbol }}</strong>.
+            </p>
+            <div class="form-check bg-white p-2 rounded border border-warning-subtle">
+                <input type="checkbox" name="confirm_credit_overlimit" value="yes" id="confirmCreditCheckbox" class="form-check-input" form="saleForm" required>
+                <label class="form-check-label fw-bold text-dark fs-8" for="confirmCreditCheckbox">
+                    I acknowledge the credit limit warning and want to proceed with this sale anyway.
+                </label>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="post" id="saleForm">
+        {% csrf_token %}
+
+        <!-- Customer & Barcode Panel -->
+        <div class="kp-panel mb-3">
+            <div class="kp-panel-header">
+                <div>
+                    <h2 class="kp-panel-title">Customer Selection &amp; Barcode Scanner</h2>
+                    <p class="kp-panel-desc">Choose an existing account customer or scan item barcode.</p>
+                </div>
+            </div>
+            <div class="p-3">
+                <div class="row g-3 align-items-end">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label fs-8 fw-semibold text-secondary mb-1">Select Customer *</label>
+                        {{ form.customer }}
+                        {% if form.customer.errors %}<div class="text-danger fs-9 mt-1">{{ form.customer.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12 col-md-6 d-flex align-items-center gap-2">
+                        <a href="{% url 'customers:create' %}" class="btn-kp-secondary" target="_blank">
+                            <i class="bi bi-person-plus"></i> Add Customer
+                        </a>
+                        <button type="button" class="btn-kp-secondary" id="openScannerBtn" data-bs-toggle="modal" data-bs-target="#scannerModal">
+                            <i class="bi bi-qr-code-scan text-success"></i> Scan Barcode Camera
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Line Items Panel -->
+        <div class="kp-panel mb-3">
+            <div class="kp-panel-header">
+                <div>
+                    <h2 class="kp-panel-title">Sale Line Items</h2>
+                    <p class="kp-panel-desc">Add items, set quantities, unit price, and review line item subtotals.</p>
+                </div>
+                <button type="button" class="btn-kp-primary" id="addRowBtn">
+                    <i class="bi bi-plus-lg"></i> Add Line Item
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="kp-table" id="itemsTable">
+                    <thead>
+                        <tr>
+                            <th class="ps-3" style="width: 45%;">Item / Product</th>
+                            <th style="width: 18%;" class="text-end">Unit Price ({{ business_currency_symbol }})</th>
+                            <th style="width: 12%;" class="text-center">Quantity</th>
+                            <th style="width: 20%;" class="text-end">Subtotal ({{ business_currency_symbol }})</th>
+                            <th class="pe-3 text-center" style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTbody">
+                        <tr class="item-row">
+                            <td class="ps-3">
+                                <select name="product_id[]" class="form-select form-select-sm product-select fs-8 border-secondary-subtle" required>
+                                    <option value="">Select Item / Product...</option>
+                                    {% for prod in products %}
+                                    <option value="{{ prod.id }}" data-price="{{ prod.selling_price }}" data-stock="{{ prod.stock_quantity }}" data-barcode="{{ prod.barcode }}">
+                                        {{ prod.name }} ({{ prod.selling_price|money:business_currency_symbol }} - Stock: {{ prod.stock_quantity }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" name="unit_price[]" class="form-control form-control-sm unit-price font-monospace text-end fs-8 border-secondary-subtle" placeholder="0.00" required>
+                            </td>
+                            <td>
+                                <input type="number" min="1" value="1" name="quantity[]" class="form-control form-control-sm quantity text-center font-monospace fs-8 border-secondary-subtle" required>
+                            </td>
+                            <td>
+                                <input type="number" step="0.01" class="form-control form-control-sm subtotal font-monospace text-end fs-8 bg-light border-secondary-subtle" readonly value="0.00">
+                            </td>
+                            <td class="pe-3 text-center">
+                                <button type="button" class="kp-icon-action text-danger remove-row"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payment & Balance Panel -->
+        <div class="row g-3 mb-3">
+            <div class="col-12 col-md-6">
+                <div class="kp-panel h-100 p-3">
+                    <div class="mb-3">
+                        <label class="form-label fs-8 fw-semibold text-secondary mb-1">Payment Method</label>
+                        {{ form.payment_method }}
+                    </div>
+                    <div class="mb-3" id="dueDateContainer" style="display: none;">
+                        <label class="form-label fs-8 fw-bold text-danger mb-1"><i class="bi bi-calendar-event me-1"></i> Payment Promise / Due Date *</label>
+                        {{ form.due_date }}
+                        <div class="fs-9 text-muted mt-1">Automated collections cadence reminders will schedule for this date.</div>
+                    </div>
+                    <div>
+                        <label class="form-label fs-8 fw-semibold text-secondary mb-1">Invoice Notes</label>
+                        {{ form.notes }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <div class="kp-panel h-100 p-3">
+                    <div class="d-flex justify-content-between mb-2 fs-8 text-secondary">
+                        <span>Subtotal Amount:</span>
+                        <span class="fw-bold text-dark font-monospace" id="calculatedSubtotal">{{ business_currency_symbol }} 0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2 fs-8 text-secondary">
+                        <span>Discount ({{ business_currency_symbol }}):</span>
+                        <div style="width: 140px;">
+                            {{ form.discount }}
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 fs-7 pt-2 border-top">
+                        <span class="fw-bold text-dark">Net Payable Total:</span>
+                        <div style="width: 140px;">
+                            {{ form.total_amount }}
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3 fs-7">
+                        <span class="fw-semibold text-success">Amount Paid Now ({{ business_currency_symbol }}):</span>
+                        <div style="width: 140px;">
+                            {{ form.paid_amount }}
+                        </div>
+                    </div>
+
+                    <div class="p-2.5 rounded border border-danger-subtle bg-danger-subtle text-danger d-flex justify-content-between align-items-center fw-bold fs-7" id="udhaarBanner">
+                        <span>Pending Receivable Created:</span>
+                        <span class="font-monospace" id="calculatedUdhaar">{{ business_currency_symbol }} 0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Submission Footer -->
+        <div class="d-flex align-items-center gap-2">
+            <button type="submit" class="btn-kp-primary py-2 px-4 fs-7 flex-grow-1 justify-content-center">
+                <i class="bi bi-check-circle"></i> Finalize &amp; Record Sale Invoice
+            </button>
+            <a href="{% url 'sales:list' %}" class="btn-kp-secondary py-2 px-3 fs-7">Cancel</a>
+        </div>
+    </form>
+
+</div>
+
+<!-- Modal Barcode Camera Scanner -->
+<div class="modal fade" id="scannerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fs-8 fw-bold text-dark"><i class="bi bi-camera me-1 text-success"></i> Barcode / QR Code Scanner</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" id="stopScannerBtn"></button>
+            </div>
+            <div class="modal-body text-center p-3">
+                <div id="reader" style="width: 100%;"></div>
+                <div id="scanResult" class="mt-2 fw-bold text-primary fs-8">Point camera at item barcode...</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- HTML5 QR / Barcode Scanner CDN -->
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const currencySymbol = "{{ business_currency_symbol|escapejs }}";
+    const tbody = document.getElementById("itemsTbody");
+    const addRowBtn = document.getElementById("addRowBtn");
+
+    const totalAmountInput = document.getElementById("id_total_amount");
+    const discountInput = document.getElementById("id_discount");
+    const paidAmountInput = document.getElementById("id_paid_amount");
+    const calculatedSubtotal = document.getElementById("calculatedSubtotal");
+    const calculatedUdhaar = document.getElementById("calculatedUdhaar");
+    const udhaarBanner = document.getElementById("udhaarBanner");
+    const dueDateContainer = document.getElementById("dueDateContainer");
+
+    function calculateTotals() {
+        let subtotalSum = 0;
+        document.querySelectorAll(".item-row").forEach(row => {
+            const qty = parseFloat(row.querySelector(".quantity").value) || 0;
+            const price = parseFloat(row.querySelector(".unit-price").value) || 0;
+            const rowSub = qty * price;
+            row.querySelector(".subtotal").value = rowSub.toFixed(2);
+            subtotalSum += rowSub;
+        });
+
+        calculatedSubtotal.textContent = `${currencySymbol} ${subtotalSum.toFixed(2)}`;
+
+        const discount = parseFloat(discountInput.value) || 0;
+        const netTotal = Math.max(0, subtotalSum - discount);
+        totalAmountInput.value = netTotal.toFixed(2);
+
+        const paid = parseFloat(paidAmountInput.value) || 0;
+        const udhaar = Math.max(0, netTotal - paid);
+        calculatedUdhaar.textContent = `${currencySymbol} ${udhaar.toFixed(2)}`;
+
+        if (udhaar > 0) {
+            udhaarBanner.style.display = "flex";
+            dueDateContainer.style.display = "block";
+        } else {
+            udhaarBanner.style.display = "flex";
+            dueDateContainer.style.display = "none";
+        }
+    }
+
+    function attachRowEvents(row) {
+        const prodSelect = row.querySelector(".product-select");
+        const priceInput = row.querySelector(".unit-price");
+        const qtyInput = row.querySelector(".quantity");
+        const removeBtn = row.querySelector(".remove-row");
+
+        prodSelect.addEventListener("change", function() {
+            const selectedOpt = prodSelect.options[prodSelect.selectedIndex];
+            const price = selectedOpt.getAttribute("data-price");
+            if (price) {
+                priceInput.value = price;
+                calculateTotals();
+            }
+        });
+
+        priceInput.addEventListener("input", calculateTotals);
+        qtyInput.addEventListener("input", calculateTotals);
+
+        removeBtn.addEventListener("click", function() {
+            if (document.querySelectorAll(".item-row").length > 1) {
+                row.remove();
+                calculateTotals();
+            }
+        });
+    }
+
+    document.querySelectorAll(".item-row").forEach(attachRowEvents);
+
+    addRowBtn.addEventListener("click", function() {
+        const firstRow = document.querySelector(".item-row");
+        const newRow = firstRow.cloneNode(true);
+        newRow.querySelector(".product-select").value = "";
+        newRow.querySelector(".unit-price").value = "";
+        newRow.querySelector(".quantity").value = "1";
+        newRow.querySelector(".subtotal").value = "0.00";
+        tbody.appendChild(newRow);
+        attachRowEvents(newRow);
+    });
+
+    discountInput.addEventListener("input", calculateTotals);
+    paidAmountInput.addEventListener("input", calculateTotals);
+    totalAmountInput.addEventListener("input", calculateTotals);
+
+    calculateTotals();
+
+    // Barcode Camera Scanner Initialization
+    let html5QrcodeScanner = null;
+
+    document.getElementById("openScannerBtn").addEventListener("click", function() {
+        if (!html5QrcodeScanner) {
+            html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+            html5QrcodeScanner.render((decodedText, decodedResult) => {
+                document.getElementById("scanResult").textContent = `Scanned Barcode: ${decodedText}`;
+                
+                let matched = false;
+                document.querySelectorAll(".product-select option").forEach(opt => {
+                    if (opt.getAttribute("data-barcode") === decodedText || opt.text.includes(decodedText)) {
+                        const targetRow = document.querySelector(".item-row:last-child");
+                        targetRow.querySelector(".product-select").value = opt.value;
+                        targetRow.querySelector(".unit-price").value = opt.getAttribute("data-price");
+                        calculateTotals();
+                        matched = true;
+                    }
+                });
+
+                if (!matched) {
+                    alert(`No product found in catalog matching barcode '${decodedText}'. Please select manually.`);
+                }
+
+                html5QrcodeScanner.clear();
+                const modal = bootstrap.Modal.getInstance(document.getElementById('scannerModal'));
+                modal.hide();
+            });
+        }
+    });
+
+    document.getElementById("stopScannerBtn").addEventListener("click", function() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+            html5QrcodeScanner = null;
+        }
+    });
+});
+</script>
+{% endblock %}

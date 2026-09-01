@@ -1,0 +1,60 @@
+{% extends 'pwa/base_pwa.html' %}
+
+{% block title %}Vehicle Digital Inspection{% endblock %}
+
+{% block content %}
+<div class="card kp-panel mb-3">
+  <div class="card-header kp-panel-header">
+    <span class="fw-bold text-dark" style="font-size: 0.85rem;">PRE-TRIP SAFETY INSPECTION CHECKLIST</span>
+  </div>
+  <div class="card-body p-3">
+    {% if assigned_vehicle %}
+    <p class="text-secondary mb-3" style="font-size: 0.72rem;">Vehicle: <strong>{{ assigned_vehicle.vehicle_code }}</strong> ({{ assigned_vehicle.registration_number }})</p>
+
+    <form method="POST" action="{% url 'pwa_inspection' %}">
+      {% csrf_token %}
+      
+      <div class="list-group list-group-flush mb-3" style="font-size: 0.8rem;">
+        <label class="list-group-item d-flex align-items-center justify-content-between py-2">
+          <span><i class="fa-solid fa-circle-dot text-muted me-2"></i> Tyres & Pressure</span>
+          <input type="checkbox" name="tyres" class="form-check-input" checked style="width: 20px; height: 20px;">
+        </label>
+        <label class="list-group-item d-flex align-items-center justify-content-between py-2">
+          <span><i class="fa-solid fa-stop text-muted me-2"></i> Brakes & Handbrake</span>
+          <input type="checkbox" name="brakes" class="form-check-input" checked style="width: 20px; height: 20px;">
+        </label>
+        <label class="list-group-item d-flex align-items-center justify-content-between py-2">
+          <span><i class="fa-solid fa-lightbulb text-muted me-2"></i> Lights & Indicators</span>
+          <input type="checkbox" name="lights" class="form-check-input" checked style="width: 20px; height: 20px;">
+        </label>
+        <label class="list-group-item d-flex align-items-center justify-content-between py-2">
+          <span><i class="fa-solid fa-oil-can text-muted me-2"></i> Engine Oil & Fluids</span>
+          <input type="checkbox" name="engine" class="form-check-input" checked style="width: 20px; height: 20px;">
+        </label>
+        <label class="list-group-item d-flex align-items-center justify-content-between py-2">
+          <span><i class="fa-solid fa-car-battery text-muted me-2"></i> Battery Charge</span>
+          <input type="checkbox" name="battery" class="form-check-input" checked style="width: 20px; height: 20px;">
+        </label>
+        <label class="list-group-item d-flex align-items-center justify-content-between py-2">
+          <span><i class="fa-solid fa-gas-pump text-muted me-2"></i> Fuel Tank Level</span>
+          <input type="checkbox" name="fuel" class="form-check-input" checked style="width: 20px; height: 20px;">
+        </label>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label text-secondary" style="font-size: 0.7rem;">INSPECTOR NOTES & DAMAGE REPORTS</label>
+        <textarea name="notes" class="form-control form-control-kp" rows="2" placeholder="Describe any leaks, scratches, or wear..."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 py-3 fw-bold" style="font-size: 0.85rem;">
+        <i class="fa-solid fa-check me-1"></i> SUBMIT DIGITAL INSPECTION
+      </button>
+    </form>
+    {% else %}
+    <div class="text-center py-4 text-muted">
+      No vehicle assigned to run pre-trip inspection.
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Ticket #{{ ticket.id }} | Maintenance{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{% url 'ticket_list' %}" class="text-secondary text-decoration-none fs-7"><i class="bi bi-arrow-left"></i> Maintenance</a>
+      <span class="text-muted">/</span>
+      <span class="kp-status-badge kp-status-brand">Ticket #{{ ticket.id }}</span>
+    </div>
+    <h1 class="kp-page-title mt-1">{{ ticket.title }}</h1>
+    <p class="kp-page-subtitle">Submitted by {{ ticket.tenant.get_full_name }} • Unit {{ ticket.unit.unit_number }} ({{ ticket.property.name }})</p>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Left Column: Status, Assignment & Details -->
+  <div class="col-lg-5">
+
+    <!-- Status & Assignment Form -->
+    <div class="kp-panel mb-3">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Update Status & Assignment</h3>
+      </div>
+      <div class="p-3">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_status">
+          
+          <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Ticket Status *</label>
+            <select name="status" class="form-select form-select-sm">
+              {% for code, label in status_choices %}
+              <option value="{{ code }}" {% if ticket.status == code %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Assign Staff Technician</label>
+            <select name="assigned_staff" class="form-select form-select-sm">
+              <option value="">None Assigned</option>
+              {% for u in staff_users %}
+              <option value="{{ u.id }}" {% if ticket.assigned_staff_id == u.id %}selected{% endif %}>{{ u.get_full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Assign Vendor Contractor</label>
+            <select name="assigned_vendor" class="form-select form-select-sm">
+              <option value="">None Assigned</option>
+              {% for v in vendors %}
+              <option value="{{ v.id }}" {% if ticket.assigned_vendor_id == v.id %}selected{% endif %}>{{ v.company }} ({{ v.category }})</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <button type="submit" class="kp-btn kp-btn-primary w-100 py-1.5 fs-7">Update Work Order</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Ticket Description -->
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Ticket Issue Description</h3>
+      </div>
+      <div class="p-3">
+        <p class="fs-7 text-dark mb-2">{{ ticket.description }}</p>
+        <div class="d-flex gap-2">
+          <span class="kp-status-badge kp-status-info">{{ ticket.get_category_display }}</span>
+          <span class="kp-status-badge {% if ticket.priority == 'EMERGENCY' %}kp-status-danger{% else %}kp-status-warning{% endif %}">Priority: {{ ticket.get_priority_display }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right Column: Materials + Labour Cost Breakdown -->
+  <div class="col-lg-7">
+
+    <!-- Materials Used Panel -->
+    <div class="kp-panel mb-3">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Materials & Parts Used</h3>
+        <button class="kp-btn kp-btn-secondary py-0.5 px-2" data-bs-toggle="modal" data-bs-target="#addMaterialModal">+ Add Material</button>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Material Name</th>
+              <th>Quantity</th>
+              <th class="text-end">Unit Cost ($)</th>
+              <th class="text-end">Total Cost ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in ticket.materials.all %}
+            <tr>
+              <td class="fw-semibold">{{ m.material_name }}</td>
+              <td class="tabular-nums">{{ m.quantity }}</td>
+              <td class="text-end tabular-nums">${{ m.unit_cost|intcomma }}</td>
+              <td class="text-end tabular-nums fw-semibold">${{ m.total_cost|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-3 text-muted">No materials recorded.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="kp-panel-header bg-white border-top">
+        <span class="fw-semibold text-secondary fs-7">Materials Subtotal:</span>
+        <span class="tabular-nums fw-bold text-dark fs-7">${{ ticket.materials_cost|intcomma }}</span>
+      </div>
+    </div>
+
+    <!-- Labour Log Panel -->
+    <div class="kp-panel mb-3">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Labour & Technician Time</h3>
+        <button class="kp-btn kp-btn-secondary py-0.5 px-2" data-bs-toggle="modal" data-bs-target="#addLabourModal">+ Add Labour</button>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Worker / Vendor Name</th>
+              <th>Hours Spent</th>
+              <th class="text-end">Hourly Rate ($)</th>
+              <th class="text-end">Total Cost ($)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in ticket.labour_items.all %}
+            <tr>
+              <td class="fw-semibold">{{ l.worker_name }}</td>
+              <td class="tabular-nums">{{ l.hours }} hrs</td>
+              <td class="text-end tabular-nums">${{ l.rate|intcomma }}</td>
+              <td class="text-end tabular-nums fw-semibold">${{ l.total_cost|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4" class="text-center py-3 text-muted">No labour hours recorded.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="kp-panel-header bg-white border-top">
+        <span class="fw-semibold text-secondary fs-7">Labour Subtotal:</span>
+        <span class="tabular-nums fw-bold text-dark fs-7">${{ ticket.labour_cost|intcomma }}</span>
+      </div>
+    </div>
+
+    <!-- Grand Total Ticket Cost Hero Summary -->
+    <div class="kp-card kp-hero-card p-3 d-flex justify-content-between align-items-center">
+      <div>
+        <div class="kp-metric-label text-primary">Calculated Maintenance Total</div>
+        <div class="text-secondary fs-7">Total Cost = Materials (${{ ticket.materials_cost|intcomma }}) + Labour (${{ ticket.labour_cost|intcomma }})</div>
+      </div>
+      <div class="display-6 fw-bold text-primary tabular-nums">${{ ticket.actual_total_cost|intcomma }}</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal: Add Material -->
+<div class="modal fade" id="addMaterialModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content kp-modal">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6 fw-bold">Add Material Line Item</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_material">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Material Name *</label>
+            <input type="text" name="material_name" class="form-control form-control-sm" required placeholder="e.g. Copper Pipe Fitting 3/4 inch">
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Quantity *</label>
+              <input type="number" step="0.5" name="quantity" class="form-control form-control-sm" required value="1">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Unit Cost ($) *</label>
+              <input type="number" step="0.01" name="unit_cost" class="form-control form-control-sm" required placeholder="24.50">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="kp-btn kp-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="kp-btn kp-btn-primary">Add Material</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Labour -->
+<div class="modal fade" id="addLabourModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content kp-modal">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6 fw-bold">Add Labour Time Entry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_labour">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Worker / Technician Name *</label>
+            <input type="text" name="worker_name" class="form-control form-control-sm" required placeholder="e.g. John Plumber (Pro Fixers)">
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Hours Spent *</label>
+              <input type="number" step="0.5" name="hours" class="form-control form-control-sm" required value="2.5">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Hourly Rate ($) *</label>
+              <input type="number" step="0.01" name="rate" class="form-control form-control-sm" required value="75.00">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="kp-btn kp-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="kp-btn kp-btn-primary">Add Labour Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

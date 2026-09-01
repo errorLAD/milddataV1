@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Vendors | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Vendor & Contractor Directory</h1>
+    <p class="kp-page-subtitle">Third-party service contractors, performance ratings, and contacts.</p>
+  </div>
+  <div>
+    <button class="kp-btn kp-btn-primary" data-bs-toggle="modal" data-bs-target="#addVendorModal">
+      <i class="bi bi-plus-lg"></i> Add New Vendor
+    </button>
+  </div>
+</div>
+
+<div class="kp-panel mb-3">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Approved Contractors</h3>
+  </div>
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Company Name</th>
+          <th>Contact Person</th>
+          <th>Service Category</th>
+          <th>Phone & Email</th>
+          <th>Rating</th>
+          <th class="text-end">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in vendors %}
+        <tr>
+          <td class="fw-semibold">{{ v.company }}</td>
+          <td>{{ v.name }}</td>
+          <td><span class="kp-status-badge kp-status-info">{{ v.category }}</span></td>
+          <td>
+            <div class="fw-semibold text-dark" style="font-size: 0.72rem;">{{ v.email }}</div>
+            <div class="text-muted" style="font-size: 0.65rem;">{{ v.phone }}</div>
+          </td>
+          <td>
+            <span class="text-warning fw-bold fs-7"><i class="bi bi-star-fill me-1"></i> {{ v.rating }}</span>
+          </td>
+          <td class="text-end">
+            <button class="kp-btn kp-btn-secondary py-0.5 px-2">Contact</button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-4 text-muted">No vendor contractors registered yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Vendor Modal -->
+<div class="modal fade" id="addVendorModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content kp-modal">
+      <div class="modal-header">
+        <h5 class="modal-title fs-6 fw-bold">Register New Vendor Contractor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Company Name *</label>
+              <input type="text" name="company" class="form-control form-control-sm" required placeholder="ProFix Plumbing Solutions">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Contact Person *</label>
+              <input type="text" name="name" class="form-control form-control-sm" required placeholder="Robert Taylor">
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold fs-7">Service Specialty / Category *</label>
+            <input type="text" name="category" class="form-control form-control-sm" required placeholder="Plumbing & HVAC Services">
+          </div>
+          <div class="row g-3 mb-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Phone Number *</label>
+              <input type="text" name="phone" class="form-control form-control-sm" required placeholder="+1 (512) 555-8822">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold fs-7">Email Address *</label>
+              <input type="email" name="email" class="form-control form-control-sm" required placeholder="dispatch@profix.com">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="kp-btn kp-btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="kp-btn kp-btn-primary">Save Vendor</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

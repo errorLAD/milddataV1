@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}{{ page.title }} — Milda Data{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 0 3rem; background: #0f172a; color: #ffffff;">
+    <div class="container" style="max-width: 800px;">
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem;">{{ page.title }}</h1>
+        <p style="font-size: 0.85rem; color: #94a3b8;">Version {{ page.version }} &bull; Last updated {{ page.updated_at|date:"F d, Y" }}</p>
+    </div>
+</section>
+
+<section style="padding: 4rem 0; background: #ffffff;">
+    <div class="container" style="max-width: 800px;">
+        <div style="font-size: 1rem; line-height: 1.8; color: #334155;">
+            {{ page.content|safe }}
+        </div>
+    </div>
+</section>
+{% endblock %}

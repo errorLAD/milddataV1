@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Users & Roles Management{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 gap-2">
+  <div>
+    <h1 class="page-title mb-0">Users & Role Access Control</h1>
+    <p class="page-subtitle mb-0">Configure user permissions (Owner, Admin, Fleet Manager, Dispatcher, Accountant, Driver, Viewer)</p>
+  </div>
+  <button class="btn-kp btn-kp-primary"><i class="fa-solid fa-user-plus"></i> Invite User</button>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Organization User Directory</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Role</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td class="fw-bold">{{ u.get_full_name|default:u.username }}</td>
+          <td><span class="status-pill brand"><span class="status-dot"></span> {{ u.get_role_display }}</span></td>
+          <td>{{ u.email|default:"user@fleet.com" }}</td>
+          <td class="num">{{ u.phone|default:"--" }}</td>
+          <td><span class="status-pill success"><span class="status-dot"></span> Active</span></td>
+          <td class="text-end">
+            <button class="btn-kp btn-kp-secondary p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

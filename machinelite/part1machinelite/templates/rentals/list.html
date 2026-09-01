@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Rental Contracts & Billing — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Equipment Rental Contracts & Billing</h1>
+    <p class="kp-page-subtitle">Manage customer rental contracts, security deposits, handover/return meter readings, and rental revenue.</p>
+  </div>
+  <div>
+    <button class="kp-btn kp-btn-primary" data-modal-target="modal-add-rental">
+      <i class="fa-solid fa-file-contract"></i> Create Rental Contract
+    </button>
+  </div>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title">Rental Contracts ({{ contracts.count }} Total)</div>
+    <span class="kp-badge kp-badge-brand"><span class="kp-dot"></span> {{ active_count }} Currently Rented Out</span>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Contract #</th>
+          <th>Customer / Client</th>
+          <th>Rented Machine</th>
+          <th>Start Date</th>
+          <th>Daily / Agreed Rate</th>
+          <th>Deposit</th>
+          <th>Handover Meter</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in contracts %}
+          <tr>
+            <td class="num-tabular" style="font-weight: 700; color: var(--brand);">{{ c.contract_number }}</td>
+            <td style="font-weight: 650;">{{ c.customer.name }}</td>
+            <td>
+              <a href="{% url 'machine_detail' c.machine.pk %}" style="color: var(--brand); text-decoration: none;">
+                {{ c.machine.name }}
+              </a>
+            </td>
+            <td class="num-tabular">{{ c.start_date }}</td>
+            <td class="num-tabular" style="font-weight: 700;">{{ currency_symbol }}{{ c.agreed_rate|floatformat:2|intcomma }}/day</td>
+            <td class="num-tabular">{{ currency_symbol }}{{ c.deposit_amount|floatformat:2|intcomma }}</td>
+            <td class="num-tabular">{{ c.handover_meter|floatformat:1 }} {{ c.machine.unit_label }}</td>
+            <td>
+              {% if c.status == 'active' %}
+                <span class="kp-badge kp-badge-brand"><span class="kp-dot"></span> Active Rental</span>
+              {% elif c.status == 'completed' %}
+                <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Returned</span>
+              {% else %}
+                <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Cancelled</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No rental contracts created yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Add Rental -->
+<div class="kp-modal-backdrop" id="modal-add-rental">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">New Equipment Rental Contract</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_rental' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Select Customer</label>
+          <select name="customer" class="kp-select" required>
+            {% for cust in customers %}
+              <option value="{{ cust.pk }}">{{ cust.name }} ({{ cust.company_name|default:"Individual" }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Select Equipment to Rent Out</label>
+          <select name="machine" class="kp-select" required>
+            {% for m in machines %}
+              <option value="{{ m.pk }}">{{ m.name }} (Rate: {{ currency_symbol }}{{ m.daily_rate }}/day)</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Rental Start Date</label>
+            <input type="date" name="start_date" class="kp-input" value="{% now 'Y-m-d' %}" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Agreed Rate / Day ({{ currency_symbol }})</label>
+            <input type="number" step="100" name="agreed_rate" class="kp-input" value="9500" required>
+          </div>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Security Deposit Collected ({{ currency_symbol }})</label>
+          <input type="number" step="500" name="deposit_amount" class="kp-input" value="20000" required>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Generate Contract</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

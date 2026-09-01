@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Receive Goods — PO {{ po.po_number }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Receive Goods (GRN)</h1>
+    <p class="page-subtitle">Process incoming inventory for Purchase Order <strong>{{ po.po_number }}</strong>. Stock levels will automatically increase in {{ po.warehouse.name }}.</p>
+  </div>
+</div>
+
+<form method="post" action="{% url 'goods_receipt' po.id %}">
+  {% csrf_token %}
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">PO Line Items Receiving</span>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>SKU</th>
+            <th>Ordered Qty</th>
+            <th>Previously Received</th>
+            <th>Remaining Qty</th>
+            <th style="width: 160px;">Receive Now</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in po.items.all %}
+          <tr>
+            <input type="hidden" name="item_id[]" value="{{ item.id }}">
+            <td style="font-weight: 650;">{{ item.product.name }}</td>
+            <td class="tabular-nums">{{ item.product.sku }}</td>
+            <td class="tabular-nums">{{ item.quantity }}</td>
+            <td class="tabular-nums">{{ item.received_quantity }}</td>
+            <td class="tabular-nums" style="font-weight: 700;">{{ item.remaining_quantity }}</td>
+            <td>
+              <input type="number" name="quantity_received[]" class="form-control" value="{{ item.remaining_quantity }}" min="0" max="{{ item.remaining_quantity }}">
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="panel-body" style="border-top: 1px solid var(--border);">
+      <div class="form-group" style="margin-bottom: 0.8rem;">
+        <label class="form-label">Receipt Notes / Packing Slip #</label>
+        <input type="text" name="notes" class="form-control" placeholder="e.g. Packing Slip #9012 via FedEx">
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <a href="{% url 'po_detail' po.id %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Process Goods Receipt & Update Stock</button>
+      </div>
+    </div>
+  </div>
+</form>
+{% endblock %}

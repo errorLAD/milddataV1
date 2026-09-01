@@ -1,0 +1,48 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Testimonials CMS — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Client Testimonials Manager</h1>
+        <p class="page-subtitle">Manage customer reviews, ratings, approval status, and featured homepage highlights.</p>
+    </div>
+    <a href="{% url 'website_cms:testimonial_create' %}" class="btn-cms btn-primary">+ Add Testimonial</a>
+</div>
+
+<div class="cms-table-card">
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Company / Role</th>
+                    <th>Rating</th>
+                    <th>Associated Product/Service</th>
+                    <th>Approved</th>
+                    <th>Featured</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in testimonials %}
+                <tr>
+                    <td><strong>{{ item.customer_name }}</strong></td>
+                    <td>{{ item.company }} <small style="color: var(--cms-muted);">({{ item.role }})</small></td>
+                    <td>{{ item.rating }} ⭐</td>
+                    <td>{{ item.product_name|default:'General' }}</td>
+                    <td><span class="badge {% if item.is_approved %}badge-success{% else %}badge-warning{% endif %}">{% if item.is_approved %}Approved{% else %}Pending{% endif %}</span></td>
+                    <td>{% if item.is_featured %}<span class="badge badge-info">Featured</span>{% else %}-{% endif %}</td>
+                    <td>
+                        <a href="{% url 'website_cms:testimonial_edit' item.pk %}" class="btn-cms btn-outline btn-sm">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">No testimonials added yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

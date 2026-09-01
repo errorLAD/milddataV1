@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}Customer Udhaar (Receivable) | KarobarPlus{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,ital@9..144,400..700,0..1&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+    /*
+      DESIGN DIRECTION — "Bound Ledger"
+      A quieter, more premium fintech register: serif display numerals
+      (Fraunces) standing in for handwritten ink, a single deep-plum
+      brand color instead of a loud navy banner, and a spine of thin
+      serif index numbers down the register — a restrained nod to a
+      bound account book instead of literal notebook-paper texture.
+    */
+    :root {
+        --ink: #15171c;
+        --ink-soft: #4b4f5c;
+        --ink-faint: #8b8f9b;
+        --paper: #f5f5f2;
+        --surface: #ffffff;
+        --line: #e5e4e0;
+        --line-soft: #edece8;
+
+        --brand: #322a6e;
+        --brand-soft: #efedf8;
+
+        --receivable: #a15d0b;
+        --receivable-soft: #fbf0de;
+        --receivable-line: #edd9ae;
+
+        --payable: #9c2b3e;
+        --payable-soft: #fbebec;
+        --payable-line: #efc9cd;
+
+        --info: #2a5f8f;
+        --info-soft: #e9f1f8;
+
+        --good: #1f7a4d;
+        --good-soft: #e8f5ec;
+
+        --radius-lg: 20px;
+        --radius-md: 12px;
+        --radius-sm: 8px;
+        --shadow-sm: 0 1px 2px rgba(21, 23, 28, 0.04), 0 1px 4px rgba(21, 23, 28, 0.04);
+        --shadow-md: 0 10px 24px -8px rgba(21, 23, 28, 0.14);
+    }
+
+    .page-shell {
+        background: var(--paper);
+        margin: -1.5rem;
+        padding: 2.25rem 2.5rem 3.5rem;
+        min-height: 100%;
+        font-family: 'Inter', -apple-system, sans-serif;
+        color: var(--ink);
+    }
+    .serif { font-family: 'Fraunces', Georgia, serif; }
+    .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+    .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+
+    /* ---------- Header ---------- */
+    .udhaar-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 1.5rem;
+        margin-bottom: 2.25rem;
+        flex-wrap: wrap;
+    }
+    .udhaar-header .eyebrow {
+        font-family: 'Fraunces', serif;
+        font-style: italic;
+        font-weight: 500;
+        font-size: 0.95rem;
+        color: var(--receivable);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .udhaar-header .eyebrow .rule {
+        width: 22px; height: 1px;
+        background: var(--receivable);
+        opacity: 0.55;
+    }
+    .udhaar-header h1 {
+        font-family: 'Fraunces', serif;
+        font-size: 2.35rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--ink);
+        margin-bottom: 0.4rem;
+        line-height: 1.05;
+    }
+    .udhaar-header p {
+        color: var(--ink-faint);
+        font-size: 0.94rem;
+        margin: 0;
+        max-width: 46ch;
+    }
+    .btn-record {
+        background: var(--ink);
+        color: #fff;
+        border: none;
+        border-radius: 999px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.87rem;
+        padding: 0.75rem 1.4rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+        transition: all .15s ease;
+        text-decoration: none;
+    }
+    .btn-record:hover { background: var(--brand); color: #fff; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+    /* ---------- Stat strip ---------- */
+    .stat-row { margin-bottom: 2rem; }
+    .stat-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 1.15rem 1.3rem;
+        height: 100%;
+        box-shadow: var(--shadow-sm);
+        transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    .stat-card:hover { box-shadow: var(--shadow-md); }
+    .stat-card.s-warning { border-left-color: var(--receivable); }
+    .stat-card.s-danger { border-left-color: var(--payable); }
+    .stat-card.s-info { border-left-color: var(--info); }
+    .stat-card.s-success { border-left-color: var(--good); }
+
+    .stat-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--ink-faint);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    .stat-value {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 1.7rem;
+        letter-spacing: -0.01em;
+        line-height: 1.05;
+        color: var(--ink);
+    }
+    .stat-value.tone-warning { color: var(--receivable); }
+    .stat-value.tone-danger { color: var(--payable); }
+    .stat-value.tone-info { color: var(--info); }
+    .stat-value.tone-success { color: var(--good); }
+    .stat-value small { font-family: 'Inter', sans-serif; font-weight: 500; color: var(--ink-faint); font-size: 0.78rem; }
+
+    /* ---------- Register: unified toolbar + table card ---------- */
+    .register-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .register-top {
+        padding: 1.4rem 1.6rem 1.1rem;
+        border-bottom: 1px solid var(--line-soft);
+    }
+    .register-top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.1rem;
+    }
+    .register-title {
+        font-family: 'Fraunces', serif;
+        font-weight: 600;
+        font-size: 1.15rem;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin: 0;
+    }
+    .register-title .count {
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--receivable);
+        background: var(--receivable-soft);
+        border: 1px solid var(--receivable-line);
+        padding: 0.22rem 0.6rem;
+        border-radius: 999px;
+    }
+
+    .toolbar-form { margin: 0; }
+    .search-field { position: relative; }
+    .search-field i {
+        position: absolute;
+        left: 0.9rem; top: 50%;
+        transform: translateY(-50%);
+        color: var(--ink-faint);
+        font-size: 0.88rem;
+        pointer-events: none;
+    }
+    .search-field input { padding-left: 2.35rem !important; }
+    .toolbar-form .form-control,
+    .toolbar-form .form-select {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        padding: 0.58rem 0.8rem;
+        color: var(--ink);
+        background-color: var(--paper);
+    }
+    .toolbar-form .form-control:focus,
+    .toolbar-form .form-select:focus {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px var(--brand-soft);
+        background-color: #fff;
+    }
+    .btn-filter-apply {
+        background: var(--ink);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 0.58rem 1.1rem;
+    }
+    .btn-filter-apply:hover { background: var(--brand); color: #fff; }
+    .btn-filter-clear {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: #fff;
+        color: var(--ink-faint);
+        padding: 0.58rem 0.75rem;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .btn-filter-clear:hover { color: var(--payable); border-color: var(--payable-line); background: var(--payable-soft); }
+
+    /* ---------- Table ---------- */
+    .table-ledger { margin-bottom: 0; width: 100%; }
+    .table-ledger thead th {
+        font-size: 0.66rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--ink-faint);
+        font-weight: 700;
+        border-bottom: 1px solid var(--line-soft);
+        padding: 0.7rem 1rem;
+        white-space: nowrap;
+    }
+    .table-ledger thead th:first-child { padding-left: 1.6rem; }
+    .table-ledger thead th:last-child { padding-right: 1.6rem; }
+    .table-ledger tbody td {
+        font-size: 0.87rem;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--line-soft);
+        color: var(--ink-soft);
+        vertical-align: middle;
+    }
+    .table-ledger tbody td:first-child { padding-left: 1.6rem; }
+    .table-ledger tbody td:last-child { padding-right: 1.6rem; }
+    .table-ledger tbody tr:last-child td { border-bottom: none; }
+    .table-ledger tbody tr:hover td { background: var(--paper); }
+
+    .row-idx {
+        font-family: 'Fraunces', serif;
+        font-style: italic;
+        font-size: 0.85rem;
+        color: var(--ink-faint);
+    }
+
+    .cust-link { text-decoration: none; }
+    .cust-avatar {
+        width: 32px; height: 32px;
+        border-radius: 9px;
+        background: var(--brand);
+        color: #fff;
+        font-weight: 600;
+        font-family: 'Fraunces', serif;
+        font-size: 0.85rem;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .cust-name { font-weight: 600; color: var(--ink); font-size: 0.89rem; }
+    .cust-phone { color: var(--ink-faint); font-size: 0.74rem; }
+
+    .ref-link { text-decoration: none; color: var(--ink-soft); font-weight: 600; font-size: 0.83rem; }
+    .ref-link:hover { color: var(--brand); }
+    .ref-manual { color: var(--ink-faint); font-size: 0.83rem; }
+
+    .amt { font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 0.85rem; }
+    .amt-total { color: var(--ink-soft); }
+    .amt-paid { color: var(--good); }
+    .amt-remaining { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.02rem; color: var(--payable); }
+
+    .due-date { font-size: 0.82rem; font-weight: 500; color: var(--ink-soft); }
+
+    .overdue-pill {
+        display: inline-flex; align-items: center; gap: 0.3rem;
+        color: var(--payable);
+        background: var(--payable-soft);
+        border: 1px solid var(--payable-line);
+        font-size: 0.68rem; font-weight: 700;
+        padding: 0.26rem 0.6rem;
+        border-radius: 999px;
+        white-space: nowrap;
+    }
+    .on-track { color: var(--ink-faint); font-size: 0.75rem; }
+
+    .status-pill {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        padding: 0.3rem 0.65rem;
+        border-radius: 999px;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .btn-manage {
+        background: transparent;
+        color: var(--ink);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.44rem 0.95rem;
+        white-space: nowrap;
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        text-decoration: none;
+    }
+    .btn-manage:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+    /* ---------- Empty state ---------- */
+    .empty-state { text-align: center; padding: 4.5rem 1.5rem; }
+    .empty-state .icon-wrap {
+        width: 58px; height: 58px;
+        border-radius: 16px;
+        background: var(--good-soft);
+        color: var(--good);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.5rem;
+        margin: 0 auto 1.1rem;
+    }
+    .empty-state p.serif { font-size: 1.1rem; color: var(--ink); margin-bottom: 1.2rem; }
+
+    /* ---------- Mobile ---------- */
+    @media (max-width: 900px) {
+        .page-shell { margin: -1rem; padding: 1.25rem; }
+        .udhaar-header h1 { font-size: 1.85rem; }
+        .table-ledger thead { display: none; }
+        .table-ledger, .table-ledger tbody, .table-ledger tr, .table-ledger td { display: block; width: 100%; }
+        .table-ledger tbody tr { border-bottom: 8px solid var(--paper); padding: 1rem 1.4rem; }
+        .table-ledger tbody td { border: none; padding: 0.4rem 0 !important; }
+        .table-ledger tbody td::before {
+            content: attr(data-label);
+            display: block;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--ink-faint);
+            margin-bottom: 0.25rem;
+        }
+        .table-ledger tbody td[data-label="Customer Name"]::before { display: none; }
+        .table-ledger tbody td.text-end { text-align: left !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+
+    <!-- Header -->
+    <div class="udhaar-header">
+        <div>
+            <span class="eyebrow"><span class="rule"></span> Receivable Ledger</span>
+            <h1>Customer Udhaar</h1>
+            <p>What customers owe the business — money on its way in, tracked to the day.</p>
+        </div>
+        <a href="{% url 'udhaar:create' %}" class="btn-record">
+            <i class="bi bi-plus-lg"></i> Record Manual Udhaar
+        </a>
+    </div>
+
+    <!-- Financial Recovery Stats -->
+    <div class="row g-3 stat-row">
+        <div class="col-6 col-md-3">
+            <div class="stat-card s-warning">
+                <span class="stat-label">Total Outstanding</span>
+                <span class="stat-value tone-warning tnum">{{ total_outstanding|inr }}</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card s-danger">
+                <span class="stat-label">Overdue Amount</span>
+                <span class="stat-value tone-danger tnum">{{ total_overdue|inr }}</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card s-info">
+                <span class="stat-label">Due Today</span>
+                <span class="stat-value tone-info tnum">{{ due_today_count }} <small>customers</small></span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card s-success">
+                <span class="stat-label">Recovered Amount</span>
+                <span class="stat-value tone-success tnum">{{ total_recovered|inr }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register -->
+    <div class="register-card">
+        <div class="register-top">
+            <div class="register-top-row">
+                <h2 class="register-title">Receivable Register <span class="count">{{ udhaars|length }} record{{ udhaars|length|pluralize }}</span></h2>
+            </div>
+
+            <form method="get" action="{% url 'udhaar:list' %}" class="toolbar-form row g-2 align-items-end">
+                <div class="col-12 col-md-4">
+                    <div class="search-field">
+                        <i class="bi bi-search"></i>
+                        <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by customer name, phone number...">
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">All Udhaar Statuses</option>
+                        <option value="Due" {% if status_filter == 'Due' %}selected{% endif %}>Due</option>
+                        <option value="Overdue" {% if status_filter == 'Overdue' %}selected{% endif %}>Overdue</option>
+                        <option value="Payment Promised" {% if status_filter == 'Payment Promised' %}selected{% endif %}>Payment Promised</option>
+                        <option value="Partially Paid" {% if status_filter == 'Partially Paid' %}selected{% endif %}>Partially Paid</option>
+                        <option value="Paid" {% if status_filter == 'Paid' %}selected{% endif %}>Paid</option>
+                        <option value="Disputed" {% if status_filter == 'Disputed' %}selected{% endif %}>Disputed</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3">
+                    <select name="due" class="form-select">
+                        <option value="">All Due Timing</option>
+                        <option value="overdue" {% if due_filter == 'overdue' %}selected{% endif %}>Overdue</option>
+                        <option value="today" {% if due_filter == 'today' %}selected{% endif %}>Due Today</option>
+                        <option value="soon" {% if due_filter == 'soon' %}selected{% endif %}>Due Next 7 Days</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-2 d-flex gap-2">
+                    <button type="submit" class="btn-filter-apply flex-grow-1">Filter</button>
+                    {% if search_query or status_filter or due_filter %}
+                    <a href="{% url 'udhaar:list' %}" class="btn-filter-clear" title="Clear Filters"><i class="bi bi-x-circle"></i></a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-ledger align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:34px;">#</th>
+                        <th>Customer Name</th>
+                        <th>Invoice / Ref</th>
+                        <th>Total Udhaar</th>
+                        <th>Paid</th>
+                        <th>Remaining Balance</th>
+                        <th>Due Date</th>
+                        <th>Days Overdue</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in udhaars %}
+                    <tr>
+                        <td data-label="#"><span class="row-idx">{{ forloop.counter }}</span></td>
+                        <td data-label="Customer Name">
+                            <a href="{% url 'customers:detail' u.customer.pk %}" class="cust-link d-flex align-items-center gap-2">
+                                <div class="cust-avatar">{{ u.customer.name|slice:":1"|upper }}</div>
+                                <div>
+                                    <span class="cust-name d-block">{{ u.customer.name }}</span>
+                                    <span class="cust-phone">{{ u.customer.phone }}</span>
+                                </div>
+                            </a>
+                        </td>
+                        <td data-label="Invoice / Ref">
+                            {% if u.sale %}
+                            <a href="{% url 'sales:detail' u.sale.pk %}" class="ref-link">#{{ u.sale.invoice_number }}</a>
+                            {% else %}
+                            <span class="ref-manual">Manual #{{ u.pk }}</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Total Udhaar"><span class="amt amt-total tnum">{{ u.total_amount|inr }}</span></td>
+                        <td data-label="Paid"><span class="amt amt-paid tnum">{{ u.paid_amount|inr }}</span></td>
+                        <td data-label="Remaining Balance"><span class="amt-remaining tnum">{{ u.remaining_amount|inr }}</span></td>
+                        <td data-label="Due Date"><span class="due-date">{{ u.due_date|date:"d M Y" }}</span></td>
+                        <td data-label="Days Overdue">
+                            {% if u.days_overdue > 0 %}
+                            <span class="overdue-pill"><i class="bi bi-exclamation-triangle-fill"></i> {{ u.days_overdue }}d late</span>
+                            {% else %}
+                            <span class="on-track">On track</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Status">
+                            <span class="badge {{ u.status|status_badge }} status-pill">{{ u.status }}</span>
+                        </td>
+                        <td data-label="Actions" class="text-end">
+                            <a href="{% url 'udhaar:detail' u.pk %}" class="btn-manage">
+                                <i class="bi bi-gear-fill"></i> Manage
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10">
+                            <div class="empty-state">
+                                <div class="icon-wrap"><i class="bi bi-check-circle-fill"></i></div>
+                                <p class="serif">No active Udhaar records found matching your filters.</p>
+                                <a href="{% url 'udhaar:create' %}" class="btn-record"><i class="bi bi-plus-lg"></i> Add Udhaar Record</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

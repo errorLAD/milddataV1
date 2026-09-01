@@ -1,0 +1,71 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Machine OS Enterprise SaaS</title>
+  <link rel="stylesheet" href="{% static 'css/karobarplus.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body style="background-color: var(--bg); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1rem;">
+
+  <div style="width: 100%; max-width: 400px;">
+    <div style="text-align: center; margin-bottom: 1.25rem;">
+      <div style="width: 42px; height: 42px; background: var(--brand); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 800; font-size: 1.2rem; margin-bottom: 0.5rem;">
+        M
+      </div>
+      <h1 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">Machine OS Enterprise</h1>
+      <p style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.2rem;">Heavy Machinery & Fleet Management OS</p>
+    </div>
+
+    {% if messages %}
+      <div style="margin-bottom: 0.875rem;">
+        {% for message in messages %}
+          <div class="kp-badge {% if message.tags == 'success' %}kp-badge-success{% elif message.tags == 'warning' %}kp-badge-warning{% else %}kp-badge-danger{% endif %}" style="padding: 0.4rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.72rem; display: flex; align-items: center; width: 100%;">
+            <span class="kp-dot"></span>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="kp-panel">
+      <div class="kp-panel-header" style="justify-content: center;">
+        <span class="kp-panel-title">Sign In to Tenant Portal</span>
+      </div>
+      <div class="kp-panel-body" style="padding: 1.25rem;">
+        <form method="POST" action="{% url 'login' %}">
+          {% csrf_token %}
+          <div class="kp-form-group">
+            <label class="kp-label">Username</label>
+            <input type="text" name="username" class="kp-input" placeholder="e.g. admin" required autofocus>
+          </div>
+          <div class="kp-form-group" style="margin-bottom: 1rem;">
+            <label class="kp-label">Password</label>
+            <input type="password" name="password" class="kp-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="kp-btn kp-btn-primary" style="width: 100%; justify-content: center; padding: 0.5rem;">
+            Sign In to Account
+          </button>
+        </form>
+
+        <div style="position: relative; text-align: center; margin: 1rem 0;">
+          <hr style="border: none; border-top: 1px solid var(--border);">
+          <span style="position: absolute; top: -8px; left: 50%; transform: translateX(-50%); background: #FFFFFF; padding: 0 0.5rem; font-size: 0.64rem; color: var(--text-tertiary);">OR</span>
+        </div>
+
+        <!-- Continue as Guest Action Button -->
+        <a href="{% url 'guest_login' %}" class="kp-btn kp-btn-secondary" style="width: 100%; justify-content: center; padding: 0.48rem; border-color: var(--brand-soft-border); color: var(--brand); background-color: var(--brand-soft);">
+          <i class="fa-solid fa-eye"></i> Continue as Guest (Demo Access)
+        </a>
+      </div>
+    </div>
+    
+    <div style="text-align: center; font-size: 0.68rem; color: var(--text-tertiary); margin-top: 1rem;">
+      Multi-tenant isolated • Server-Side Security • Mobile Responsive & PWA
+    </div>
+  </div>
+
+</body>
+</html>

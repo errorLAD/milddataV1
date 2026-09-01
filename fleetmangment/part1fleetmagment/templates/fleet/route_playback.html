@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Route Playback{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 gap-2">
+  <div>
+    <h1 class="page-title mb-0">Historical Route Playback</h1>
+    <p class="page-subtitle mb-0">Visually replay vehicle movement, stops, speed timeline, and idle locations</p>
+  </div>
+
+  <form method="GET" class="d-flex align-items-center gap-2">
+    <select name="vehicle_id" class="form-select form-select-kp" onchange="this.form.submit()">
+      {% for v in vehicles %}
+      <option value="{{ v.id }}" {% if selected_vehicle and selected_vehicle.id == v.id %}selected{% endif %}>
+        {{ v.vehicle_code }} - {{ v.registration_number }}
+      </option>
+      {% endfor %}
+    </select>
+  </form>
+</div>
+
+<div class="kp-panel mb-3">
+  <!-- Playback Control Bar -->
+  <div class="kp-panel-header flex-wrap gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <button id="btn-play-pause" class="btn-kp btn-kp-primary">
+        <i class="fa-solid fa-play me-1"></i> Play
+      </button>
+      <button id="btn-reset" class="btn-kp btn-kp-secondary">
+        <i class="fa-solid fa-rotate-left me-1"></i> Reset
+      </button>
+      <div class="btn-group btn-group-sm">
+        <button type="button" class="btn-kp btn-kp-secondary speed-btn active" data-speed="1">1x</button>
+        <button type="button" class="btn-kp btn-kp-secondary speed-btn" data-speed="2">2x</button>
+        <button type="button" class="btn-kp btn-kp-secondary speed-btn" data-speed="5">5x</button>
+        <button type="button" class="btn-kp btn-kp-secondary speed-btn" data-speed="10">10x</button>
+      </div>
+    </div>
+
+    <!-- Live Playback Status Telemetry -->
+    <div class="d-flex align-items-center gap-3 num" style="font-size: 0.72rem;">
+      <span>Time: <strong id="pb-time" class="text-primary">--:--:--</strong></span>
+      <span>Speed: <strong id="pb-speed" class="text-dark">0 km/h</strong></span>
+      <span>Battery: <strong id="pb-battery" class="text-success">--%</strong></span>
+    </div>
+  </div>
+
+  <!-- Timeline Slider -->
+  <div class="px-3 py-2 bg-light border-bottom">
+    <input type="range" class="form-range" id="pb-slider" min="0" max="100" value="0">
+  </div>
+
+  <!-- Map Display -->
+  <div class="kp-panel-body p-0" style="height: 520px;">
+    <div id="playback-map" style="width: 100%; height: 100%;"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const points = {{ points_json|safe }};
+    let map = L.map('playback-map').setView([28.6139, 77.2090], 13);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(map);
+
+    if (!points || points.length === 0) {
+      return;
+    }
+
+    let latLngs = points.map(p => [p.lat, p.lng]);
+    let polyline = L.polyline(latLngs, { color: '#2451FF', weight: 4 }).addTo(map);
+    map.fitBounds(polyline.getBounds(), { padding: [40, 40] });
+
+    L.marker(latLngs[0]).addTo(map).bindPopup("Trip Departure Point");
+    L.marker(latLngs[latLngs.length - 1]).addTo(map).bindPopup("Trip Arrival Point");
+
+    let movingMarker = L.marker(latLngs[0], {
+      icon: L.divIcon({
+        className: 'vehicle-playback-marker',
+        html: `<div style="background: #067647; width: 28px; height: 28px; border-radius: 50%; border: 2px solid #FFF; box-shadow: 0 2px 6px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: #FFF;">
+                 <i class="fa-solid fa-truck-fast"></i>
+               </div>`,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      })
+    }).addTo(map);
+
+    let currentIndex = 0;
+    let isPlaying = false;
+    let playbackSpeed = 1;
+    let timer = null;
+
+    const slider = document.getElementById('pb-slider');
+    slider.max = points.length - 1;
+
+    function updateStep(index) {
+      if (index >= points.length) return;
+      currentIndex = index;
+      let pt = points[index];
+      movingMarker.setLatLng([pt.lat, pt.lng]);
+      map.panTo([pt.lat, pt.lng]);
+
+      document.getElementById('pb-time').innerText = pt.time;
+      document.getElementById('pb-speed').innerText = Math.round(pt.speed) + ' km/h';
+      document.getElementById('pb-battery').innerText = pt.battery + '%';
+      slider.value = index;
+    }
+
+    function play() {
+      if (currentIndex >= points.length - 1) currentIndex = 0;
+      isPlaying = true;
+      document.getElementById('btn-play-pause').innerHTML = '<i class="fa-solid fa-pause me-1"></i> Pause';
+      
+      timer = setInterval(() => {
+        if (currentIndex < points.length - 1) {
+          currentIndex++;
+          updateStep(currentIndex);
+        } else {
+          pause();
+        }
+      }, 1000 / playbackSpeed);
+    }
+
+    function pause() {
+      isPlaying = false;
+      document.getElementById('btn-play-pause').innerHTML = '<i class="fa-solid fa-play me-1"></i> Play';
+      if (timer) clearInterval(timer);
+    }
+
+    document.getElementById('btn-play-pause').addEventListener('click', () => {
+      if (isPlaying) pause(); else play();
+    });
+
+    document.getElementById('btn-reset').addEventListener('click', () => {
+      pause();
+      updateStep(0);
+    });
+
+    slider.addEventListener('input', (e) => {
+      pause();
+      updateStep(parseInt(e.target.value));
+    });
+
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active', 'btn-kp-primary'));
+        btn.classList.add('active', 'btn-kp-primary');
+        playbackSpeed = parseInt(btn.dataset.speed);
+        if (isPlaying) {
+          pause();
+          play();
+        }
+      });
+    });
+
+    updateStep(0);
+  });
+</script>
+{% endblock %}

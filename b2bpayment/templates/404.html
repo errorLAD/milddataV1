@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}404 Page Not Found | NextSlot{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center min-vh-75 py-5 text-center">
+    <div class="col-12 col-md-6">
+        <div class="kp-card p-5">
+            <div class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 rounded-pill mb-3">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> Page Not Found (404)
+            </div>
+            <h2 class="fw-bold text-dark mb-2">Resource Not Found</h2>
+            <p class="text-secondary fs-7 mb-4">The page or resource you requested could not be found or has been moved.</p>
+            <a href="{% url 'dashboard:index' %}" class="btn-kp-primary">
+                <i class="bi bi-house-fill me-1"></i> Return to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

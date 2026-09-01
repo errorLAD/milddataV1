@@ -1,0 +1,93 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}{% if service %}Edit Service — {{ service.name }}{% else %}Create New Service{% endif %}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">{% if service %}Edit Service: {{ service.name }}{% else %}Create New Service{% endif %}</h1>
+        <p class="page-subtitle">Configure full service details, features, process steps, and SEO metadata.</p>
+    </div>
+    <a href="{% url 'website_cms:services_list' %}" class="btn-cms btn-outline">&larr; Back to Services</a>
+</div>
+
+<div class="cms-form-card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Service Name</label>
+                {{ form.name }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Slug (auto-generated if empty)</label>
+                {{ form.slug }}
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Icon (Emoji/Class)</label>
+                {{ form.icon }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Status</label>
+                {{ form.status }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Sort Order</label>
+                {{ form.sort_order }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Short Description (Card Summary)</label>
+            {{ form.short_description }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Full Description (HTML / Rich Text)</label>
+            {{ form.full_description }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Features List (One per line)</label>
+                {{ form.features }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Benefits List (One per line)</label>
+                {{ form.benefits }}
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Development Process Steps (One step per line)</label>
+            {{ form.process_steps }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label class="form-label">Technologies (Comma-separated)</label>
+                {{ form.technologies }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Pricing Info / Starting Rate</label>
+                {{ form.pricing_info }}
+            </div>
+        </div>
+
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin: 1.5rem 0 1rem;">SEO &amp; Metadata</h3>
+        <div class="form-group">
+            <label class="form-label">SEO Title</label>
+            {{ form.seo_title }}
+        </div>
+        <div class="form-group">
+            <label class="form-label">Meta Description</label>
+            {{ form.meta_description }}
+        </div>
+
+        <button type="submit" class="btn-cms btn-primary" style="margin-top: 1rem;">Save Service</button>
+    </form>
+</div>
+{% endblock %}

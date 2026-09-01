@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Digital Vehicle Inspections{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 gap-2">
+  <div>
+    <h1 class="page-title mb-0">Digital Vehicle Inspections</h1>
+    <p class="page-subtitle mb-0">Driver pre-trip safety checklists (Tyres, Brakes, Lights, Engine, Safety equipment)</p>
+  </div>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Inspection Log History</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>Vehicle</th>
+          <th>Inspecting Driver</th>
+          <th>Safety Checklist Items</th>
+          <th>Overall Status</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in inspections %}
+        <tr>
+          <td class="num">{{ i.inspect_date|date:"Y-m-d H:i" }}</td>
+          <td class="fw-bold">{{ i.vehicle.vehicle_code }}</td>
+          <td>{{ i.driver.get_full_name }}</td>
+          <td style="font-size: 0.65rem;">
+            Tyres: {% if i.tyres_passed %}<i class="fa-solid fa-check text-success"></i>{% else %}<i class="fa-solid fa-xmark text-danger"></i>{% endif %} |
+            Brakes: {% if i.brakes_passed %}<i class="fa-solid fa-check text-success"></i>{% else %}<i class="fa-solid fa-xmark text-danger"></i>{% endif %} |
+            Lights: {% if i.lights_passed %}<i class="fa-solid fa-check text-success"></i>{% else %}<i class="fa-solid fa-xmark text-danger"></i>{% endif %} |
+            Engine: {% if i.engine_passed %}<i class="fa-solid fa-check text-success"></i>{% else %}<i class="fa-solid fa-xmark text-danger"></i>{% endif %}
+          </td>
+          <td>
+            {% if i.overall_status == 'PASS' %}
+            <span class="status-pill success"><span class="status-dot"></span> PASSED</span>
+            {% else %}
+            <span class="status-pill danger"><span class="status-dot"></span> FAILED (Maint Auto-Triggered)</span>
+            {% endif %}
+          </td>
+          <td>{{ i.notes|default:"All checks normal." }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-3 text-muted">No inspection records found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ property.name }} | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<!-- Header Row -->
+<div class="kp-header-row">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <a href="{% url 'property_list' %}" class="text-secondary text-decoration-none fs-7"><i class="bi bi-arrow-left"></i> Properties</a>
+      <span class="text-muted">/</span>
+      <span class="kp-status-badge kp-status-brand"><i class="bi bi-building me-1"></i> {{ property.get_property_type_display }}</span>
+    </div>
+    <h1 class="kp-page-title">{{ property.name }}</h1>
+    <p class="kp-page-subtitle"><i class="bi bi-geo-alt me-1 text-primary"></i> {{ property.address }}, {{ property.city }}, {{ property.state }} {{ property.zip_code }} • {{ property.country }}</p>
+  </div>
+  <div class="d-flex flex-wrap gap-1.5">
+    <a href="{% url 'unit_create' property_pk=property.id %}" class="kp-btn kp-btn-primary">
+      <i class="bi bi-plus-lg"></i> Add Unit
+    </a>
+    <a href="{% url 'lease_create' %}" class="kp-btn kp-btn-secondary">
+      <i class="bi bi-file-earmark-plus"></i> New Lease
+    </a>
+    <a href="{% url 'ticket_create' %}" class="kp-btn kp-btn-secondary">
+      <i class="bi bi-tools"></i> Report Repair
+    </a>
+  </div>
+</div>
+
+<!-- 4 Key Financial & Occupancy Metrics Cards -->
+<div class="kp-metrics-grid mb-3">
+
+  <!-- Card 1: Total Units -->
+  <div class="kp-card kp-hero-card">
+    <div class="kp-card-body">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <div class="kp-metric-label text-primary">Total Inventory</div>
+        <span class="kp-status-badge kp-status-brand">{{ property.occupied_units_count }} Occupied</span>
+      </div>
+      <div class="kp-metric-number text-primary">{{ property.total_units_count }} Units</div>
+      <div class="kp-metric-subtext">{{ property.vacant_units_count }} vacant unit{% if property.vacant_units_count != 1 %}s{% endif %}</div>
+    </div>
+  </div>
+
+  <!-- Card 2: Occupancy Rate -->
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <div class="kp-metric-label">Occupancy Yield</div>
+        <span class="kp-status-badge kp-status-success"><span class="dot"></span> {{ property.occupancy_rate }}%</span>
+      </div>
+      <div class="kp-metric-number">{{ property.occupancy_rate }}%</div>
+      <div class="progress mt-2" style="height: 6px;">
+        <div class="progress-bar bg-primary" style="width: {{ property.occupancy_rate }}%;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card 3: Property Owner & Manager -->
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label">Ownership & Management</div>
+      <div class="fw-bold text-dark fs-7 text-truncate mt-1">Owner: {{ property.owner.get_full_name|default:"Not Assigned" }}</div>
+      <div class="text-secondary fs-8 text-truncate mt-0.5">Manager: {{ property.manager.get_full_name|default:"PropFlow Admin" }}</div>
+    </div>
+  </div>
+
+  <!-- Card 4: Estimated Valuation -->
+  <div class="kp-card">
+    <div class="kp-card-body">
+      <div class="kp-metric-label">Current Asset Valuation</div>
+      <div class="kp-metric-number">{{ current_org.currency_symbol|default:"$" }}{{ property.current_value|intcomma }}</div>
+      <div class="kp-metric-subtext">Purchase: {{ current_org.currency_symbol|default:"$" }}{{ property.purchase_value|intcomma }}</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Tabs for Units / Leases / Maintenance / Financials -->
+<ul class="nav nav-tabs mb-3" style="font-size: 0.75rem;">
+  <li class="nav-item">
+    <button class="nav-link active fw-semibold" data-bs-toggle="tab" data-bs-target="#tab-units"><i class="bi bi-grid-3x3-gap me-1"></i> Units ({{ units.count }})</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#tab-leases"><i class="bi bi-file-earmark-text me-1"></i> Active Leases ({{ leases.count }})</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#tab-tickets"><i class="bi bi-tools me-1"></i> Maintenance ({{ tickets.count }})</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#tab-expenses"><i class="bi bi-receipt me-1"></i> Expenses ({{ expenses.count }})</button>
+  </li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- Units Tab -->
+  <div class="tab-pane fade show active" id="tab-units">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <div>
+          <h3 class="kp-panel-title">Unit Inventory & Rental Rates</h3>
+          <p class="kp-panel-desc">All suites, apartments, and commercial units in {{ property.name }}.</p>
+        </div>
+        <a href="{% url 'unit_create' property_pk=property.id %}" class="kp-btn kp-btn-secondary py-0.5 px-2">+ Add Unit</a>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Unit #</th>
+              <th>Floor Level</th>
+              <th>Layout Type</th>
+              <th>Area</th>
+              <th>Status</th>
+              <th class="text-end">Monthly Rent ({{ current_org.currency_symbol|default:"$" }})</th>
+              <th class="text-end">Deposit ({{ current_org.currency_symbol|default:"$" }})</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in units %}
+            <tr>
+              <td class="fw-semibold">
+                <span class="text-dark"><i class="bi bi-door-open me-1 text-primary"></i> Unit {{ u.unit_number }}</span>
+              </td>
+              <td>Floor {{ u.floor }}</td>
+              <td><span class="kp-status-badge kp-status-brand">{{ u.get_type_display }}</span></td>
+              <td class="tabular-nums">{{ u.area_sqft }} sqft</td>
+              <td>
+                <span class="kp-status-badge {% if u.status == 'OCCUPIED' %}kp-status-success{% elif u.status == 'VACANT' %}kp-status-warning{% else %}kp-status-info{% endif %}">
+                  <span class="dot"></span> {{ u.get_status_display }}
+                </span>
+              </td>
+              <td class="text-end tabular-nums fw-semibold text-primary">{{ current_org.currency_symbol|default:"$" }}{{ u.monthly_rent|intcomma }}</td>
+              <td class="text-end tabular-nums">{{ current_org.currency_symbol|default:"$" }}{{ u.security_deposit|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">No units created yet for this property. Click '+ Add Unit' above to create one.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leases Tab -->
+  <div class="tab-pane fade" id="tab-leases">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <div>
+          <h3 class="kp-panel-title">Property Active Leases</h3>
+          <p class="kp-panel-desc">Tenant contract terms and renewal schedules.</p>
+        </div>
+        <a href="{% url 'lease_create' %}" class="kp-btn kp-btn-secondary py-0.5 px-2">+ New Lease</a>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Lease ID</th>
+              <th>Unit</th>
+              <th>Tenant Name</th>
+              <th>Start Date</th>
+              <th>End Date</th>
+              <th>Status</th>
+              <th class="text-end">Monthly Rent</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in leases %}
+            <tr>
+              <td class="fw-semibold"><a href="{% url 'lease_detail' pk=l.id %}" class="text-dark">#{{ l.id }}</a></td>
+              <td>Unit {{ l.unit.unit_number }}</td>
+              <td class="fw-semibold">{{ l.tenant.get_full_name }}</td>
+              <td>{{ l.start_date }}</td>
+              <td><span class="{% if l.is_expiring_within_30_days %}text-danger fw-bold{% endif %}">{{ l.end_date }}</span></td>
+              <td>
+                <span class="kp-status-badge {% if l.status == 'ACTIVE' %}kp-status-success{% else %}kp-status-warning{% endif %}">
+                  <span class="dot"></span> {{ l.get_status_display }}
+                </span>
+              </td>
+              <td class="text-end tabular-nums fw-semibold">{{ current_org.currency_symbol|default:"$" }}{{ l.monthly_rent|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-4 text-muted">No active leases recorded for this property.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tickets Tab -->
+  <div class="tab-pane fade" id="tab-tickets">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <div>
+          <h3 class="kp-panel-title">Maintenance Work Orders</h3>
+          <p class="kp-panel-desc">Active repair issues submitted for this property.</p>
+        </div>
+        <a href="{% url 'ticket_create' %}" class="kp-btn kp-btn-secondary py-0.5 px-2">+ Submit Ticket</a>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Ticket ID</th>
+              <th>Title</th>
+              <th>Unit</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th class="text-end">Actual Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in tickets %}
+            <tr>
+              <td class="fw-semibold"><a href="{% url 'ticket_detail' pk=t.id %}" class="text-dark">#{{ t.id }}</a></td>
+              <td class="fw-semibold">{{ t.title }}</td>
+              <td>Unit {{ t.unit.unit_number }}</td>
+              <td><span class="kp-status-badge {% if t.priority == 'EMERGENCY' or t.priority == 'HIGH' %}kp-status-danger{% else %}kp-status-info{% endif %}">{{ t.get_priority_display }}</span></td>
+              <td><span class="kp-status-badge kp-status-brand">{{ t.get_status_display }}</span></td>
+              <td class="text-end tabular-nums fw-semibold">{{ current_org.currency_symbol|default:"$" }}{{ t.actual_total_cost|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">No maintenance tickets for this property.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expenses Tab -->
+  <div class="tab-pane fade" id="tab-expenses">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <div>
+          <h3 class="kp-panel-title">Property Expenses Ledger</h3>
+          <p class="kp-panel-desc">Log of operating costs and utility bills.</p>
+        </div>
+        <a href="{% url 'expense_list' %}" class="kp-btn kp-btn-secondary py-0.5 px-2">+ Record Expense</a>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Vendor</th>
+              <th>Description</th>
+              <th class="text-end">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in expenses %}
+            <tr>
+              <td>{{ e.date }}</td>
+              <td><span class="kp-status-badge kp-status-warning">{{ e.get_category_display }}</span></td>
+              <td>{{ e.vendor_name|default:"—" }}</td>
+              <td>{{ e.description }}</td>
+              <td class="text-end tabular-nums text-danger fw-semibold">{{ current_org.currency_symbol|default:"$" }}{{ e.amount|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-4 text-muted">No expenses recorded for this property.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

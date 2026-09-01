@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Receipt #{{ payment.payment_number }} - MildData BusinessLite</title>
+    <link rel="stylesheet" href="{% static 'css/karobar.css' %}">
+    <style>
+        body { background: var(--bg); padding: 1.5rem; }
+        .receipt-card { background: #fff; max-width: 580px; margin: 0 auto; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-xs); }
+        .receipt-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--brand); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: #fff; padding: 0; }
+            .receipt-card { border: none; box-shadow: none; max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print" style="max-width: 580px; margin: 0 auto 1rem auto; display: flex; justify-content: space-between; align-items: center;">
+    <a href="{% url 'invoice_detail' payment.invoice.id %}" class="btn-saas btn-secondary">← Back to Invoice</a>
+    <div style="display: flex; gap: 0.5rem;">
+        <button onclick="window.print()" class="btn-saas btn-primary">🖨️ Print Receipt</button>
+        <a href="https://api.whatsapp.com/send?text=Payment%20Receipt%20from%20{{ organization.name }}:%20Received%20{{ currency_symbol }}{{ payment.amount }}%20for%20Invoice%20{{ payment.invoice.invoice_number }}.%20Ref:%20{{ payment.payment_number }}" target="_blank" class="btn-saas btn-whatsapp">💬 Share Receipt</a>
+    </div>
+</div>
+
+<div class="receipt-card">
+    <div class="receipt-header">
+        <div>
+            <div style="font-size: 1.3rem; font-weight: 700; color: var(--brand);">{{ organization.name }}</div>
+            <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.2rem;">Official Payment Receipt</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 1rem; font-weight: 700; color: var(--text-primary);">RECEIPT #{{ payment.payment_number }}</div>
+            <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.2rem;">Date: {{ payment.date }}</div>
+        </div>
+    </div>
+
+    <div style="background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem; text-align: center;">
+        <div style="font-size: 0.65rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary); letter-spacing: 0.05em;">Amount Received</div>
+        <div style="font-size: 1.8rem; font-weight: 700; color: var(--success); font-variant-numeric: tabular-nums; margin-top: 0.2rem;">{{ currency_symbol }}{{ payment.amount|floatformat:2 }}</div>
+        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.3rem;">Payment Method: <strong>{{ payment.payment_method }}</strong> {% if payment.reference %}(Ref: {{ payment.reference }}){% endif %}</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; font-size: 0.72rem;">
+        <div>
+            <div style="font-weight: 700; color: var(--text-tertiary); font-size: 0.6rem; text-transform: uppercase;">Received From</div>
+            <div style="font-weight: 650; color: var(--text-primary); font-size: 0.85rem; margin-top: 0.2rem;">{{ payment.customer.company_name }}</div>
+            <div style="color: var(--text-secondary);">Contact: {{ payment.customer.contact_person|default:"-" }}</div>
+            <div style="color: var(--text-secondary);">Email: {{ payment.customer.email|default:"-" }}</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-weight: 700; color: var(--text-tertiary); font-size: 0.6rem; text-transform: uppercase;">Applied to Invoice</div>
+            <div style="font-weight: 650; color: var(--text-primary); font-size: 0.85rem; margin-top: 0.2rem;">{{ payment.invoice.invoice_number }}</div>
+            <div style="color: var(--text-secondary);">Invoice Total: {{ currency_symbol }}{{ payment.invoice.total_amount|floatformat:2 }}</div>
+            <div style="color: var(--text-secondary);">Invoice Remaining: {{ currency_symbol }}{{ payment.invoice.remaining_amount|floatformat:2 }}</div>
+        </div>
+    </div>
+
+    <div style="border-top: 1px solid var(--border); padding-top: 1rem; display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; color: var(--text-tertiary);">
+        <div>Thank you for your prompt payment!</div>
+        <div>Authorized Signatory</div>
+    </div>
+</div>
+
+</body>
+</html>

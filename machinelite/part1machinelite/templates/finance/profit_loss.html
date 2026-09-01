@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Machine-Level Profit & Loss Engine — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Machine-Level Profit & Loss Financial Engine</h1>
+    <p class="kp-page-subtitle">Granular unit economics per heavy machine asset: Revenue, Fuel, Maintenance, Operating Costs, Net Profit, and ROI %.</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <button class="kp-btn kp-btn-secondary" data-modal-target="modal-add-revenue">
+      <i class="fa-solid fa-file-invoice-dollar"></i> Add Revenue Invoice
+    </button>
+    <button class="kp-btn kp-btn-secondary" data-modal-target="modal-add-expense">
+      <i class="fa-solid fa-receipt"></i> Add Operating Expense
+    </button>
+  </div>
+</div>
+
+<!-- Financial High-Level Metrics -->
+<div class="kp-metrics-grid">
+  <div class="kp-metric-card kp-metric-card-hero">
+    <div>
+      <div class="kp-metric-label">Total Fleet Net Profit</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ total_fleet_net_profit|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub num-tabular">
+      Gross Billing Revenue: {{ currency_symbol }}{{ total_fleet_revenue|floatformat:2|intcomma }}
+    </div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Total Fleet Operating Expenses</div>
+      <div class="kp-metric-val num-tabular">{{ currency_symbol }}{{ total_fleet_expenses|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="kp-metric-sub num-tabular">
+      Fuel: {{ currency_symbol }}{{ total_fleet_fuel|floatformat:0|intcomma }} • Repairs: {{ currency_symbol }}{{ total_fleet_maintenance|floatformat:0|intcomma }}
+    </div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Diesel Expense Ratio</div>
+      <div class="kp-metric-val num-tabular">
+        {% if total_fleet_expenses > 0 %}
+          {% widthratio total_fleet_fuel total_fleet_expenses 100 %}%
+        {% else %}
+          0%
+        {% endif %}
+      </div>
+    </div>
+    <div class="kp-metric-sub">Percentage of operating expenditure</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Fleet Asset Valuation</div>
+      <div class="kp-metric-val num-tabular">
+        {{ currency_symbol }}2,45,00,000
+      </div>
+    </div>
+    <div class="kp-metric-sub">Estimated fleet replacement asset value</div>
+  </div>
+</div>
+
+<!-- Machine P&L Table -->
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title">Machine Unit Economics & Profitability Ranking</div>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Equipment Name</th>
+          <th>Reg Number</th>
+          <th>Category</th>
+          <th>Gross Revenue</th>
+          <th>Fuel Cost</th>
+          <th>Maintenance</th>
+          <th>Total Expenses</th>
+          <th>Net Profit / Loss</th>
+          <th>Profit Margin</th>
+          <th>Cost / Unit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pl in machine_pl_list %}
+          <tr>
+            <td>
+              <a href="{% url 'machine_detail' pl.machine.pk %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">
+                {{ pl.machine.name }}
+              </a>
+            </td>
+            <td class="num-tabular" style="font-weight: 600;">{{ pl.machine.reg_number }}</td>
+            <td><span class="kp-badge kp-badge-brand">{{ pl.machine.get_category_display }}</span></td>
+            <td class="num-tabular" style="color: var(--success); font-weight: 700;">
+              {{ currency_symbol }}{{ pl.revenue|floatformat:2|intcomma }}
+            </td>
+            <td class="num-tabular">{{ currency_symbol }}{{ pl.fuel|floatformat:2|intcomma }}</td>
+            <td class="num-tabular">{{ currency_symbol }}{{ pl.maintenance|floatformat:2|intcomma }}</td>
+            <td class="num-tabular" style="color: var(--danger);">
+              {{ currency_symbol }}{{ pl.total_expenses|floatformat:2|intcomma }}
+            </td>
+            <td class="num-tabular" style="font-weight: 800; font-size: 0.78rem;">
+              {% if pl.net_profit >= 0 %}
+                <span style="color: var(--success);">+{{ currency_symbol }}{{ pl.net_profit|floatformat:2|intcomma }}</span>
+              {% else %}
+                <span style="color: var(--danger);">-{{ currency_symbol }}{{ pl.net_profit|floatformat:2|intcomma }}</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if pl.margin >= 30 %}
+                <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> {{ pl.margin }}%</span>
+              {% elif pl.margin > 0 %}
+                <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> {{ pl.margin }}%</span>
+              {% else %}
+                <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> {{ pl.margin }}%</span>
+              {% endif %}
+            </td>
+            <td class="num-tabular">{{ currency_symbol }}{{ pl.cost_per_unit|floatformat:2 }}/{{ pl.machine.unit_label }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="10" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No machines found for P&L analysis.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Recent Transactions Rows -->
+<div class="kp-row-split">
+  
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Recent Revenue Invoices</div>
+    </div>
+    <div class="kp-table-responsive">
+      <table class="kp-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Machine</th>
+            <th>Client</th>
+            <th>Amount</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in recent_revenues %}
+            <tr>
+              <td class="num-tabular">{{ r.date }}</td>
+              <td style="font-weight: 600;">{{ r.machine.name }}</td>
+              <td>{{ r.client_name }}</td>
+              <td class="num-tabular" style="font-weight: 700; color: var(--success);">{{ currency_symbol }}{{ r.amount|floatformat:2|intcomma }}</td>
+              <td><span class="kp-badge kp-badge-success"><span class="kp-dot"></span> {{ r.get_status_display }}</span></td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No recent revenue entries.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Recent Operating Expenses</div>
+    </div>
+    <div class="kp-table-responsive">
+      <table class="kp-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Machine</th>
+            <th>Category</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in recent_expenses %}
+            <tr>
+              <td class="num-tabular">{{ e.date }}</td>
+              <td>{{ e.machine.name|default:"General Fleet" }}</td>
+              <td><span class="kp-badge kp-badge-brand">{{ e.get_category_display }}</span></td>
+              <td class="num-tabular" style="font-weight: 700; color: var(--danger);">{{ currency_symbol }}{{ e.amount|floatformat:2|intcomma }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No recent expense entries.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Add Revenue -->
+<div class="kp-modal-backdrop" id="modal-add-revenue">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Record Revenue Billing</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_revenue' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Select Equipment</label>
+          <select name="machine" class="kp-select" required>
+            {% for m in machines %}
+              <option value="{{ m.pk }}">{{ m.name }} ({{ m.reg_number }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Invoice Date</label>
+            <input type="date" name="date" class="kp-input" value="{% now 'Y-m-d' %}" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Billed Amount ({{ currency_symbol }})</label>
+            <input type="number" step="100" name="amount" class="kp-input" placeholder="e.g. 45000" required>
+          </div>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Client / Contractor Name</label>
+          <input type="text" name="client_name" class="kp-input" placeholder="e.g. L&T Infrastructure Corp" required>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Save Revenue Log</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Add Expense -->
+<div class="kp-modal-backdrop" id="modal-add-expense">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Record Operating Expense</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_expense' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Target Machine (Optional)</label>
+          <select name="machine" class="kp-select">
+            <option value="">General Fleet Expense</option>
+            {% for m in machines %}
+              <option value="{{ m.pk }}">{{ m.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Expense Date</label>
+            <input type="date" name="date" class="kp-input" value="{% now 'Y-m-d' %}" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Expense Category</label>
+            <select name="category" class="kp-select">
+              <option value="operator_salary">Operator Wages</option>
+              <option value="transport">Towing / Transport</option>
+              <option value="emi_lease">Loan EMI / Lease</option>
+              <option value="other">General Expense</option>
+            </select>
+          </div>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Amount ({{ currency_symbol }})</label>
+          <input type="number" step="100" name="amount" class="kp-input" placeholder="e.g. 12000" required>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Save Expense</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Notifications Center</h1>
+        <div class="page-subtitle">Alerts and reminders</div>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Notifications</div>
+    </div>
+    <div class="panel-body">
+        {% if notifications %}
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                {% for n in notifications %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.8rem; background: {% if not n.is_read %}var(--brand-soft){% else %}var(--surface-alt){% endif %}; border: 1px solid var(--border); border-radius: var(--radius-sm);">
+                    <div>
+                        <div style="font-weight: 650; font-size: 0.75rem;">
+                            <span class="badge-pill badge-warning">{{ n.notification_type }}</span>
+                            {{ n.title }}
+                        </div>
+                        <div style="font-size: 0.68rem; color: var(--text-secondary); margin-top: 2px;">{{ n.message }}</div>
+                        <div style="font-size: 0.58rem; color: var(--text-tertiary); margin-top: 2px;">{{ n.created_at|timesince }} ago</div>
+                    </div>
+                    <div>
+                        {% if n.link %}
+                        <a href="{{ n.link }}" class="btn-saas btn-primary">Open Record</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="padding: 1rem; text-align: center; color: var(--text-tertiary);">No notifications.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

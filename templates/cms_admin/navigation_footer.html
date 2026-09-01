@@ -1,0 +1,102 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Navigation &amp; Footer CMS — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Header Navigation &amp; Footer Settings</h1>
+        <p class="page-subtitle">Control top header links, dropdown menus, footer columns, and contact info.</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <!-- Navigation Menu Items -->
+    <div class="cms-form-card">
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; color: var(--cms-primary);">Header Navigation Links</h3>
+        <div class="cms-table-card" style="margin-bottom: 1.5rem;">
+            <table class="cms-table">
+                <thead>
+                    <tr>
+                        <th>Label</th>
+                        <th>Target URL</th>
+                        <th>Sort</th>
+                        <th>Active</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in nav_items %}
+                    <tr>
+                        <td><strong>{{ item.label }}</strong></td>
+                        <td><code>{{ item.url }}</code></td>
+                        <td>{{ item.sort_order }}</td>
+                        <td><span class="badge {% if item.is_active %}badge-success{% else %}badge-danger{% endif %}">{% if item.is_active %}Active{% else %}Off{% endif %}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4">No navigation links created yet. (Using default fallback)</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.75rem;">+ Add Navigation Link</h4>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_nav">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Link Label</label>
+                    {{ nav_form.label }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Target URL</label>
+                    {{ nav_form.url }}
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label class="form-label">Parent Menu (Optional)</label>
+                    {{ nav_form.parent }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Sort Order</label>
+                    {{ nav_form.sort_order }}
+                </div>
+            </div>
+            <button type="submit" class="btn-cms btn-primary">Add Link</button>
+        </form>
+    </div>
+
+    <!-- Footer Config -->
+    <div class="cms-form-card">
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; color: #34d399;">Footer Configuration</h3>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="update_footer">
+            
+            <div class="form-group">
+                <label class="form-label">Footer Short Description</label>
+                {{ footer_form.description }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Copyright Text</label>
+                {{ footer_form.copyright_text }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contact Email Display</label>
+                {{ footer_form.contact_email }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone Display</label>
+                {{ footer_form.phone_display }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Address Display</label>
+                {{ footer_form.address_display }}
+            </div>
+
+            <button type="submit" class="btn-cms btn-primary">Save Footer Configuration</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

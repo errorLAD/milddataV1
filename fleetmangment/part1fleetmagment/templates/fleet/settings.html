@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings & Preferences{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h1 class="page-title mb-0">Organization & Currency Settings</h1>
+    <p class="page-subtitle mb-0">Configure operational country, price symbol (₹, $, €, £, AED, SAR), threshold alerts, and organization details</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <!-- General & Currency Preference Form -->
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title"><i class="fa-solid fa-earth-americas text-primary me-2"></i> Operational Country & Currency Preferences</h3>
+      </div>
+      <div class="kp-panel-body">
+        <form method="POST" action="{% url 'settings' %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label text-secondary fw-semibold" style="font-size: 0.75rem;">ORGANIZATION NAME</label>
+            <input type="text" name="name" class="form-control form-control-kp" value="{{ org.name }}" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-secondary fw-semibold" style="font-size: 0.75rem;">OPERATIONAL COUNTRY & CURRENCY</label>
+            <select name="country_code" class="form-select form-select-kp py-2" required>
+              {% for c in countries %}
+              <option value="{{ c.code }}" {% if country_code == c.code %}selected{% endif %}>
+                {{ c.name }} — {{ c.currency }}
+              </option>
+              {% endfor %}
+            </select>
+            <div class="form-text text-muted mt-1" style="font-size: 0.72rem;">
+              Changing country automatically sets the price symbol to <strong>{{ currency_symbol }}</strong> ({{ currency_code }}) across all fuel, expense, maintenance, and analytics modules.
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label text-secondary fw-semibold" style="font-size: 0.75rem;">SPEED LIMIT OVERSPEED THRESHOLD (KM/H)</label>
+            <input type="number" class="form-control form-control-kp" value="80">
+          </div>
+          <div class="mb-4">
+            <label class="form-label text-secondary fw-semibold" style="font-size: 0.75rem;">EXCESSIVE IDLE TIME TRIGGER (MINUTES)</label>
+            <input type="number" class="form-control form-control-kp" value="20">
+          </div>
+
+          <button type="submit" class="btn-kp btn-kp-primary px-4">
+            <i class="fa-solid fa-floppy-disk me-1"></i> Save Preferences
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active Preference Summary Card -->
+  <div class="col-lg-5">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Active Country Summary</h3>
+      </div>
+      <div class="kp-panel-body">
+        <div class="p-3 bg-light rounded border mb-3">
+          <div class="text-secondary" style="font-size: 0.7rem;">CURRENT OPERATIONAL COUNTRY</div>
+          <div class="fw-bold fs-5 text-dark">{{ country_name }}</div>
+        </div>
+        <div class="p-3 bg-light rounded border mb-3">
+          <div class="text-secondary" style="font-size: 0.7rem;">ACTIVE CURRENCY SYMBOL</div>
+          <div class="fw-bold fs-3 text-primary num">{{ currency_symbol }} <span class="fs-6 text-muted">({{ currency_code }})</span></div>
+        </div>
+        <div class="text-muted" style="font-size: 0.75rem;">
+          <i class="fa-solid fa-circle-info text-info me-1"></i> Currency preferences are enforced multi-tenant server-side. All reports, expenses, fuel logs, and AI queries will output in <strong>{{ currency_symbol }} {{ currency_code }}</strong>.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Products &amp; SaaS Store — Milda Data{% endblock %}
+
+{% block content %}
+<div class="mithila-products-page">
+<style>
+.mithila-products-page {
+    --ink: #14161F;
+    --panel: #1C1F2C;
+    --panel-raised: #242838;
+    --paper: #F3EAD6;
+    --paper-dim: #C9BFA8;
+    --sindoor: #C6432E;
+    --turmeric: #D9A23B;
+    --peacock: #2C6E68;
+    --line: rgba(243, 234, 214, 0.14);
+
+    --font-display: 'Fraunces', 'Georgia', serif;
+    --font-body: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--font-body);
+    padding-bottom: 4rem;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+.mithila-products-page * { box-sizing: border-box; }
+
+/* ---------- kachni border motif ---------- */
+.mp-border {
+    height: 7px;
+    width: 100%;
+    background-image:
+        linear-gradient(135deg, var(--turmeric) 25%, transparent 25.5%),
+        linear-gradient(225deg, var(--turmeric) 25%, transparent 25.5%);
+    background-size: 14px 14px;
+    background-position: 0 0;
+    opacity: 0.9;
+}
+.mp-border.mp-border-sindoor {
+    background-image:
+        linear-gradient(135deg, var(--sindoor) 25%, transparent 25.5%),
+        linear-gradient(225deg, var(--sindoor) 25%, transparent 25.5%);
+}
+
+/* ---------- hero ---------- */
+.mp-hero {
+    padding: 5rem 1.5rem 4rem;
+    text-align: left;
+    max-width: 1120px;
+    margin: 0 auto;
+}
+.mp-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--turmeric);
+    margin: 0 0 1.1rem;
+}
+.mp-hero h1 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    line-height: 1.05;
+    margin: 0 0 1.1rem;
+    max-width: 22ch;
+    color: var(--paper);
+}
+.mp-hero .lead {
+    font-size: 1.15rem;
+    color: var(--paper-dim);
+    max-width: 48ch;
+    line-height: 1.55;
+    margin: 0;
+}
+.mp-auth-note {
+    margin-top: 1.6rem;
+    font-size: 0.95rem;
+    color: var(--paper-dim);
+}
+.mp-auth-note a {
+    color: var(--turmeric);
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(217, 162, 59, 0.4);
+}
+.mp-auth-note a:hover,
+.mp-auth-note a:focus-visible { border-bottom-color: var(--turmeric); }
+
+/* ---------- filter bar ---------- */
+.mp-section { max-width: 1120px; margin: 0 auto; padding: 0 1.5rem; }
+.mp-filter-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin: 2.5rem 0 2.5rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0;
+}
+.mp-filter-bar a {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    color: var(--paper-dim);
+    text-decoration: none;
+    padding: 0.7rem 0.2rem;
+    margin-right: 1.4rem;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+.mp-filter-bar a:hover,
+.mp-filter-bar a:focus-visible {
+    color: var(--paper);
+}
+.mp-filter-bar a.active {
+    color: var(--paper);
+    border-bottom-color: var(--sindoor);
+}
+
+/* ---------- product grid ---------- */
+.mp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding-bottom: 3rem;
+}
+
+.mp-card {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 1.6rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+}
+.mp-card:hover {
+    border-color: rgba(243, 234, 214, 0.3);
+    background: var(--panel-raised);
+    transform: translateY(-2px);
+}
+
+/* corner sun motif — traditional Mithila radiating-sun mark */
+.mp-card::before {
+    content: "";
+    position: absolute;
+    top: 1.1rem;
+    right: 1.1rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, var(--turmeric) 0 3px, transparent 3.5px),
+        repeating-conic-gradient(var(--turmeric) 0 4deg, transparent 4deg 45deg);
+    opacity: 0.55;
+}
+
+.mp-badge {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 0.28rem 0.6rem;
+    border: 1px solid currentColor;
+    margin-bottom: 1rem;
+    width: fit-content;
+}
+.mp-badge.badge-agent { color: var(--sindoor); }
+.mp-badge.badge-saas { color: var(--peacock); }
+
+.mp-card h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.3rem;
+    color: var(--paper);
+    margin: 0 0 0.6rem;
+    line-height: 1.25;
+}
+.mp-card .description {
+    font-size: 0.94rem;
+    color: var(--paper-dim);
+    line-height: 1.55;
+    margin: 0 0 1.4rem;
+    flex-grow: 1;
+}
+.mp-card .price {
+    font-family: var(--font-mono);
+    font-size: 1.05rem;
+    color: var(--turmeric);
+    margin-bottom: 1.1rem;
+}
+
+.mp-card-footer {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.mp-btn {
+    flex: 1;
+    display: block;
+    text-align: center;
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.92rem;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    background: var(--paper);
+    text-decoration: none;
+    padding: 0.75rem 0.8rem;
+    border: 1px solid var(--paper);
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.mp-btn:hover,
+.mp-btn:focus-visible {
+    background: var(--sindoor);
+    border-color: var(--sindoor);
+    color: var(--paper);
+    outline: none;
+}
+.mp-btn-secondary {
+    background: transparent;
+    color: var(--paper);
+    border-color: var(--line);
+}
+.mp-btn-secondary:hover {
+    background: var(--panel-raised);
+    border-color: var(--paper);
+</style>
+
+<div class="mp-border"></div>
+
+<section class="mp-hero">
+    <span class="mp-eyebrow">Enterprise &amp; SMB Applications</span>
+    <h1>Ready-to-Deploy SaaS Tools &amp; Specialized AI Agents</h1>
+    <p class="lead">Select a product to initiate purchase or launch live SaaS instances.</p>
+    {% if not user.is_authenticated %}
+    <p class="mp-auth-note">
+        Already have an account? <a href="{% url 'accounts:login' %}?next={% url 'products:catalog' %}">Sign in</a> for quick access.
+    </p>
+    {% endif %}
+</section>
+<div class="mp-border mp-border-sindoor"></div>
+
+<section class="mp-section">
+    <nav class="mp-filter-bar">
+        <a href="{% url 'products:catalog' %}" class="{% if not active_category %}active{% endif %}">All Products</a>
+        <a href="{% url 'products:saas_directory' %}">SaaS Directory</a>
+        <a href="{% url 'products:catalog' %}?category=saas_tool" class="{% if active_category == 'saas_tool' %}active{% endif %}">SaaS Applications</a>
+        <a href="{% url 'products:catalog' %}?category=ai_agent" class="{% if active_category == 'ai_agent' %}active{% endif %}">AI Agents</a>
+    </nav>
+
+    {% if products %}
+    <div class="mp-grid">
+        {% for product in products %}
+        <article class="mp-card">
+            <span class="mp-badge {% if product.category == 'ai_agent' %}badge-agent{% else %}badge-saas{% endif %}">
+                {{ product.get_category_display }}
+            </span>
+            <h3>{{ product.name }}</h3>
+            <p class="description">{{ product.description|truncatewords:25 }}</p>
+            <div class="price">{{ product.active_display_price }}</div>
+            <div class="mp-card-footer">
+                <a href="{% url 'products:detail' product.pk %}" class="mp-btn mp-btn-secondary">Details</a>
+                {% if product.category == 'saas_tool' %}
+                    {% if product.name == "Payment Reminder / B2B Payment" %}
+                        <a href="{% url 'products:saas_launch' 'b2b-payment' %}" class="mp-btn">Launch</a>
+                    {% elif product.name == "Supplier Onboarding OS" %}
+                        <a href="{% url 'products:saas_launch' 'supplier-onboarding' %}" class="mp-btn">Launch</a>
+                    {% elif product.name == "Business SaaS Lite" %}
+                        <a href="{% url 'products:saas_launch' 'business-saas' %}" class="mp-btn">Launch</a>
+                    {% elif product.name == "Fleet Management OS" %}
+                        <a href="{% url 'products:saas_launch' 'fleet-management' %}" class="mp-btn">Launch</a>
+                    {% elif "StockFlow" in product.name %}
+                        <a href="{% url 'products:saas_launch' 'stockflow' %}" class="mp-btn">Launch</a>
+                    {% elif product.name == "MachineOS" %}
+                        <a href="{% url 'products:saas_launch' 'machine-os' %}" class="mp-btn">Launch</a>
+                    {% elif "PropFlow" in product.name %}
+                        <a href="{% url 'products:saas_launch' 'property-management' %}" class="mp-btn">Launch</a>
+                    {% else %}
+                        <a href="{% url 'products:saas_directory' %}" class="mp-btn">Open</a>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'products:detail' product.pk %}" class="mp-btn">Buy</a>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% elif saas_products %}
+    {% if active_category == 'ai_agent' %}
+    <div class="mp-empty" style="margin-bottom: 2rem; border-color: var(--turmeric); background: rgba(217, 162, 59, 0.05); padding: 1.5rem; text-align: center;">
+        <p style="color: var(--turmeric); font-family: var(--font-display); font-size: 1.15rem; margin: 0;">
+            🤖 AI Agents are currently undergoing fine-tuning on regional enterprise data and launching soon!
+        </p>
+        <p style="color: var(--paper-dim); font-size: 0.92rem; margin: 0.5rem 0 0;">
+            In the meantime, explore and launch our live enterprise SaaS applications below:
+        </p>
+    </div>
+    {% endif %}
+    <div class="mp-grid">
+        {% for product in saas_products %}
+        <article class="mp-card">
+            <span class="mp-badge badge-saas">{{ product.category }}</span>
+            <h3>{{ product.name }}</h3>
+            <p class="description">{{ product.short_description }}</p>
+            <div class="price">{{ product.display_price }}</div>
+            <div class="mp-card-footer">
+                <a href="{% url 'products:saas_detail' product.slug %}" class="mp-btn mp-btn-secondary">Details</a>
+                <a href="{% url 'products:saas_launch' product.slug %}" class="mp-btn">Launch</a>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="mp-empty">
+        <p>Explore our ready-to-deploy SaaS applications above.</p>
+    </div>
+    {% endif %}
+</section>
+</div>
+{% endblock %}

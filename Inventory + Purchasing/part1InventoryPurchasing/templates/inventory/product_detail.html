@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}{{ product.name }} — Product Detail{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.6rem;">
+      <h1 class="page-title">{{ product.name }}</h1>
+      <span class="badge badge-info">{{ product.get_product_type_display }}</span>
+      {% if product.status == 'In Stock' %}
+        <span class="badge badge-success"><span class="badge-dot-mark"></span> In Stock</span>
+      {% elif product.status == 'Low Stock' %}
+        <span class="badge badge-warning"><span class="badge-dot-mark"></span> Low Stock</span>
+      {% else %}
+        <span class="badge badge-danger"><span class="badge-dot-mark"></span> Out of Stock</span>
+      {% endif %}
+    </div>
+    <p class="page-subtitle">SKU: <strong class="tabular-nums">{{ product.sku }}</strong> • Barcode: {{ product.barcode|default:'N/A' }} • Category: {{ product.category.name|default:'Uncategorized' }}</p>
+  </div>
+  <div class="page-actions">
+    <button onclick="document.getElementById('edit-product-modal').style.display='flex'" class="btn btn-secondary">Edit Product</button>
+    <a href="{% url 'stock_movements' %}?product={{ product.id }}" class="btn btn-secondary">View Movements</a>
+  </div>
+</div>
+
+<!-- Metrics summary for Product -->
+<div class="metrics-grid">
+  <div class="metric-card hero-card">
+    <div class="metric-label">Current Stock</div>
+    <div class="metric-value">{{ product.total_stock }} <span style="font-size: 0.8rem; font-weight: normal;">{{ product.unit.abbreviation|default:'pcs' }}</span></div>
+    <div class="metric-sub">Across All Warehouses</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Available Stock</div>
+    <div class="metric-value" style="color: var(--success);">{{ product.available_stock }}</div>
+    <div class="metric-sub">Reserved: {{ product.reserved_stock }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Purchase / Selling Price</div>
+    <div class="metric-value money">{{ product.purchase_price|money:org }} / {{ product.selling_price|money:org }}</div>
+    <div class="metric-sub">Margin: {{ product.selling_price|money:org }}</div>
+  </div>
+  <div class="metric-card">
+    <div class="metric-label">Total Stock Value</div>
+    <div class="metric-value money">{{ product.inventory_value|money:org }}</div>
+    <div class="metric-sub">Reorder Level: {{ product.reorder_level }}</div>
+  </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.2rem;">
+  <!-- Left Side: Stock per Warehouse & Timeline -->
+  <div>
+    <!-- Stock by Warehouse Panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Stock Breakdown by Location / Warehouse</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Warehouse Name</th>
+              <th>Code</th>
+              <th>Quantity</th>
+              <th>Reserved</th>
+              <th>Available</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for level in inventory_levels %}
+            <tr>
+              <td style="font-weight: 600;">{{ level.warehouse.name }}</td>
+              <td class="tabular-nums">{{ level.warehouse.code }}</td>
+              <td class="tabular-nums" style="font-weight: 700;">{{ level.quantity }}</td>
+              <td class="tabular-nums">{{ level.reserved_quantity }}</td>
+              <td class="tabular-nums" style="color: var(--success); font-weight: 700;">{{ level.available_quantity }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" style="text-align: center; color: var(--text-tertiary); padding: 1.2rem;">No inventory records found for this product.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Stock Movement History Timeline -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Stock Movement Timeline</span>
+        <a href="{% url 'stock_movements' %}?product={{ product.id }}" style="font-size: 0.68rem; color: var(--brand); text-decoration: none;">Full History →</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Warehouse</th>
+              <th>Quantity</th>
+              <th>Reference</th>
+              <th>User</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in movements %}
+            <tr>
+              <td>{{ m.created_at|date:"M d, Y H:i" }}</td>
+              <td><span class="badge badge-neutral">{{ m.get_movement_type_display }}</span></td>
+              <td>{{ m.warehouse.code }}</td>
+              <td class="tabular-nums" style="font-weight: 700; color: {% if m.quantity > 0 %}var(--success){% else %}var(--danger){% endif %};">
+                {% if m.quantity > 0 %}+{% endif %}{{ m.quantity }}
+              </td>
+              <td>{{ m.reference|default:'—' }}</td>
+              <td>{{ m.user.username|default:'System' }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" style="text-align: center; color: var(--text-tertiary); padding: 1.2rem;">No movements recorded yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Side: Recent Sales & Purchases -->
+  <div>
+    <!-- Purchase History -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Recent Purchases</span>
+      </div>
+      <div class="panel-body" style="padding: 0.6rem 0.9rem;">
+        {% for item in po_items %}
+        <div style="padding: 0.4rem 0; border-bottom: 1px solid var(--border); font-size: 0.66rem;">
+          <div style="display: flex; justify-content: space-between;">
+            <a href="{% url 'po_detail' item.purchase_order.id %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">{{ item.purchase_order.po_number }}</a>
+            <span class="money" style="font-weight: 650;">{{ item.unit_cost|money:org }}</span>
+          </div>
+          <div style="color: var(--text-secondary); margin-top: 0.1rem;">
+            Qty: {{ item.quantity }} • Supplier: {{ item.purchase_order.supplier.company_name }}
+          </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; color: var(--text-tertiary); font-size: 0.68rem; padding: 1rem;">No recent purchase orders.</div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Sales History -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Recent Sales</span>
+      </div>
+      <div class="panel-body" style="padding: 0.6rem 0.9rem;">
+        {% for item in invoice_items %}
+        <div style="padding: 0.4rem 0; border-bottom: 1px solid var(--border); font-size: 0.66rem;">
+          <div style="display: flex; justify-content: space-between;">
+            <a href="{% url 'invoice_detail' item.invoice.id %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">{{ item.invoice.invoice_number }}</a>
+            <span class="money" style="font-weight: 650;">{{ item.unit_price|money:org }}</span>
+          </div>
+          <div style="color: var(--text-secondary); margin-top: 0.1rem;">
+            Qty: {{ item.quantity }} • Customer: {{ item.invoice.customer.company_name }}
+          </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; color: var(--text-tertiary); font-size: 0.68rem; padding: 1rem;">No recent sales invoices.</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

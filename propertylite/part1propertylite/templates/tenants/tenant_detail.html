@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}{{ tenant_user.get_full_name }} | Tenant Profile{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <div class="d-flex align-items-center gap-2">
+      <a href="{% url 'tenant_list' %}" class="text-secondary text-decoration-none fs-7"><i class="bi bi-arrow-left"></i> Tenants</a>
+      <span class="text-muted">/</span>
+      <span class="kp-status-badge kp-status-success">Active Tenant</span>
+    </div>
+    <h1 class="kp-page-title mt-1">{{ tenant_user.get_full_name }}</h1>
+    <p class="kp-page-subtitle">{{ tenant_user.email }} • Phone: {{ tenant_user.phone|default:"N/A" }}</p>
+  </div>
+</div>
+
+<!-- Active Lease Banner -->
+{% if active_lease %}
+<div class="kp-card kp-hero-card mb-3 p-3">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <div class="kp-metric-label text-primary">Current Residence</div>
+      <h4 class="fw-bold text-dark mb-0">Unit {{ active_lease.unit.unit_number }} — {{ active_lease.property.name }}</h4>
+      <div class="text-secondary fs-7 mt-1">Lease Term: {{ active_lease.start_date }} to {{ active_lease.end_date }}</div>
+    </div>
+    <div class="text-end">
+      <div class="kp-metric-number text-primary">${{ active_lease.monthly_rent|intcomma }} / mo</div>
+      <span class="kp-status-badge kp-status-brand mt-1">Active Lease #{{ active_lease.id }}</span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Tabs for Lease, Invoices, Payments, Tickets -->
+<ul class="nav nav-tabs mb-3" style="font-size: 0.75rem;">
+  <li class="nav-item">
+    <button class="nav-link active fw-semibold" data-bs-toggle="tab" data-bs-target="#t-invoices">Rent Invoices ({{ invoices.count }})</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#t-payments">Payment History ({{ payments.count }})</button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link fw-semibold" data-bs-toggle="tab" data-bs-target="#t-tickets">Maintenance Requests ({{ tickets.count }})</button>
+  </li>
+</ul>
+
+<div class="tab-content">
+  <!-- Invoices -->
+  <div class="tab-pane fade show active" id="t-invoices">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Monthly Rent Invoices</h3>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Due Date</th>
+              <th>Rent Amount</th>
+              <th>Paid</th>
+              <th>Status</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for inv in invoices %}
+            <tr>
+              <td class="fw-semibold">#{{ inv.invoice_number }}</td>
+              <td>{{ inv.due_date }}</td>
+              <td class="tabular-nums">${{ inv.total_due|intcomma }}</td>
+              <td class="tabular-nums text-success">${{ inv.total_paid|intcomma }}</td>
+              <td>
+                <span class="kp-status-badge {% if inv.status == 'PAID' %}kp-status-success{% elif inv.status == 'OVERDUE' %}kp-status-danger{% else %}kp-status-warning{% endif %}">
+                  {{ inv.get_status_display }}
+                </span>
+              </td>
+              <td class="text-end">
+                {% if inv.status != 'PAID' %}
+                <a href="{% url 'payment_record' invoice_pk=inv.id %}" class="kp-btn kp-btn-primary py-0.5 px-2">Record Payment</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">No invoices generated for this tenant yet.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payments -->
+  <div class="tab-pane fade" id="t-payments">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Completed Payments</h3>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Invoice</th>
+              <th>Payment Method</th>
+              <th>Ref / Check #</th>
+              <th class="text-end">Amount Paid</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in payments %}
+            <tr>
+              <td>{{ p.payment_date }}</td>
+              <td>#{{ p.invoice.invoice_number }}</td>
+              <td>{{ p.get_payment_method_display }}</td>
+              <td>{{ p.reference_number|default:"—" }}</td>
+              <td class="text-end tabular-nums fw-semibold text-success">${{ p.amount|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-4 text-muted">No payment records found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Maintenance -->
+  <div class="tab-pane fade" id="t-tickets">
+    <div class="kp-panel">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Submitted Maintenance Requests</h3>
+      </div>
+      <div class="kp-table-responsive">
+        <table class="kp-table">
+          <thead>
+            <tr>
+              <th>Ticket ID</th>
+              <th>Title</th>
+              <th>Category</th>
+              <th>Priority</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tk in tickets %}
+            <tr>
+              <td class="fw-semibold"><a href="{% url 'ticket_detail' pk=tk.id %}" class="text-dark">#{{ tk.id }}</a></td>
+              <td>{{ tk.title }}</td>
+              <td>{{ tk.get_category_display }}</td>
+              <td><span class="kp-status-badge kp-status-info">{{ tk.get_priority_display }}</span></td>
+              <td><span class="kp-status-badge kp-status-brand">{{ tk.get_status_display }}</span></td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="5" class="text-center py-4 text-muted">No maintenance requests submitted by this tenant.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

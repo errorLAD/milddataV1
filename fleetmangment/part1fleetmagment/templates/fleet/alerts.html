@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Notification Center{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h1 class="page-title mb-0">Alerts & Notifications</h1>
+    <p class="page-subtitle mb-0">Vehicle offline, geofence breaches, maintenance due, and document expiry notices</p>
+  </div>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">System Alert Feed</h3>
+  </div>
+  <div class="kp-panel-body p-0">
+    <ul class="list-group list-group-flush" style="font-size: 0.72rem;">
+      {% for alert in alerts %}
+      <li class="list-group-item d-flex align-items-start justify-content-between py-3">
+        <div>
+          <span class="status-pill {% if alert.severity == 'DANGER' %}danger{% elif alert.severity == 'WARNING' %}warning{% else %}info{% endif %} mb-1">
+            <span class="status-dot"></span> {{ alert.get_severity_display }}
+          </span>
+          <h5 class="mb-1 fw-bold text-dark" style="font-size: 0.78rem;">{{ alert.title }}</h5>
+          <p class="mb-0 text-secondary" style="font-size: 0.7rem;">{{ alert.message }}</p>
+        </div>
+        <span class="text-muted num" style="font-size: 0.65rem;">{{ alert.created_at|date:"M d, H:i" }}</span>
+      </li>
+      {% empty %}
+      <li class="list-group-item text-center py-4 text-muted">No notifications.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

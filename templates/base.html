@@ -1,0 +1,400 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#0b0f1a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>{% block title %}Milda Data — Enterprise SaaS &amp; AI Tools{% endblock %}</title>
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<style>
+    /* Top Utility & Control Bar */
+    .top-control-bar {
+        background: #0f172a;
+        color: #94a3b8;
+        font-size: 0.8rem;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        border-bottom: 1px solid #1e293b;
+        padding: 6px 0;
+    }
+    .top-control-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .top-control-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .top-control-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #64748b;
+    }
+    .top-segment-box {
+        display: inline-flex;
+        align-items: center;
+        background: #1e293b;
+        padding: 2px 4px;
+        border-radius: 9999px;
+        border: 1px solid #334155;
+    }
+    .top-segment-btn {
+        border: none;
+        background: transparent;
+        color: #94a3b8;
+        padding: 3px 12px;
+        border-radius: 9999px;
+        font-weight: 600;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+    .top-segment-btn:hover {
+        color: #f1f5f9;
+    }
+    .top-segment-btn.active-blue {
+        background: #2563eb;
+        color: #ffffff !important;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+    }
+    .top-segment-btn.active-pink {
+        background: #c026d3;
+        color: #ffffff !important;
+        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(192, 38, 211, 0.35);
+    }
+
+    /* Guest Banner */
+    .guest-banner {
+        background: linear-gradient(90deg, #3730a3 0%, #4f46e5 100%);
+        color: #ffffff;
+        text-align: center;
+        padding: 0.5rem 1rem;
+        font-size: 0.84rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+    }
+    .guest-banner a {
+        background: #ffffff;
+        color: #3730a3;
+        padding: 0.2rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.78rem;
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    /* Main Header */
+    .site-header {
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1.5rem;
+    }
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    .logo::before { display: none !important; }
+    .logo-img {
+        height: 38px;
+        width: auto;
+        display: block;
+    }
+    .nav-toggle {
+        display: none;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.25rem 0.5rem;
+        color: #0f172a;
+    }
+    .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 1.1rem;
+        flex-wrap: wrap;
+    }
+    .nav-links a {
+        color: #334155;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.88rem;
+        transition: color 0.15s ease;
+        white-space: nowrap;
+    }
+    .nav-links a:hover {
+        color: #2563eb;
+    }
+
+    .nav-products {
+        font-weight: 700;
+        color: #2563eb !important;
+        position: relative;
+    }
+    .nav-products::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: -4px;
+        width: 100%;
+        height: 2px;
+        background: #2563eb;
+        border-radius: 2px;
+    }
+
+    .user-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        padding: 0.35rem 0.85rem;
+        border-radius: 9999px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #334155;
+    }
+
+    .nav-admin-btn {
+        background: rgba(217, 119, 6, 0.12);
+        color: #d97706 !important;
+        border: 1px solid rgba(217, 119, 6, 0.3);
+        padding: 0.35rem 0.85rem;
+        border-radius: 9999px;
+        font-weight: 700 !important;
+        font-size: 0.82rem !important;
+        transition: all 0.15s ease;
+    }
+    .nav-admin-btn:hover {
+        background: #d97706;
+        color: #ffffff !important;
+    }
+
+    .nav-signup {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+        color: #ffffff !important;
+        padding: 0.45rem 1.1rem;
+        border-radius: 9999px;
+        font-weight: 700;
+        letter-spacing: 0.2px;
+        box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .nav-signup:hover {
+        color: #ffffff !important;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(219, 39, 119, 0.4);
+    }
+
+    @media (max-width: 1100px) {
+        .top-control-inner {
+            justify-content: center;
+        }
+        .nav-toggle {
+            display: block;
+        }
+        .nav-links {
+            display: none;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 999;
+        }
+        .nav-links.open {
+            display: flex;
+        }
+        .site-header {
+            position: relative;
+        }
+    }
+</style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Top Utility & Regional Pricing Bar -->
+    <div class="top-control-bar">
+        <div class="container top-control-inner">
+            <div class="top-control-group">
+                <span class="top-control-label">Region:</span>
+                <div class="top-segment-box">
+                    <button type="button" onclick="window.switchRegion('IN')" class="top-segment-btn {% if active_currency == 'INR' %}active-blue{% endif %}">🇮🇳 India (₹199)</button>
+                    <button type="button" onclick="window.switchRegion('INT')" class="top-segment-btn {% if active_currency == 'USD' %}active-blue{% endif %}">🌐 International ($5)</button>
+                </div>
+            </div>
+            <div class="top-control-group">
+                <span class="top-control-label">Billing:</span>
+                <div class="top-segment-box">
+                    <button type="button" onclick="window.switchBilling('monthly')" class="top-segment-btn {% if billing_cycle == 'monthly' %}active-pink{% endif %}">Monthly</button>
+                    <button type="button" onclick="window.switchBilling('yearly')" class="top-segment-btn {% if billing_cycle == 'yearly' %}active-pink{% endif %}">Yearly (Save 17%)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if is_guest %}
+    <div class="guest-banner">
+        <span>⚡ <strong>Guest Mode Active</strong> (ID: {{ guest_id }}). You have public preview access.</span>
+        <div>
+            <a href="{% url 'accounts:signup' %}">Sign Up</a>
+            <a href="{% url 'accounts:login' %}" style="background: transparent; color: #ffffff; border: 1px solid #ffffff; margin-left: 4px;">Log In</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Main Navigation Header -->
+    <header class="site-header">
+        <div class="container header-inner">
+            <a href="{% url 'home' %}" class="logo">
+                <img src="{{ cms_settings.logo_url|default:'https://i.postimg.cc/43gxKLrL/6e2fd4bb-c219-46d7-a5a3-21d4df5b9461.png' }}" alt="{{ cms_settings.company_name|default:'Milda Data' }}" class="logo-img">
+            </a>
+            <button class="nav-toggle" aria-expanded="false" aria-label="Toggle navigation">☰</button>
+            <nav class="nav-links" role="navigation">
+                {% if cms_nav_items %}
+                    {% for item in cms_nav_items %}
+                        <a href="{{ item.url }}" {% if item.open_in_new_tab %}target="_blank"{% endif %}>{{ item.label }}</a>
+                    {% endfor %}
+                {% else %}
+                    <a href="{% url 'labeling:home' %}">Data Labeling</a>
+                    <a href="{% url 'products:catalog' %}" class="nav-products">SAAS/AI STORE</a>
+                    <a href="{% url 'website_cms:blog_index' %}">Blog</a>
+                    <a href="{% url 'website_cms:contact' %}">Contact</a>
+                {% endif %}
+
+                {% if user.is_authenticated %}
+                <span class="user-pill">👤 {{ user.email }}</span>
+                <a href="{% url 'accounts:logout' %}" style="color: #ef4444;">Log Out</a>
+                {% else %}
+                <a href="{% url 'accounts:login' %}">Log In</a>
+                <a href="{% url 'accounts:signup' %}" class="nav-signup">Sign Up</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    {% if messages %}
+    <div class="container messages" style="margin-top: 1rem;">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer" style="background: #0f172a; color: #94a3b8; padding: 3rem 0 2rem; border-top: 1px solid #1e293b; margin-top: 4rem;">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                <div>
+                    <h4 style="color: #ffffff; font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.75rem;">{{ cms_settings.company_name|default:'Milda Data' }}</h4>
+                    <p style="font-size: 0.88rem; line-height: 1.6; color: #94a3b8;">{{ cms_footer.description }}</p>
+                </div>
+                <div>
+                    <h4 style="color: #ffffff; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Quick Links</h4>
+                    <ul style="list-style: none; font-size: 0.88rem; line-height: 2;">
+                        <li><a href="{% url 'products:catalog' %}" style="color: #cbd5e1; text-decoration: none;">SaaS Marketplace</a></li>
+                        <li><a href="{% url 'website_cms:services_index' %}" style="color: #cbd5e1; text-decoration: none;">Services Directory</a></li>
+                        <li><a href="{% url 'website_cms:projects_index' %}" style="color: #cbd5e1; text-decoration: none;">Portfolio Case Studies</a></li>
+                        <li><a href="{% url 'website_cms:blog_index' %}" style="color: #cbd5e1; text-decoration: none;">Blog &amp; Insights</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="color: #ffffff; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Contact &amp; Support</h4>
+                    <p style="font-size: 0.88rem; line-height: 1.8;">
+                        Email: {{ cms_footer.contact_email }}<br>
+                        {% if cms_footer.phone_display %}Phone: {{ cms_footer.phone_display }}<br>{% endif %}
+                        {{ cms_footer.address_display }}
+                    </p>
+                </div>
+                <div>
+                    <h4 style="color: #ffffff; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 0.75rem;">Newsletter</h4>
+                    <form action="{% url 'website_cms:newsletter_subscribe' %}" method="post" style="display: flex; gap: 0.4rem;">
+                        {% csrf_token %}
+                        <input type="email" name="email" required placeholder="Enter email" style="background: #1e293b; border: 1px solid #334155; border-radius: 6px; padding: 0.4rem 0.75rem; color: #ffffff; font-size: 0.82rem; width: 100%;">
+                        <button type="submit" style="background: #2563eb; color: #ffffff; border: none; padding: 0.4rem 0.85rem; border-radius: 6px; font-weight: 700; font-size: 0.82rem; cursor: pointer;">Join</button>
+                    </form>
+                </div>
+            </div>
+            <div style="border-top: 1px solid #1e293b; padding-top: 1.5rem; text-align: center; font-size: 0.82rem;">
+                <p>{{ cms_footer.copyright_text }}</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+    (function(){
+        window.currentRegion = "{{ active_region|default:'IN' }}";
+        window.currentCurrency = "{{ active_currency|default:'INR' }}";
+        window.currentBilling = "{{ billing_cycle|default:'monthly' }}";
+
+        window.switchRegion = function(targetRegion) {
+            var currency = (targetRegion === 'IN') ? 'INR' : 'USD';
+            var url = new URL(window.location.href);
+            url.searchParams.set('region', targetRegion);
+            url.searchParams.set('currency', currency);
+            window.location.href = url.toString();
+        };
+
+        window.switchBilling = function(targetBilling) {
+            var url = new URL(window.location.href);
+            url.searchParams.set('billing', targetBilling);
+            window.location.href = url.toString();
+        };
+    })();
+
+    document.addEventListener('DOMContentLoaded', function(){
+        var btn = document.querySelector('.nav-toggle');
+        var nav = document.querySelector('.nav-links');
+        if (btn && nav) {
+            btn.addEventListener('click', function(){
+                var open = nav.classList.toggle('open');
+                btn.setAttribute('aria-expanded', open);
+            });
+        }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/static/sw.js').catch(function(){});
+        }
+    });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Offline Mode | NextSlot PWA{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center min-vh-75 py-5 text-center">
+    <div class="col-12 col-md-6">
+        <div class="kp-card p-5">
+            <div class="badge bg-secondary text-light px-3 py-1 rounded-pill mb-3">
+                <i class="bi bi-wifi-off me-1"></i> You Are Offline
+            </div>
+            <h2 class="fw-bold text-dark mb-2">No Internet Connection</h2>
+            <p class="text-secondary fs-7 mb-4">Please check your mobile data or Wi-Fi connection. NextSlot will automatically sync when you reconnect.</p>
+            <button onclick="window.location.reload();" class="btn-kp-primary">
+                <i class="bi bi-arrow-clockwise me-1"></i> Retry Connection
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

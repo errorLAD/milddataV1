@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Trips & Dispatch System — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Trips & Dispatch Operations</h1>
+    <p class="kp-page-subtitle">Schedule equipment transit, assign drivers and machines, track distance/mileage, and monitor job completion.</p>
+  </div>
+  <div>
+    <button class="kp-btn kp-btn-primary" data-modal-target="modal-add-trip">
+      <i class="fa-solid fa-route"></i> Create & Dispatch Trip
+    </button>
+  </div>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title">Trip Log ({{ trips.count }} Dispatches)</div>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Trip #</th>
+          <th>Equipment</th>
+          <th>Assigned Driver</th>
+          <th>Pickup Location</th>
+          <th>Drop / Job Site</th>
+          <th>Distance</th>
+          <th>Trip Expenses</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for t in trips %}
+          <tr>
+            <td class="num-tabular" style="font-weight: 700; color: var(--brand);">{{ t.trip_number }}</td>
+            <td style="font-weight: 650;">{{ t.machine.name }}</td>
+            <td>{{ t.driver.name }}</td>
+            <td style="font-size: 0.68rem;">{{ t.pickup_location }}</td>
+            <td style="font-size: 0.68rem;">{{ t.drop_location }}</td>
+            <td class="num-tabular">{{ t.distance_km }} KM</td>
+            <td class="num-tabular">{{ currency_symbol }}{{ t.expenses|floatformat:2|intcomma }}</td>
+            <td>
+              {% if t.status == 'completed' %}
+                <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> Completed</span>
+              {% elif t.status == 'in_progress' %}
+                <span class="kp-badge kp-badge-info"><span class="kp-dot"></span> In Progress</span>
+              {% elif t.status == 'en_route' %}
+                <span class="kp-badge kp-badge-warning"><span class="kp-dot"></span> En Route</span>
+              {% else %}
+                <span class="kp-badge kp-badge-brand"><span class="kp-dot"></span> Scheduled</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No trips dispatched yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Add Trip -->
+<div class="kp-modal-backdrop" id="modal-add-trip">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Dispatch Equipment Trip</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_trip' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Select Equipment</label>
+            <select name="machine" class="kp-select" required>
+              {% for m in machines %}
+                <option value="{{ m.pk }}">{{ m.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Select Assigned Driver</label>
+            <select name="driver" class="kp-select" required>
+              {% for d in operators %}
+                <option value="{{ d.pk }}">{{ d.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Pickup Location</label>
+            <input type="text" name="pickup_location" class="kp-input" placeholder="e.g. Central Yard" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Drop / Site Location</label>
+            <input type="text" name="drop_location" class="kp-input" placeholder="e.g. NH-48 Site" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Distance (KM)</label>
+            <input type="number" step="0.1" name="distance_km" class="kp-input" placeholder="e.g. 45" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Trip Allowance / Tolls ({{ currency_symbol }})</label>
+            <input type="number" step="50" name="expenses" class="kp-input" value="1500" required>
+          </div>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Dispatch Trip</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

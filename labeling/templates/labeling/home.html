@@ -1,0 +1,657 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}B2B Data Labeling Studio — Milda Data{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+Devanagari:wght@500;600&display=swap');
+
+    :root {
+        --ink: #0b0f1a;
+        --ink-soft: #565d74;
+        --paper: #f7f7f3;
+        --surface: #ffffff;
+        --indigo: #3730a3;
+        --indigo-bright: #4f46e5;
+        --marigold: #d98e2b;
+        --sindoor: #b5451f;
+        --moss: #3f7a5c;
+        --line: rgba(11, 15, 26, 0.09);
+        --line-soft: rgba(11, 15, 26, 0.06);
+        --font-display: 'Fraunces', Georgia, serif;
+        --font-body: 'Manrope', -apple-system, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+        --font-dev: 'Noto Serif Devanagari', serif;
+    }
+
+    .mith * { box-sizing: border-box; }
+    .mith { font-family: var(--font-body); color: var(--ink); background: var(--paper); }
+    .mith h1, .mith h2, .mith h3, .mith h4 {
+        background: none !important; -webkit-background-clip: initial !important; background-clip: initial !important;
+        -webkit-text-fill-color: var(--ink) !important; color: var(--ink);
+        text-shadow: none; mix-blend-mode: normal; opacity: 1; margin: 0;
+    }
+    .annot-card h1, .annot-card h2, .annot-card h3, .annot-card h4,
+    .cta-inner h1, .cta-inner h2, .cta-inner h3, .cta-inner h4,
+    .dark-card h1, .dark-card h2, .dark-card h3, .dark-card h4 {
+        -webkit-text-fill-color: #f3f4f8 !important; color: #f3f4f8;
+    }
+    .mith a { text-decoration: none; }
+    .mith .container { max-width: 1180px; margin: 0 auto; padding: 0 1.75rem; }
+
+    .thread {
+        height: 4px;
+        width: 100%;
+        background: linear-gradient(90deg, var(--sindoor) 0 33.3%, var(--marigold) 33.3% 66.6%, var(--indigo-bright) 66.6% 100%);
+    }
+
+    .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: var(--font-mono);
+        font-size: 0.76rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--sindoor);
+    }
+    .eyebrow::before {
+        content: "";
+        width: 6px; height: 6px;
+        background: var(--marigold);
+        display: inline-block;
+        border-radius: 50%;
+    }
+    .eyebrow .dev {
+        font-family: var(--font-dev);
+        font-weight: 600;
+        color: var(--sindoor);
+        letter-spacing: 0;
+        text-transform: none;
+        font-size: 0.85rem;
+    }
+
+    .top-strip {
+        border-bottom: 1px solid var(--line);
+        background: var(--surface);
+        padding: 0.6rem 0;
+    }
+    .top-strip .container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--ink-soft);
+        letter-spacing: 0.02em;
+    }
+    .top-strip span strong { color: var(--ink); font-weight: 700; }
+
+    .hero {
+        padding: 4.5rem 0 5rem;
+        background: var(--paper);
+        position: relative;
+    }
+
+    .hero-grid {
+        display: grid;
+        grid-template-columns: 1.05fr 0.95fr;
+        gap: 3.5rem;
+        align-items: center;
+    }
+
+    .hero-copy h1 {
+        margin: 1.2rem 0 1.15rem;
+        font-family: var(--font-display);
+        font-size: clamp(2.6rem, 4.3vw, 3.8rem);
+        line-height: 1.05;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--ink);
+    }
+
+    .hero-copy h1 .accent { color: var(--sindoor); -webkit-text-fill-color: var(--sindoor); font-style: normal; }
+
+    .hero-copy .lead {
+        max-width: 540px;
+        margin: 0;
+        font-size: 1.1rem;
+        line-height: 1.68;
+        color: var(--ink-soft);
+    }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2.2rem; align-items: center; }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.9rem 1.6rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        letter-spacing: -0.005em;
+        font-family: var(--font-body);
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        text-decoration: none;
+    }
+    .btn-primary { background: var(--sindoor); color: #ffffff; }
+    .btn-primary:hover { background: #963515; color: #ffffff; }
+    .btn-secondary { background: var(--surface); color: var(--ink); border-color: var(--line); }
+    .btn-secondary:hover { border-color: var(--ink); background: var(--paper); }
+    .btn-dark { background: var(--ink); color: #ffffff; }
+    .btn-dark:hover { background: var(--indigo-bright); color: #ffffff; }
+
+    .hero-metrics {
+        display: flex;
+        gap: 1.8rem;
+        margin-top: 2.5rem;
+        padding-top: 1.8rem;
+        border-top: 1px solid var(--line);
+    }
+    .metric-item strong {
+        display: block;
+        font-family: var(--font-display);
+        font-size: 1.65rem;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1;
+    }
+    .metric-item span {
+        font-size: 0.8rem;
+        color: var(--ink-soft);
+        font-family: var(--font-mono);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    /* Workbench Mockup Card */
+    .annot-card {
+        background: var(--ink);
+        border-radius: 18px;
+        padding: 1.6rem;
+        box-shadow: 0 30px 60px rgba(11, 15, 26, 0.25);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .annot-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 1rem;
+        margin-bottom: 1.1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .annot-topbar .file {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: #9aa1b8;
+    }
+    .annot-topbar .badge {
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #34d399;
+        background: rgba(52, 211, 153, 0.12);
+        border: 1px solid rgba(52, 211, 153, 0.25);
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+    }
+
+    .waveform {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        height: 48px;
+        margin-bottom: 0.8rem;
+        padding: 0 0.5rem;
+    }
+    .waveform span {
+        flex: 1;
+        background: rgba(255,255,255,0.18);
+        border-radius: 2px;
+        transition: height 0.2s ease;
+    }
+    .waveform span.active {
+        background: var(--marigold);
+    }
+
+    .time-ruler {
+        display: flex;
+        justify-content: space-between;
+        font-family: var(--font-mono);
+        font-size: 0.68rem;
+        color: #64748b;
+        margin-bottom: 1.2rem;
+        padding: 0 0.5rem;
+    }
+
+    .transcript-lines {
+        display: flex;
+        flex-direction: column;
+        gap: 0.65rem;
+        margin-bottom: 1.4rem;
+    }
+    .t-line {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 8px;
+        padding: 0.65rem 0.85rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.88rem;
+        color: #e2e8f0;
+    }
+    .t-line .stamp {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: #64748b;
+        margin-right: 0.6rem;
+    }
+    .t-line .txt {
+        flex: 1;
+        font-family: 'Noto Serif Devanagari', sans-serif;
+    }
+    .t-line .tag {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        font-weight: 700;
+        padding: 0.15rem 0.45rem;
+        border-radius: 4px;
+        margin-left: 0.5rem;
+    }
+    .tag.mai { background: rgba(181, 69, 31, 0.25); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); }
+    .tag.hin { background: rgba(217, 142, 43, 0.25); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+    .tag.eng { background: rgba(79, 70, 229, 0.25); color: #818cf8; border: 1px solid rgba(129, 140, 248, 0.3); }
+
+    .annot-footer {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+    }
+    .annot-stat { display: flex; flex-direction: column; gap: 0.15rem; }
+    .annot-stat .k { color: #64748b; font-size: 0.65rem; text-transform: uppercase; }
+    .annot-stat .v { color: #f3f4f8; font-weight: 700; }
+
+    .section { padding: 5.5rem 0; }
+    .section.alt { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+
+    .section-header { max-width: 650px; margin: 0 0 3rem; }
+    .section-header .eyebrow { margin-bottom: 0.9rem; }
+    .section-header h2 {
+        font-family: var(--font-display);
+        font-size: clamp(2rem, 2.9vw, 2.6rem);
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        font-weight: 700;
+        color: var(--ink);
+    }
+    .section-header p { margin: 1rem 0 0; color: var(--ink-soft); font-size: 1.05rem; line-height: 1.65; }
+
+    .capabilities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .cap-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1.8rem;
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .cap-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--sindoor);
+        box-shadow: 0 12px 24px rgba(11, 15, 26, 0.06);
+    }
+    .cap-card .num {
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--sindoor);
+        background: rgba(181, 69, 31, 0.08);
+        padding: 0.3rem 0.6rem;
+        border-radius: 6px;
+        display: inline-block;
+        margin-bottom: 1rem;
+    }
+    .cap-card h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 700;
+        margin: 0 0 0.6rem;
+        color: var(--ink);
+    }
+    .cap-card p {
+        font-size: 0.94rem;
+        color: var(--ink-soft);
+        line-height: 1.65;
+        margin: 0;
+    }
+
+    /* Code Sample Inspector */
+    .sample-card {
+        background: #0f172a;
+        color: #e2e8f0;
+        border-radius: 14px;
+        padding: 1.8rem;
+        border: 1px solid #1e293b;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.4);
+    }
+    .sample-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid #1e293b;
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: #94a3b8;
+    }
+    .sample-code {
+        font-family: var(--font-mono);
+        font-size: 0.88rem;
+        line-height: 1.8;
+        white-space: pre-wrap;
+        color: #f1f5f9;
+    }
+    .sample-code .k { color: #818cf8; font-weight: 600; }
+    .sample-code .s { color: #34d399; }
+    .sample-code .n { color: #fbbf24; }
+
+    /* Pipeline Process Steps */
+    .process-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.5rem;
+    }
+    .process-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1.8rem;
+        position: relative;
+    }
+    .process-card .step-no {
+        font-family: var(--font-mono);
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: rgba(181, 69, 31, 0.2);
+        margin-bottom: 0.6rem;
+    }
+    .process-card h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        color: var(--ink);
+    }
+    .process-card p {
+        font-size: 0.92rem;
+        color: var(--ink-soft);
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Quote Request Form Card */
+    .quote-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 2.5rem;
+        max-width: 680px;
+        margin: 0 auto;
+        box-shadow: 0 10px 30px rgba(11, 15, 26, 0.05);
+    }
+    .quote-card label {
+        display: block;
+        font-weight: 700;
+        font-size: 0.88rem;
+        margin-bottom: 0.4rem;
+        color: var(--ink);
+    }
+    .quote-card input,
+    .quote-card select,
+    .quote-card textarea {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        color: var(--ink);
+        background: var(--paper);
+        margin-bottom: 1.3rem;
+        transition: border-color 0.15s ease;
+    }
+    .quote-card input:focus,
+    .quote-card select:focus,
+    .quote-card textarea:focus {
+        outline: none;
+        border-color: var(--sindoor);
+        background: #ffffff;
+    }
+
+    @media (max-width: 980px) {
+        .hero-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="mith">
+<div class="thread"></div>
+
+<div class="top-strip">
+    <div class="container">
+        <span>Milda Data <strong>·</strong> B2B Data Labeling Studio</span>
+        <span><strong>Maithili · Hindi · English</strong> &nbsp;/&nbsp; Native Speaker QA</span>
+    </div>
+</div>
+
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="container hero-grid">
+        <div class="hero-copy">
+            <span class="eyebrow">Data Labeling Studio <span class="dev">मिथिला</span></span>
+            <h1>Multilingual <span class="accent">Data Annotation</span> for Next-Gen AI Models</h1>
+            <p class="lead">Enterprise audio transcription, text annotation, sentiment tagging, and trilingual dataset creation in Maithili, Hindi, and English. Powered by 180+ native regional language experts.</p>
+
+            <div class="hero-actions">
+                <a href="#quote-form" class="btn btn-primary">Request a Quote →</a>
+                <a href="{% url 'products:saas_directory' %}" class="btn btn-secondary">Explore SaaS Store</a>
+            </div>
+
+            <div class="hero-metrics">
+                <div class="metric-item">
+                    <strong>200k+</strong>
+                    <span>Audio Hours Labeled</span>
+                </div>
+                <div class="metric-item">
+                    <strong>180+</strong>
+                    <span>Native Annotators</span>
+                </div>
+                <div class="metric-item">
+                    <strong>99.2%</strong>
+                    <span>QA Consensus Score</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-panel">
+            <div class="annot-card">
+                <div class="annot-topbar">
+                    <span class="file">session_0142.wav — darbhanga_call_center</span>
+                    <span class="badge">QA Passed (99.8%)</span>
+                </div>
+
+                <div class="waveform" aria-hidden="true">
+                    <span style="height:22%"></span><span style="height:38%"></span><span style="height:60%" class="active"></span><span style="height:44%" class="active"></span><span style="height:70%" class="active"></span><span style="height:30%"></span><span style="height:52%"></span><span style="height:80%" class="active"></span><span style="height:36%"></span><span style="height:58%" class="active"></span><span style="height:26%"></span><span style="height:44%"></span><span style="height:66%" class="active"></span><span style="height:20%"></span><span style="height:48%"></span><span style="height:74%" class="active"></span><span style="height:34%"></span><span style="height:54%"></span><span style="height:28%"></span><span style="height:62%" class="active"></span><span style="height:40%"></span><span style="height:56%" class="active"></span><span style="height:24%"></span><span style="height:46%"></span><span style="height:32%"></span><span style="height:68%" class="active"></span><span style="height:30%"></span><span style="height:50%"></span><span style="height:76%" class="active"></span>
+                </div>
+                <div class="time-ruler">
+                    <span>00:00</span><span>00:08</span><span>00:16</span><span>00:24</span>
+                </div>
+
+                <div class="transcript-lines">
+                    <div class="t-line">
+                        <span class="stamp">00:04</span>
+                        <span class="txt">अहाँ के की सहायता कऽ सकैत छी</span>
+                        <span class="tag mai">MAI</span>
+                    </div>
+                    <div class="t-line">
+                        <span class="stamp">00:09</span>
+                        <span class="txt">आपका ऑर्डर की स्थिति बताइए</span>
+                        <span class="tag hin">HIN</span>
+                    </div>
+                    <div class="t-line">
+                        <span class="stamp">00:15</span>
+                        <span class="txt" style="font-family: inherit;">Ship it to the Darbhanga branch</span>
+                        <span class="tag eng">ENG</span>
+                    </div>
+                </div>
+
+                <div class="annot-footer">
+                    <div class="annot-stat"><span class="k">Speakers</span><span class="v">3 Diarized</span></div>
+                    <div class="annot-stat"><span class="k">Accuracy</span><span class="v">99.8% Verified</span></div>
+                    <div class="annot-stat"><span class="k">SLA</span><span class="v">2–4 Weeks</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 1: DATA CAPABILITIES -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow">Data Capabilities</span>
+            <h2>Specialized annotation services for Indian language AI.</h2>
+            <p>We combine human expertise, language-specific data pipelines, and strict QA protocols to turn regional-language data into production AI models.</p>
+        </div>
+
+        <div class="capabilities-grid">
+            <article class="cap-card">
+                <span class="num">01 · Speech &amp; Audio</span>
+                <h3>Audio Transcription</h3>
+                <p>Native-speaker verbatim transcription, speaker diarization, noise tagging, and precise time-stamping for ASR training.</p>
+            </article>
+
+            <article class="cap-card">
+                <span class="num">02 · NLP &amp; Text</span>
+                <h3>Trilingual Text Tagging</h3>
+                <p>Named Entity Recognition (NER), intent classification, sentiment analysis, and code-switching annotation across Maithili &amp; Hindi.</p>
+            </article>
+
+            <article class="cap-card">
+                <span class="num">03 · Quality Control</span>
+                <h3>Double-Annotator QA</h3>
+                <p>Dual independent annotator passes with automated inter-annotator consensus scoring ensuring 99.2%+ verified accuracy.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 2: SAMPLE DATA INSPECTOR -->
+<section class="section alt">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow">Sample Dataset Deliverable</span>
+            <h2>Inspect our clean JSONL annotation format.</h2>
+            <p>Every dataset is delivered with detailed metadata, audio segment timestamps, speaker labels, and multi-tier QA metrics.</p>
+        </div>
+
+        <div class="sample-card">
+            <div class="sample-header">
+                <span>dataset_export_sample_042.jsonl</span>
+                <span style="color: #34d399; font-weight: 700;">✓ Validated Schema</span>
+            </div>
+            <div class="sample-code">{
+  <span class="k">"record_id"</span>: <span class="s">"mtl_0042"</span>,
+  <span class="k">"audio_file"</span>: <span class="s">"session_0142.wav"</span>,
+  <span class="k">"segment"</span>: {<span class="k">"start_sec"</span>: <span class="n">4.2</span>, <span class="k">"end_sec"</span>: <span class="n">18.5</span>},
+  <span class="k">"maithili"</span>: <span class="s">"हमर गाँव में बहुत सुंदर मिथिला पेंटिंग होइत अछि।"</span>,
+  <span class="k">"hindi"</span>: <span class="s">"हमारे गाँव में बहुत सुंदर मिथिला पेंटिंग होती है।"</span>,
+  <span class="k">"english"</span>: <span class="s">"There is very beautiful Mithila painting in our village."</span>,
+  <span class="k">"metadata"</span>: {
+    <span class="k">"speakers"</span>: <span class="n">3</span>,
+    <span class="k">"domain"</span>: <span class="s">"culture_and_commerce"</span>,
+    <span class="k">"qa_score"</span>: <span class="n">0.998</span>,
+    <span class="k">"verified_by"</span>: <span class="s">"Senior Maithili Linguist QA"</span>
+  }
+}</div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 3: PRODUCTION PIPELINE -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <span class="eyebrow">Production Workflow</span>
+            <h2>Our 4-step data annotation pipeline.</h2>
+            <p>From initial scoping to final dataset export, our structured pipeline guarantees enterprise SLAs and consistent quality.</p>
+        </div>
+
+        <div class="process-grid">
+            <div class="process-card">
+                <div class="step-no">01</div>
+                <h3>Scoping &amp; Guidelines</h3>
+                <p>We review your dataset requirements, define custom taxonomy guidelines, and set inter-annotator consensus benchmarks.</p>
+            </div>
+            <div class="process-card">
+                <div class="step-no">02</div>
+                <h3>Benchmark Pilot</h3>
+                <p>We annotate a sample benchmark batch for your team to review and calibrate before full-scale production rollout.</p>
+            </div>
+            <div class="process-card">
+                <div class="step-no">03</div>
+                <h3>Native Production &amp; QA</h3>
+                <p>Native regional language annotators execute labeling with 2-tier dual-annotator verification and continuous QA audits.</p>
+            </div>
+            <div class="process-card">
+                <div class="step-no">04</div>
+                <h3>Multi-Format Export</h3>
+                <p>Final dataset delivery in JSONL, CoNLL, WebVTT, or Parquet format complete with compliance and agreement reports.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 4: B2B QUOTE FORM -->
+<section class="section alt" id="quote-form">
+    <div class="container">
+        <div class="section-header" style="text-align: center; margin: 0 auto 3rem;">
+            <span class="eyebrow">B2B Quote Request</span>
+            <h2>Start your custom data labeling project.</h2>
+            <p>Tell us about your dataset requirements and timeline. Our team will review and respond with a detailed quote within 1–2 business days.</p>
+        </div>
+
+        <div class="quote-card">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                    <div class="form-error" style="color: #ef4444; font-size: 0.85rem; margin-top: -0.8rem; margin-bottom: 0.8rem;">{{ field.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 1rem;">Submit Quote Request →</button>
+            </form>
+        </div>
+    </div>
+</section>
+</div>
+{% endblock %}

@@ -1,0 +1,197 @@
+{% extends 'pwa/base_pwa.html' %}
+
+{% block title %}Live Tracking Console{% endblock %}
+
+{% block content %}
+<div class="card kp-panel mb-3">
+  <div class="card-header kp-panel-header">
+    <span class="fw-bold text-dark" style="font-size: 0.8rem;">
+      <i class="fa-solid fa-satellite-dish text-primary me-1"></i> TRIP TELEMETRY CONSOLE
+    </span>
+    <span id="gps-accuracy-badge" class="status-pill info">
+      <span class="status-dot"></span> Locating GPS...
+    </span>
+  </div>
+
+  <div class="card-body p-3 text-center">
+    <!-- Live Speedometer Display -->
+    <div class="my-3">
+      <span class="metric-label d-block text-muted">CURRENT SPEED</span>
+      <div id="live-speed" class="metric-val text-primary display-4 fw-bold num">0</div>
+      <span class="text-secondary fw-semibold" style="font-size: 0.85rem;">km / h</span>
+    </div>
+
+    <div class="p-2 radius-sm mb-3" style="background: var(--surface-alt); border: 1px solid var(--border);">
+      <div class="row g-2 text-center" style="font-size: 0.72rem;">
+        <div class="col-4 border-end">
+          <span class="text-muted d-block">LATITUDE</span>
+          <strong id="live-lat" class="num text-dark">0.0000</strong>
+        </div>
+        <div class="col-4 border-end">
+          <span class="text-muted d-block">LONGITUDE</span>
+          <strong id="live-lng" class="num text-dark">0.0000</strong>
+        </div>
+        <div class="col-4">
+          <span class="text-muted d-block">ACCURACY</span>
+          <strong id="live-acc" class="num text-success">± 0m</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signal Stale Warning -->
+    <div id="stale-gps-alert" class="alert alert-warning py-1 px-2 mb-3 d-none" style="font-size: 0.68rem;">
+      <i class="fa-solid fa-triangle-exclamation me-1"></i> GPS telemetry paused or suspended by device background policy.
+    </div>
+
+    <!-- Offline Queue Counter -->
+    <div id="offline-queue-alert" class="alert alert-secondary py-1 px-2 mb-3 d-none" style="font-size: 0.68rem;">
+      <i class="fa-solid fa-wifi me-1"></i> Offline Mode: <strong id="queue-count">0</strong> telemetry logs queued locally.
+    </div>
+
+    <!-- Action Buttons (Pause / Resume / Stop) -->
+    <form method="POST" action="{% url 'pwa_trip' %}">
+      {% csrf_token %}
+      {% if active_trip %}
+      <div class="row g-2">
+        {% if active_trip.status == 'IN_PROGRESS' %}
+        <div class="col-6">
+          <button type="submit" name="action" value="pause" class="btn btn-warning w-100 py-2 fw-bold" style="font-size: 0.8rem;">
+            <i class="fa-solid fa-pause me-1"></i> PAUSE
+          </button>
+        </div>
+        {% else %}
+        <div class="col-6">
+          <button type="submit" name="action" value="resume" class="btn btn-success w-100 py-2 fw-bold" style="font-size: 0.8rem;">
+            <i class="fa-solid fa-play me-1"></i> RESUME
+          </button>
+        </div>
+        {% endif %}
+
+        <div class="col-6">
+          <button type="submit" name="action" value="stop" class="btn btn-danger w-100 py-2 fw-bold" style="font-size: 0.8rem;">
+            <i class="fa-solid fa-stop me-1"></i> END TRIP
+          </button>
+        </div>
+      </div>
+      {% else %}
+      <button type="submit" name="action" value="start" class="btn btn-success w-100 py-3 fw-bold" style="font-size: 0.9rem;">
+        <i class="fa-solid fa-play me-2"></i> START TRIP
+      </button>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const driverId = {{ request.user.id }};
+    const speedEl = document.getElementById('live-speed');
+    const latEl = document.getElementById('live-lat');
+    const lngEl = document.getElementById('live-lng');
+    const accEl = document.getElementById('live-acc');
+    const badgeEl = document.getElementById('gps-accuracy-badge');
+    const staleAlert = document.getElementById('stale-gps-alert');
+    const offlineAlert = document.getElementById('offline-queue-alert');
+    const queueCountEl = document.getElementById('queue-count');
+
+    let offlineQueue = JSON.parse(localStorage.getItem('fleet_gps_queue') || '[]');
+
+    function updateQueueUI() {
+      if (offlineQueue.length > 0) {
+        offlineAlert.classList.remove('d-none');
+        queueCountEl.innerText = offlineQueue.length;
+      } else {
+        offlineAlert.classList.add('d-none');
+      }
+    }
+    updateQueueUI();
+
+    function sendGPSPoint(payload) {
+      if (navigator.onLine) {
+        fetch('{% url "api_log_gps" %}', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+          // Sync any queued points if online
+          if (offlineQueue.length > 0) {
+            let pending = [...offlineQueue];
+            offlineQueue = [];
+            localStorage.setItem('fleet_gps_queue', '[]');
+            updateQueueUI();
+            pending.forEach(p => sendGPSPoint(p));
+          }
+        })
+        .catch(err => {
+          queuePoint(payload);
+        });
+      } else {
+        queuePoint(payload);
+      }
+    }
+
+    function queuePoint(payload) {
+      offlineQueue.push(payload);
+      localStorage.setItem('fleet_gps_queue', JSON.stringify(offlineQueue));
+      updateQueueUI();
+    }
+
+    let lastUpdateTimestamp = Date.now();
+
+    if ('geolocation' in navigator) {
+      navigator.geolocation.watchPosition(
+        (pos) => {
+          lastUpdateTimestamp = Date.now();
+          staleAlert.classList.add('d-none');
+
+          let speedKmh = pos.coords.speed ? Math.round(pos.coords.speed * 3.6) : 0;
+          let lat = pos.coords.latitude;
+          let lng = pos.coords.longitude;
+          let acc = Math.round(pos.coords.accuracy);
+
+          speedEl.innerText = speedKmh;
+          latEl.innerText = lat.toFixed(4);
+          lngEl.innerText = lng.toFixed(4);
+          accEl.innerText = '± ' + acc + 'm';
+
+          if (acc <= 10) {
+            badgeEl.className = 'status-pill success';
+            badgeEl.innerHTML = '<span class="status-dot"></span> High GPS Accuracy';
+          } else {
+            badgeEl.className = 'status-pill warning';
+            badgeEl.innerHTML = '<span class="status-dot"></span> Low Accuracy (±' + acc + 'm)';
+          }
+
+          let payload = {
+            driver_id: driverId,
+            lat: lat,
+            lng: lng,
+            speed: speedKmh,
+            heading: pos.coords.heading || 0,
+            accuracy: acc,
+            battery: 95
+          };
+
+          sendGPSPoint(payload);
+        },
+        (err) => {
+          badgeEl.className = 'status-pill danger';
+          badgeEl.innerHTML = '<span class="status-dot"></span> GPS Permission Denied';
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      );
+    }
+
+    // Monitor for stale GPS updates
+    setInterval(() => {
+      if (Date.now() - lastUpdateTimestamp > 30000) {
+        staleAlert.classList.remove('d-none');
+      }
+    }, 10000);
+  });
+</script>
+{% endblock %}

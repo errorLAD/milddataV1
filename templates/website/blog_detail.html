@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.seo_title|default:post.title }} — Milda Data Blog{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 0 3rem; background: #0f172a; color: #ffffff;">
+    <div class="container" style="max-width: 800px;">
+        <a href="{% url 'website_cms:blog_index' %}" style="color: #60a5fa; font-weight: 600; text-decoration: none; font-size: 0.9rem;">&larr; Back to Blog Index</a>
+        {% if is_preview %}
+        <div style="margin-top: 1rem; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; display: inline-block;">
+            ⚠️ DRAFT PREVIEW MODE (Status: {{ post.get_status_display }})
+        </div>
+        {% endif %}
+        <div style="font-size: 0.82rem; font-weight: 700; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.06em; margin: 1.5rem 0 0.5rem;">{{ post.category.name|default:'Engineering' }} &bull; {{ post.reading_time }}</div>
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2;">{{ post.title }}</h1>
+        <p style="font-size: 0.9rem; color: #94a3b8;">Published on {{ post.publish_date|date:"F d, Y" }} by <strong>{{ post.author_name }}</strong></p>
+    </div>
+</section>
+
+<section style="padding: 4rem 0; background: #ffffff;">
+    <div class="container" style="max-width: 800px;">
+        <div style="font-size: 1.08rem; line-height: 1.85; color: #1e293b;" class="cms-blog-body">
+            {{ post.content|safe }}
+        </div>
+
+        {% if post.get_tags_list %}
+        <div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <strong style="font-size: 0.85rem; color: #64748b;">TAGS:</strong>
+            {% for tag in post.get_tags_list %}
+            <span style="background: #f1f5f9; color: #334155; padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600;">#{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

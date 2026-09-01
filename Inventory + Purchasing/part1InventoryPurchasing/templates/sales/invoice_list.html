@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Invoices — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Invoices</h1>
+    <p class="page-subtitle">Create commercial sales invoices, track receivables, and log customer payments.</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'invoice_create' %}" class="btn btn-primary">+ Create Invoice</a>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table table-card-mobile">
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Customer</th>
+          <th>Invoice Date</th>
+          <th>Due Date</th>
+          <th>Total Amount</th>
+          <th>Paid</th>
+          <th>Balance</th>
+          <th>Status</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inv in invoices %}
+        <tr>
+          <td data-label="Invoice #"><a href="{% url 'invoice_detail' inv.id %}" style="font-weight: 650; color: var(--brand); text-decoration: none;">{{ inv.invoice_number }}</a></td>
+          <td data-label="Customer" style="font-weight: 600;">{{ inv.customer.company_name }}</td>
+          <td data-label="Invoice Date">{{ inv.invoice_date|date_fmt:org }}</td>
+          <td data-label="Due Date">{{ inv.due_date|date_fmt:org }}</td>
+          <td data-label="Total" class="money" style="font-weight: 700;">{{ inv.total_amount|money:org }}</td>
+          <td data-label="Paid" class="money">{{ inv.paid_amount|money:org }}</td>
+          <td data-label="Balance" class="money" style="font-weight: 700; color: {% if inv.remaining_balance > 0 %}var(--danger){% else %}var(--success){% endif %};">
+            {{ inv.remaining_balance|money:org }}
+          </td>
+          <td data-label="Status">
+            {% if inv.status == 'PAID' %}
+              <span class="badge badge-success"><span class="badge-dot-mark"></span> Paid</span>
+            {% elif inv.status == 'PARTIALLY_PAID' %}
+              <span class="badge badge-warning"><span class="badge-dot-mark"></span> Partially Paid</span>
+            {% elif inv.status == 'OVERDUE' %}
+              <span class="badge badge-danger"><span class="badge-dot-mark"></span> Overdue</span>
+            {% else %}
+              <span class="badge badge-neutral">{{ inv.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td data-label="Action" style="text-align: right;">
+            <a href="{% url 'invoice_detail' inv.id %}" class="btn btn-secondary btn-sm">View / Print</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" style="text-align: center; color: var(--text-tertiary); padding: 2rem;">No invoices created yet. <a href="{% url 'invoice_create' %}">Create first invoice</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

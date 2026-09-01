@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}Properties | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Property Portfolio</h1>
+    <p class="kp-page-subtitle">Manage residential and commercial properties across your portfolio.</p>
+  </div>
+  <div>
+    <a href="{% url 'property_create' %}" class="kp-btn kp-btn-primary">
+      <i class="bi bi-plus-lg"></i> Add New Property
+    </a>
+  </div>
+</div>
+
+<div class="kp-panel mb-3">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Filter Portfolio</h3>
+    <div class="d-flex gap-2">
+      <a href="{% url 'property_list' %}" class="kp-btn kp-btn-secondary py-0.5 px-2">All Types</a>
+      {% for type_code, type_name in property_types %}
+      <a href="?type={{ type_code }}" class="kp-btn kp-btn-secondary py-0.5 px-2">{{ type_name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Property Name</th>
+          <th>Type</th>
+          <th>Location</th>
+          <th>Total Units</th>
+          <th>Occupancy</th>
+          <th>Owner</th>
+          <th class="text-end">Est. Value</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for prop in properties %}
+        <tr>
+          <td class="fw-semibold">
+            <a href="{% url 'property_detail' pk=prop.id %}" class="text-dark text-decoration-none hover-underline">
+              {{ prop.name }}
+            </a>
+          </td>
+          <td><span class="kp-status-badge kp-status-brand">{{ prop.get_property_type_display }}</span></td>
+          <td>{{ prop.city }}, {{ prop.state }}</td>
+          <td class="tabular-nums">{{ prop.total_units_count }} Units</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              <span class="tabular-nums fw-semibold">{{ prop.occupancy_rate }}%</span>
+              <div class="progress flex-grow-1" style="height: 6px;">
+                <div class="progress-bar bg-primary" style="width: {{ prop.occupancy_rate }}%;"></div>
+              </div>
+            </div>
+          </td>
+          <td>{{ prop.owner.get_full_name|default:"—" }}</td>
+          <td class="text-end tabular-nums">{{ current_org.currency_symbol|default:"$" }}{{ prop.current_value|intcomma }}</td>
+          <td class="text-end">
+            <a href="{% url 'property_detail' pk=prop.id %}" class="kp-btn kp-btn-secondary py-0.5 px-2">View Details</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center py-4 text-muted">No properties found. Add your first property to start managing your portfolio!</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

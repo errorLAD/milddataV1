@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+
+{% block title %}Document Management Vault{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-2">
+  <div>
+    <h1 class="page-title mb-0">Centralized Document Vault</h1>
+    <p class="page-subtitle mb-0">Compliance tracking for Registrations, Insurance, Pollution, Permits, and Driver Licenses</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <a href="?status=EXPIRED" class="btn-kp btn-kp-secondary"><span class="status-dot" style="background: var(--danger);"></span> Expired</a>
+    <a href="?status=EXPIRING_SOON" class="btn-kp btn-kp-secondary"><span class="status-dot" style="background: var(--warning);"></span> Expiring Soon</a>
+    <button class="btn-kp btn-kp-primary" data-bs-toggle="modal" data-bs-target="#newDocModal">
+      <i class="fa-solid fa-upload"></i> Upload Document
+    </button>
+  </div>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Vault Records (Expired → Expiring Soon → Valid)</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Document Title</th>
+          <th>Type</th>
+          <th>Associated Unit / Driver</th>
+          <th>Expiry Date</th>
+          <th>Compliance Status</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in documents %}
+        <tr>
+          <td class="fw-bold">{{ d.title }}</td>
+          <td><span class="badge bg-light text-dark border">{{ d.get_doc_type_display }}</span></td>
+          <td>
+            {% if d.vehicle %}
+            <span class="text-primary fw-semibold">{{ d.vehicle.vehicle_code }}</span>
+            {% elif d.driver %}
+            <span class="text-secondary fw-semibold">{{ d.driver.get_full_name }}</span>
+            {% else %}
+            <span class="text-muted">Company General</span>
+            {% endif %}
+          </td>
+          <td class="num fw-bold">{{ d.expiry_date }}</td>
+          <td>
+            {% if d.status == 'EXPIRED' %}
+            <span class="status-pill danger"><span class="status-dot"></span> EXPIRED</span>
+            {% elif d.status == 'EXPIRING_SOON' %}
+            <span class="status-pill warning"><span class="status-dot"></span> EXPIRING SOON</span>
+            {% else %}
+            <span class="status-pill success"><span class="status-dot"></span> VALID</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <button class="btn-kp btn-kp-secondary p-1" title="Download Document"><i class="fa-solid fa-download"></i></button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center py-3 text-muted">No documents found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: New Document -->
+<div class="modal fade" id="newDocModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content kp-modal">
+      <div class="modal-header kp-modal-header">
+        <h5 class="modal-title" style="font-size: 0.95rem; font-weight: 650;">Upload Vault Document</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'documents' %}">
+        {% csrf_token %}
+        <div class="modal-body p-3">
+          <div class="mb-2">
+            <label class="form-label text-secondary" style="font-size: 0.72rem;">DOCUMENT TITLE</label>
+            <input type="text" name="title" class="form-control form-control-kp" placeholder="e.g. Vehicle Insurance Certificate" required>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label text-secondary" style="font-size: 0.72rem;">DOCUMENT TYPE</label>
+              <select name="doc_type" class="form-select form-select-kp">
+                <option value="REGISTRATION">Registration</option>
+                <option value="INSURANCE">Insurance Policy</option>
+                <option value="POLLUTION">Pollution (PUC)</option>
+                <option value="FITNESS">Fitness Certificate</option>
+                <option value="PERMIT">Permit</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-secondary" style="font-size: 0.72rem;">EXPIRY DATE</label>
+              <input type="date" name="expiry_date" class="form-control form-control-kp" value="2026-12-31" required>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label text-secondary" style="font-size: 0.72rem;">ASSOCIATED VEHICLE</label>
+            <select name="vehicle_id" class="form-select form-select-kp">
+              <option value="">General Company Document</option>
+              {% for v in vehicles %}
+              <option value="{{ v.id }}">{{ v.vehicle_code }} ({{ v.registration_number }})</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer kp-modal-footer">
+          <button type="button" class="btn-kp btn-kp-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-kp btn-kp-primary">Save Document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

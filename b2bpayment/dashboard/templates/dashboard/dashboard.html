@@ -1,0 +1,1010 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}Collections Dashboard | KarobarPlus{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ==========================================================================
+       KAROBARPLUS — LIGHT ENTERPRISE SAAS DESIGN SYSTEM
+       Palette + type inspired by Stripe / Ramp / Mercury: white surfaces,
+       deep (not neon) status colors, a single confident brand blue, tabular
+       numerals for money, and hairline borders instead of heavy shadows.
+       ========================================================================== */
+    :root {
+        --bg: #F7F8FA;
+        --surface: #FFFFFF;
+        --surface-alt: #FAFAFB;
+        --border: #E4E7EC;
+        --border-strong: #D0D5DD;
+
+        --text-primary: #101828;
+        --text-secondary: #475467;
+        --text-tertiary: #98A2B3;
+
+        --brand: #2451FF;
+        --brand-dark: #1939B7;
+        --brand-soft: #EEF2FF;
+        --brand-soft-border: #D6E0FF;
+
+        --success: #067647;
+        --success-soft: #ECFDF3;
+        --success-border: #ABEFC6;
+
+        --danger: #B42318;
+        --danger-soft: #FEF3F2;
+        --danger-border: #FECDCA;
+
+        --warning: #B54708;
+        --warning-soft: #FFFAEB;
+        --warning-border: #FEDF89;
+
+        --info: #175CD3;
+        --info-soft: #EFF8FF;
+        --info-border: #B2DDFF;
+
+        --whatsapp: #067647;
+        --whatsapp-soft: #ECFDF3;
+
+        --radius-sm: 6px;
+        --radius-md: 10px;
+        --radius-lg: 14px;
+        --shadow-xs: 0 1px 2px rgba(16, 24, 40, 0.04);
+        --shadow-sm: 0 1px 3px rgba(16, 24, 40, 0.06), 0 1px 2px rgba(16, 24, 40, 0.04);
+    }
+
+    body {
+        background-color: var(--bg);
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        color: var(--text-primary);
+    }
+
+    .knum { font-feature-settings: "tnum" 1, "lnum" 1; font-variant-numeric: tabular-nums; }
+
+    /* ---------------------------------------------------------------- */
+    /* Page header                                                      */
+    /* ---------------------------------------------------------------- */
+    .kp-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 9px;
+        border-radius: 9999px;
+        font-size: 0.62rem;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        background: var(--brand-soft);
+        color: var(--brand-dark);
+        border: 1px solid var(--brand-soft-border);
+    }
+
+    .kp-page-title {
+        font-size: 1.02rem;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+    }
+
+    .kp-page-sub {
+        font-size: 0.72rem;
+        color: var(--text-secondary);
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Buttons                                                          */
+    /* ---------------------------------------------------------------- */
+    .btn-kp-primary {
+        background: var(--brand);
+        color: #FFFFFF;
+        border: 1px solid var(--brand-dark);
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        padding: 0.32rem 0.65rem;
+        font-size: 0.7rem;
+        box-shadow: var(--shadow-xs);
+        transition: background 0.15s ease, box-shadow 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .btn-kp-primary:hover { background: var(--brand-dark); color: #fff; box-shadow: var(--shadow-sm); }
+
+    .btn-kp-whatsapp {
+        background: var(--surface);
+        color: var(--whatsapp);
+        border: 1px solid var(--success-border);
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        padding: 0.32rem 0.65rem;
+        font-size: 0.7rem;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .btn-kp-whatsapp:hover { background: var(--success-soft); color: var(--whatsapp); border-color: var(--success); }
+
+    .btn-kp-secondary {
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        color: var(--text-secondary);
+        font-weight: 600;
+        border-radius: var(--radius-sm);
+        padding: 0.32rem 0.6rem;
+        font-size: 0.7rem;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+    .btn-kp-secondary:hover { background: var(--surface-alt); border-color: var(--text-tertiary); color: var(--text-primary); }
+
+    /* ---------------------------------------------------------------- */
+    /* Metric grid                                                      */
+    /* ---------------------------------------------------------------- */
+    .kp-metric-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.875rem;
+        margin-bottom: 1.1rem;
+    }
+    @media (max-width: 1200px) { .kp-metric-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 576px) { .kp-metric-grid { grid-template-columns: 1fr; } }
+
+    .kp-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 1rem 1.1rem;
+        box-shadow: var(--shadow-xs);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .kp-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
+
+    /* Hero metric — light brand-tinted surface, not dark, per brief */
+    .kp-hero-card {
+        background: linear-gradient(180deg, #F5F7FF 0%, #FFFFFF 100%);
+        border: 1px solid var(--brand-soft-border);
+    }
+    .kp-hero-card .hero-label {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--brand-dark);
+    }
+    .kp-hero-card .hero-value {
+        font-size: 1.15rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--text-primary);
+        margin: 0.2rem 0;
+    }
+    .kp-hero-card .hero-sub { font-size: 0.66rem; color: var(--text-secondary); }
+
+    .kp-icon-box {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        background: var(--surface);
+        border: 1px solid var(--brand-soft-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        color: var(--brand);
+    }
+
+    .kp-metric-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.3rem;
+    }
+    .kp-metric-title {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-tertiary);
+    }
+    .kp-metric-number {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: -0.02em;
+        line-height: 1.15;
+    }
+    .kp-metric-sub {
+        font-size: 0.66rem;
+        color: var(--text-tertiary);
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-weight: 500;
+    }
+    .kp-icon-squircle {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        border: 1px solid transparent;
+    }
+    .kp-icon-squircle.tone-danger { background: var(--danger-soft); color: var(--danger); border-color: var(--danger-border); }
+    .kp-icon-squircle.tone-info { background: var(--info-soft); color: var(--info); border-color: var(--info-border); }
+    .kp-icon-squircle.tone-success { background: var(--success-soft); color: var(--success); border-color: var(--success-border); }
+
+    .kp-card.tone-danger { border-top: 2px solid var(--danger); }
+    .kp-card.tone-info { border-top: 2px solid var(--info); }
+    .kp-card.tone-success { border-top: 2px solid var(--success); }
+
+    /* ---------------------------------------------------------------- */
+    /* Follow-up notice bar                                             */
+    /* ---------------------------------------------------------------- */
+    .kp-notice {
+        background: var(--warning-soft);
+        border: 1px solid var(--warning-border);
+        border-radius: var(--radius-md);
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* Section panels + table                                          */
+    /* ---------------------------------------------------------------- */
+    .kp-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xs);
+        overflow: hidden;
+        margin-bottom: 1.1rem;
+    }
+    .kp-panel-header {
+        padding: 0.9rem 1.1rem;
+        background: var(--surface-alt);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        flex-wrap: wrap;
+    }
+    .kp-panel-header h6 { font-size: 0.8rem; font-weight: 650; letter-spacing: -0.01em; color: var(--text-primary); }
+    .kp-panel-header p { font-size: 0.68rem; color: var(--text-tertiary); }
+
+    .kp-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 9999px;
+        padding: 2px 8px;
+        font-size: 0.62rem;
+        font-weight: 650;
+        background: var(--danger-soft);
+        color: var(--danger);
+        border: 1px solid var(--danger-border);
+    }
+
+    .kp-table { width: 100%; border-collapse: collapse; }
+    .kp-table thead th {
+        background: var(--surface-alt);
+        font-size: 0.58rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-tertiary);
+        padding: 0.5rem 0.9rem;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+    }
+    .kp-table tbody td {
+        padding: 0.55rem 0.9rem;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+        font-size: 0.72rem;
+        color: var(--text-primary);
+    }
+    .kp-table tbody tr:last-child td { border-bottom: none; }
+    .kp-table tbody tr:hover { background-color: var(--surface-alt); }
+
+    .kp-avatar {
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        background: var(--brand-soft);
+        color: var(--brand-dark);
+        font-weight: 700;
+        font-size: 0.68rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    /* Status pills — soft fill + dot, no emoji, matches Ramp/Stripe conventions */
+    .kp-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-radius: 9999px;
+        padding: 2px 8px 2px 6px;
+        font-size: 0.6rem;
+        font-weight: 650;
+        white-space: nowrap;
+    }
+    .kp-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    .kp-pill.urgent { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger-border); }
+    .kp-pill.urgent .kp-dot { background: var(--danger); }
+
+    .kp-pill.high { background: var(--warning-soft); color: var(--warning); border: 1px solid var(--warning-border); }
+    .kp-pill.high .kp-dot { background: var(--warning); }
+
+    .kp-pill.normal { background: var(--info-soft); color: var(--info); border: 1px solid var(--info-border); }
+    .kp-pill.normal .kp-dot { background: var(--info); }
+
+    .kp-pill.success { background: var(--success-soft); color: var(--success); border: 1px solid var(--success-border); }
+    .kp-pill.success .kp-dot { background: var(--success); }
+
+    .kp-pill.neutral { background: var(--surface-alt); color: var(--text-tertiary); border: 1px solid var(--border); }
+    .kp-pill.neutral .kp-dot { background: var(--text-tertiary); }
+
+    .kp-pill.brand { background: var(--brand-soft); color: var(--brand-dark); border: 1px solid var(--brand-soft-border); }
+    .kp-pill.brand .kp-dot { background: var(--brand); }
+
+    .kp-icon-action {
+        width: 27px;
+        height: 27px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-strong);
+        background: var(--surface);
+        color: var(--text-secondary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        transition: all 0.15s ease;
+    }
+    .kp-icon-action:hover { background: var(--surface-alt); color: var(--text-primary); }
+
+    /* ---------------------------------------------------------------- */
+    /* Side panels                                                      */
+    /* ---------------------------------------------------------------- */
+    .kp-list-item {
+        padding: 0.65rem 0;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+    }
+    .kp-list-item:last-child { border-bottom: none; }
+
+    .kp-list-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: var(--radius-sm);
+        background: var(--surface-alt);
+        border: 1px solid var(--border);
+        color: var(--text-tertiary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.78rem;
+        flex-shrink: 0;
+    }
+
+    .kp-ai-badge {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--brand-soft);
+        color: var(--brand-dark);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--brand-soft-border);
+    }
+
+    .kp-prompt-chip {
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        color: var(--text-secondary);
+        font-weight: 600;
+        border-radius: 9999px;
+        padding: 0.28rem 0.6rem;
+        font-size: 0.65rem;
+        transition: all 0.15s ease;
+    }
+    .kp-prompt-chip:hover { background: var(--brand-soft); border-color: var(--brand-soft-border); color: var(--brand-dark); }
+
+    .kp-empty-state { text-align: center; padding: 2rem 1rem; color: var(--text-tertiary); }
+    .kp-empty-state i { color: var(--success); font-size: 1.6rem; display: block; margin-bottom: 0.4rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2.5">
+
+    <!-- Page Header -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+        <div>
+            <div class="kp-eyebrow mb-1">
+                <i class="bi bi-shield-lock-fill"></i> B2B Payment Collections SaaS
+            </div>
+            <h5 class="kp-page-title mb-0">Collections Executive Dashboard</h5>
+            <p class="kp-page-sub mb-0">Monitor accounts receivable, send automated payment reminders, and track payment promises.</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <button type="button" class="btn-kp-whatsapp" data-bs-toggle="modal" data-bs-target="#bulkReminderModal">
+                <i class="bi bi-whatsapp"></i>
+                <span>Send All Reminders</span>
+            </button>
+            <a href="{% url 'collections:list' %}" class="btn-kp-secondary">
+                <i class="bi bi-collection"></i>
+                <span>Workspace</span>
+            </a>
+            <a href="{% url 'sales:create' %}" class="btn-kp-primary">
+                <i class="bi bi-plus-lg"></i>
+                <span>New Invoice</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 1. METRIC GRID                                                             -->
+    <!-- ========================================================================= -->
+    <div class="kp-metric-grid">
+        <!-- 1. Total Outstanding (light brand-tinted hero card) -->
+        <div class="kp-card kp-hero-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="hero-label">Total Outstanding AR</div>
+                    <div class="hero-value knum">{{ total_outstanding|inr:currency_symbol }}</div>
+                    <div class="hero-sub">
+                        <i class="bi bi-people-fill me-1"></i> {{ customers_with_outstanding }} active accounts
+                    </div>
+                </div>
+                <div class="kp-icon-box">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Overdue -->
+        <div class="kp-card tone-danger">
+            <div class="kp-metric-top">
+                <span class="kp-metric-title">Overdue Amount</span>
+                <div class="kp-icon-squircle tone-danger">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                </div>
+            </div>
+            <div class="kp-metric-number knum">{{ overdue_amount|inr:currency_symbol }}</div>
+            <div class="kp-metric-sub">
+                <i class="bi bi-clock-history"></i> Past maturity date
+            </div>
+        </div>
+
+        <!-- 3. Due Today -->
+        <div class="kp-card tone-info">
+            <div class="kp-metric-top">
+                <span class="kp-metric-title">Due Today</span>
+                <div class="kp-icon-squircle tone-info">
+                    <i class="bi bi-calendar2-check-fill"></i>
+                </div>
+            </div>
+            <div class="kp-metric-number knum">{{ due_today_amount|inr:currency_symbol }}</div>
+            <div class="kp-metric-sub">
+                <i class="bi bi-alarm"></i> Maturing today
+            </div>
+        </div>
+
+        <!-- 4. Upcoming -->
+        <div class="kp-card tone-success">
+            <div class="kp-metric-top">
+                <span class="kp-metric-title">Upcoming</span>
+                <div class="kp-icon-squircle tone-success">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+            </div>
+            <div class="kp-metric-number knum">{{ upcoming_amount|inr:currency_symbol }}</div>
+            <div class="kp-metric-sub">
+                <i class="bi bi-arrow-up-right-circle"></i> Future pipeline
+            </div>
+        </div>
+    </div>
+
+    <!-- Follow-up Notice Bar -->
+    {% if customers_needing_followup > 0 %}
+    <div class="kp-notice p-2.5 mb-3 d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-bell-fill" style="color: var(--warning);"></i>
+            <span class="fs-9" style="color: var(--text-primary); font-size: 0.78rem;">
+                <strong>{{ customers_needing_followup }} customer accounts</strong> require follow-up or have reached payment due dates today.
+            </span>
+        </div>
+        <a href="{% url 'collections:list' %}?tab=overdue" class="btn-kp-secondary py-1 px-2" style="font-size: 0.72rem;">
+            Review Accounts <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- ========================================================================= -->
+    <!-- 2. TODAY'S PRIORITY COLLECTION TASKS                                       -->
+    <!-- ========================================================================= -->
+    <div class="kp-panel">
+
+        <div class="kp-panel-header">
+            <div>
+                <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="kp-tag">
+                        <i class="bi bi-fire"></i> Priority Collections
+                    </span>
+                    <h6 class="mb-0 knum">
+                        {{ potential_today|inr:currency_symbol }} potential collection from today's priority accounts
+                    </h6>
+                </div>
+                <p class="mb-0">Prioritized by overdue days, risk level, and payment promise deadlines.</p>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" class="btn-kp-whatsapp py-1 px-2" style="font-size: 0.72rem;" data-bs-toggle="modal" data-bs-target="#bulkReminderModal">
+                    <i class="bi bi-whatsapp"></i>
+                    <span>Send All Reminders</span>
+                </button>
+                <a href="{% url 'collections:list' %}" class="btn-kp-secondary py-1 px-2" style="font-size: 0.72rem;">
+                    View Workspace
+                </a>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="kp-table">
+                <thead>
+                    <tr>
+                        <th class="ps-3" style="min-width: 180px;">Customer</th>
+                        <th style="min-width: 120px;">Outstanding</th>
+                        <th style="min-width: 140px;">Due Date / Overdue</th>
+                        <th style="min-width: 130px;">Promise Status</th>
+                        <th style="min-width: 90px;">Priority</th>
+                        <th class="text-end pe-3" style="min-width: 170px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in priority_list %}
+                    <tr>
+                        <!-- Customer -->
+                        <td class="ps-3">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="kp-avatar">
+                                    {{ item.customer.name|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <a href="{% url 'customers:detail' item.customer.pk %}" class="fw-bold text-decoration-none" style="color: var(--text-primary); font-size: 0.8rem;">
+                                        {{ item.customer.name }}
+                                    </a>
+                                    <div style="font-size: 0.7rem; color: var(--text-tertiary);">
+                                        <i class="bi bi-telephone me-1" style="color: var(--brand);"></i>{{ item.customer.phone }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Outstanding -->
+                        <td>
+                            <div class="fw-bold knum" style="color: var(--text-primary);">{{ item.remaining_amount|inr:currency_symbol }}</div>
+                            {% if item.paid_amount > 0 %}
+                            <div class="knum" style="font-size: 0.7rem; color: var(--text-tertiary);">Paid: {{ item.paid_amount|inr:currency_symbol }}</div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Overdue Aging -->
+                        <td>
+                            {% if item.days_overdue > 0 %}
+                                <span class="kp-pill urgent"><span class="kp-dot"></span>{{ item.days_overdue }} days overdue</span>
+                                <div style="font-size: 0.7rem; color: var(--text-tertiary);" class="mt-1">Due: {{ item.due_date|date:"d M Y" }}</div>
+                            {% elif item.due_date == today %}
+                                <span class="kp-pill normal"><span class="kp-dot"></span>Due Today</span>
+                            {% else %}
+                                <span class="kp-pill neutral" style="font-size: 0.7rem;">Due: {{ item.due_date|date:"d M Y" }}</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Promise Status -->
+                        <td>
+                            {% if item.status == 'Payment Promised' and item.promised_date %}
+                                <span class="kp-pill brand"><span class="kp-dot"></span>Promised {{ item.promised_date|date:"d M" }}</span>
+                            {% elif item.promise_broken %}
+                                <span class="kp-pill high"><span class="kp-dot"></span>Missed Promise</span>
+                            {% else %}
+                                <span style="font-size: 0.7rem; color: var(--text-tertiary);">No promise set</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Priority Level -->
+                        <td>
+                            {% if item.priority.level == 'Urgent' %}
+                                <span class="kp-pill urgent"><span class="kp-dot"></span>Urgent</span>
+                            {% elif item.priority.level == 'High' %}
+                                <span class="kp-pill high"><span class="kp-dot"></span>High</span>
+                            {% else %}
+                                <span class="kp-pill normal"><span class="kp-dot"></span>Normal</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="text-end pe-3">
+                            <div class="d-flex justify-content-end align-items-center gap-1.5">
+                                <button type="button" class="btn-kp-whatsapp py-1 px-2" style="font-size: 0.72rem;"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#reminderModal"
+                                        data-record-id="{{ item.id }}"
+                                        data-customer-name="{{ item.customer.name }}"
+                                        data-customer-phone="{{ item.customer.phone }}"
+                                        data-amount="{{ item.remaining_amount|inr }}"
+                                        data-invoice-number="{{ item.sale.invoice_number|default:'N/A' }}"
+                                        data-days-overdue="{{ item.days_overdue }}"
+                                        data-due-date="{{ item.due_date|date:'d M Y' }}"
+                                        title="Send WhatsApp Reminder">
+                                    <i class="bi bi-whatsapp"></i>
+                                    <span>Remind</span>
+                                </button>
+
+                                <a href="tel:{{ item.customer.phone }}" class="kp-icon-action" title="Call Customer">
+                                    <i class="bi bi-telephone"></i>
+                                </a>
+
+                                <button type="button" class="kp-icon-action" style="color: var(--brand);"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#promiseModal"
+                                        data-record-id="{{ item.id }}"
+                                        data-customer-name="{{ item.customer.name }}"
+                                        data-remaining="{{ item.remaining_amount }}"
+                                        data-current-promise="{{ item.promised_date|date:'Y-m-d'|default:'' }}"
+                                        data-current-amount="{{ item.promised_amount|default:item.remaining_amount }}"
+                                        title="Record Promise to Pay">
+                                    <i class="bi bi-handshake"></i>
+                                </button>
+
+                                <a href="{% url 'customers:detail' item.customer.pk %}" class="kp-icon-action" title="View Profile">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">
+                            <div class="kp-empty-state">
+                                <i class="bi bi-check-circle"></i>
+                                <h6 class="fw-bold mb-1" style="color: var(--text-primary); font-size: 0.85rem;">All Collections Are Up to Date!</h6>
+                                <p class="mb-0" style="font-size: 0.75rem;">No urgent follow-up tasks required right now.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- 3. BOTTOM PANELS                                                           -->
+    <!-- ========================================================================= -->
+    <div class="row g-2.5 mb-2.5">
+        <!-- Left: Promises & Upcoming Due Invoices -->
+        <div class="col-12 col-lg-6">
+            <div class="kp-panel h-100 mb-0">
+                <div class="kp-panel-header py-2 px-3">
+                    <h6 class="mb-0" style="font-size: 0.82rem;">
+                        <i class="bi bi-handshake me-1" style="color: var(--brand);"></i>Promises &amp; Upcoming Maturities
+                    </h6>
+                    <a href="{% url 'collections:list' %}?tab=upcoming" class="text-decoration-none fw-bold" style="color: var(--brand); font-size: 0.72rem;">
+                        View All <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div class="p-3">
+                    {% if promises_due_today %}
+                    <div class="kp-notice p-2 mb-2 d-flex align-items-center gap-2">
+                        <i class="bi bi-exclamation-triangle-fill" style="color: var(--warning);"></i>
+                        <div>
+                            <strong style="font-size: 0.78rem;">{{ promises_due_today.count }} Payment Promise{{ promises_due_today.count|pluralize }} Due Today!</strong>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary);">Follow up to ensure promised payments arrive as scheduled.</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for u in upcoming_collections %}
+                    <div class="kp-list-item">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="kp-list-icon"><i class="bi bi-calendar2-event"></i></span>
+                            <div>
+                                <a href="{% url 'customers:detail' u.customer.pk %}" class="fw-bold text-decoration-none" style="color: var(--text-primary); font-size: 0.78rem;">
+                                    {{ u.customer.name }}
+                                </a>
+                                <div style="font-size: 0.7rem; color: var(--text-tertiary);">Due: {{ u.due_date|date:"d M Y" }}</div>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <div class="fw-bold knum" style="font-size: 0.78rem; color: var(--text-primary);">{{ u.remaining_amount|inr:currency_symbol }}</div>
+                            <span class="kp-pill neutral">{{ u.status }}</span>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-3" style="color: var(--text-tertiary); font-size: 0.78rem;">
+                        No upcoming maturities due in the next 7 days.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: AI Collections Assistant & Recent Activity -->
+        <div class="col-12 col-lg-6">
+            <div class="kp-panel h-100 mb-0">
+                <div class="kp-panel-header py-2 px-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="kp-ai-badge"><i class="bi bi-robot" style="font-size: 0.75rem;"></i></span>
+                        <h6 class="mb-0" style="font-size: 0.82rem;">AI Collections Assistant</h6>
+                    </div>
+                    <a href="{% url 'ai_advisor:dashboard' %}" class="btn-kp-primary py-1 px-2" style="font-size: 0.72rem;">
+                        Open Assistant <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+                <div class="p-3">
+                    <div class="p-2.5 rounded-3 mb-3" style="background: var(--surface-alt); border: 1px solid var(--border);">
+                        <small class="d-block mb-2 fw-bold" style="color: var(--text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.63rem;">Instant Recovery Queries</small>
+                        <div class="d-flex flex-wrap gap-1.5">
+                            <form method="post" action="{% url 'ai_advisor:ask' %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="question" value="Who should I contact today for collections?">
+                                <button type="submit" class="kp-prompt-chip">Who to contact today?</button>
+                            </form>
+                            <form method="post" action="{% url 'ai_advisor:ask' %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="question" value="Which customers are most overdue with highest balance?">
+                                <button type="submit" class="kp-prompt-chip">Most overdue accounts</button>
+                            </form>
+                            <form method="post" action="{% url 'ai_advisor:ask' %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="question" value="How much can I potentially collect this week?">
+                                <button type="submit" class="kp-prompt-chip">Expected collections this week</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2" style="font-size: 0.78rem; color: var(--text-primary);">
+                        <i class="bi bi-check-circle-fill me-1" style="color: var(--success);"></i>Recent Payments Received
+                    </h6>
+                    {% for pay in recent_payments %}
+                    <div class="kp-list-item">
+                        <div>
+                            <span class="fw-semibold" style="font-size: 0.78rem; color: var(--text-primary);">{{ pay.customer.name }}</span>
+                            <div style="font-size: 0.68rem; color: var(--text-tertiary);">{{ pay.payment_method }} • {{ pay.created_at|date:"d M, H:i" }}</div>
+                        </div>
+                        <span class="kp-pill success knum">+{{ pay.amount|inr:currency_symbol }}</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-2" style="color: var(--text-tertiary); font-size: 0.72rem;">
+                        No payments recorded yet today.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- MODALS                                                                    -->
+<!-- ========================================================================= -->
+<!-- Modal: Single WhatsApp Reminder -->
+<div class="modal fade" id="reminderModal" tabindex="-1" aria-labelledby="dashReminderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <form method="post" id="dashReminderForm" action="">
+                {% csrf_token %}
+                <div class="modal-header border-0 py-3" style="background: var(--surface-alt);">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="kp-list-icon" style="width:36px;height:36px;color: var(--whatsapp); background: var(--whatsapp-soft); border-color: var(--success-border);"><i class="bi bi-whatsapp fs-6"></i></div>
+                        <div>
+                            <h6 class="modal-title fw-bold mb-0" style="color: var(--text-primary);" id="dashReminderModalLabel">Send WhatsApp Payment Reminder</h6>
+                            <small style="color: var(--text-tertiary);" id="dashReminderCustomer"></small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold fs-7" style="color: var(--text-primary);">Message Style Template</label>
+                        <select class="form-select fs-7" id="dashTemplateSelector">
+                            <option value="friendly">Friendly (English)</option>
+                            <option value="professional">Professional / Formal (English)</option>
+                            <option value="hindi">Hindi / Hinglish Reminder</option>
+                            <option value="urgent">Urgent Overdue Notice</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold fs-7 d-flex justify-content-between" style="color: var(--text-primary);">
+                            <span>Message Content</span>
+                            <span class="fw-normal" style="color: var(--text-tertiary); font-size: 0.7rem;">Editable before sending</span>
+                        </label>
+                        <textarea name="custom_message" id="dashReminderMessageText" class="form-control fs-7 font-monospace" rows="5" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 py-3" style="background: var(--surface-alt);">
+                    <button type="button" class="btn-kp-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-kp-whatsapp">
+                        <i class="bi bi-send-fill me-1"></i> Send WhatsApp Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Promise to Pay -->
+<div class="modal fade" id="promiseModal" tabindex="-1" aria-labelledby="dashPromiseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <form method="post" id="dashPromiseForm" action="">
+                {% csrf_token %}
+                <div class="modal-header border-0 py-3" style="background: var(--surface-alt);">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="kp-ai-badge" style="width:36px;height:36px;"><i class="bi bi-handshake fs-6"></i></div>
+                        <div>
+                            <h6 class="modal-title fw-bold mb-0" style="color: var(--text-primary);" id="dashPromiseModalLabel">Record Promise to Pay</h6>
+                            <small style="color: var(--text-tertiary);" id="dashPromiseCustomer"></small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold fs-7" style="color: var(--text-primary);">Promised Payment Date <span style="color: var(--danger);">*</span></label>
+                        <input type="date" name="promised_date" id="dashPromiseDateInput" class="form-control fs-7" required min="{{ today|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold fs-7" style="color: var(--text-primary);">Promised Amount (₹)</label>
+                        <input type="number" step="0.01" name="promised_amount" id="dashPromiseAmountInput" class="form-control fs-7" required>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 py-3" style="background: var(--surface-alt);">
+                    <button type="button" class="btn-kp-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-kp-primary">Save Promise</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Bulk Reminders -->
+<div class="modal fade" id="bulkReminderModal" tabindex="-1" aria-labelledby="dashBulkReminderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg);">
+            <form method="post" action="{% url 'collections:send_bulk_reminders' %}">
+                {% csrf_token %}
+                <div class="modal-header border-0 py-3" style="background: var(--surface-alt);">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="kp-list-icon" style="width:36px;height:36px;color: var(--whatsapp); background: var(--whatsapp-soft); border-color: var(--success-border);"><i class="bi bi-whatsapp fs-6"></i></div>
+                        <div>
+                            <h6 class="modal-title fw-bold mb-0" style="color: var(--text-primary);">Send Bulk WhatsApp Reminders</h6>
+                            <small style="color: var(--text-tertiary);">Automate follow-ups across priority accounts</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="fs-7 mb-3" style="color: var(--text-primary);">Send personalized WhatsApp payment reminders to priority accounts:</p>
+
+                    <div class="form-check p-3 mb-2" style="border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-alt);">
+                        <input class="form-check-input ms-0 me-2" type="radio" name="target" id="dashTargetAllOverdue" value="overdue" checked>
+                        <label class="form-check-label fw-bold fs-7" style="color: var(--text-primary);" for="dashTargetAllOverdue">
+                            All Overdue & Priority Accounts
+                            <div class="fw-normal fs-8" style="color: var(--text-secondary);">Sends reminder to all accounts past due or requiring follow-up today.</div>
+                        </label>
+                    </div>
+
+                    <div class="form-check p-3 mb-3" style="border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-alt);">
+                        <input class="form-check-input ms-0 me-2" type="radio" name="target" id="dashTargetDueTodayOnly" value="due_today">
+                        <label class="form-check-label fw-bold fs-7" style="color: var(--text-primary);" for="dashTargetDueTodayOnly">
+                            Due Today Customers Only ({{ due_today_amount|inr }})
+                            <div class="fw-normal fs-8" style="color: var(--text-secondary);">Sends friendly reminder only to accounts maturing today.</div>
+                        </label>
+                    </div>
+
+                    <div class="p-3 fs-8" style="background: var(--warning-soft); color: var(--warning); border: 1px solid var(--warning-border); border-radius: var(--radius-md);">
+                        <i class="bi bi-shield-check me-1"></i>
+                        <strong>Smart Rate-limiting:</strong> Customers contacted within the last 24 hours will be skipped automatically.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 py-3" style="background: var(--surface-alt);">
+                    <button type="button" class="btn-kp-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-kp-whatsapp">
+                        <i class="bi bi-whatsapp me-1"></i> Send Reminders Now
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentReminderData = {};
+
+    const reminderModal = document.getElementById('reminderModal');
+    if (reminderModal) {
+        reminderModal.addEventListener('show.bs.modal', function(event) {
+            const btn = event.relatedTarget;
+            const recordId = btn.getAttribute('data-record-id');
+            const customerName = btn.getAttribute('data-customer-name');
+            const amount = btn.getAttribute('data-amount');
+            const invoiceNumber = btn.getAttribute('data-invoice-number');
+            const daysOverdue = parseInt(btn.getAttribute('data-days-overdue') || '0');
+            const dueDate = btn.getAttribute('data-due-date');
+
+            currentReminderData = { recordId, customerName, amount, invoiceNumber, daysOverdue, dueDate };
+
+            document.getElementById('dashReminderCustomer').textContent = `Customer: ${customerName} | Outstanding: ${amount}`;
+            document.getElementById('dashReminderForm').action = `/collections/${recordId}/remind/`;
+
+            updateReminderText();
+        });
+    }
+
+    const templateSelector = document.getElementById('dashTemplateSelector');
+    if (templateSelector) {
+        templateSelector.addEventListener('change', updateReminderText);
+    }
+
+    function updateReminderText() {
+        const style = document.getElementById('dashTemplateSelector').value;
+        const d = currentReminderData;
+        const msgBox = document.getElementById('dashReminderMessageText');
+        if (!d.customerName) return;
+
+        if (style === 'friendly') {
+            msgBox.value = `Hello ${d.customerName}, this is a gentle reminder that your payment of ${d.amount} is pending. Please let us know your expected payment date. Thank you! 🙏`;
+        } else if (style === 'professional') {
+            msgBox.value = `Payment Reminder: Dear ${d.customerName}, your payment of ${d.amount} against invoice #${d.invoiceNumber} is currently pending. Kindly arrange payment at your earliest convenience.`;
+        } else if (style === 'hindi') {
+            msgBox.value = `Namaste ${d.customerName} ji 🙏\nAapka ${d.amount} ka payment pending hai. Kripya payment ki expected date bata dein. Dhanyawad!`;
+        } else if (style === 'urgent') {
+            msgBox.value = `URGENT: Dear ${d.customerName}, your payment of ${d.amount} is ${d.daysOverdue} days OVERDUE. Please clear the pending balance today to prevent account escalation.`;
+        }
+    }
+
+    const promiseModal = document.getElementById('promiseModal');
+    if (promiseModal) {
+        promiseModal.addEventListener('show.bs.modal', function(event) {
+            const btn = event.relatedTarget;
+            const recordId = btn.getAttribute('data-record-id');
+            const customerName = btn.getAttribute('data-customer-name');
+            const remaining = btn.getAttribute('data-remaining');
+            const currentPromise = btn.getAttribute('data-current-promise');
+            const currentAmount = btn.getAttribute('data-current-amount');
+
+            document.getElementById('dashPromiseCustomer').textContent = `Customer: ${customerName} | Outstanding: ₹${parseFloat(remaining).toLocaleString('en-IN')}`;
+            document.getElementById('dashPromiseForm').action = `/collections/${recordId}/promise/`;
+            document.getElementById('dashPromiseAmountInput').value = currentAmount || remaining;
+            if (currentPromise) {
+                document.getElementById('dashPromiseDateInput').value = currentPromise;
+            } else {
+                const d = new Date();
+                d.setDate(d.getDate() + 3);
+                document.getElementById('dashPromiseDateInput').value = d.toISOString().split('T')[0];
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Enterprise Account — Machine OS{% endblock %}
+
+{% block content %}
+<div style="max-width: 460px; margin: 2rem auto;">
+  <div style="text-align: center; margin-bottom: 1.25rem;">
+    <div style="width: 40px; height: 40px; background: var(--brand); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.5rem;">
+      M
+    </div>
+    <h1 class="kp-page-title">Register Enterprise Account</h1>
+    <p class="kp-page-subtitle">Upgrade from Guest Mode to manage your company's own fleet equipment, fuel, maintenance, documents, and P&L.</p>
+  </div>
+
+  <div class="kp-panel">
+    <div class="kp-panel-header" style="justify-content: center;">
+      <span class="kp-panel-title">Company Registration</span>
+    </div>
+    <div class="kp-panel-body" style="padding: 1.25rem;">
+      <form method="POST" action="{% url 'upgrade_account' %}">
+        {% csrf_token %}
+        <div class="kp-form-group">
+          <label class="kp-label">Organization / Business Name</label>
+          <input type="text" name="organization_name" class="kp-input" placeholder="e.g. Acme Infra & Crane Logistics" required autofocus>
+        </div>
+        
+        <div class="kp-form-group">
+          <label class="kp-label">Admin Username</label>
+          <input type="text" name="username" class="kp-input" placeholder="e.g. fleet_manager" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Password</label>
+            <input type="password" name="password1" class="kp-input" placeholder="••••••••" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Confirm Password</label>
+            <input type="password" name="password2" class="kp-input" placeholder="••••••••" required>
+          </div>
+        </div>
+
+        <button type="submit" class="kp-btn kp-btn-primary" style="width: 100%; justify-content: center; padding: 0.5rem; margin-top: 0.5rem;">
+          Create Account & Setup Fleet
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin-top: 1rem;">
+    <a href="{% url 'login' %}" style="color: var(--brand); text-decoration: none; font-size: 0.72rem; font-weight: 600;">
+      Already have an account? Sign In
+    </a>
+  </div>
+</div>
+{% endblock %}

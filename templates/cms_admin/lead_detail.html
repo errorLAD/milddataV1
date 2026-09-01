@@ -1,0 +1,67 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Lead Record — {{ lead.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Lead Management: {{ lead.name }}</h1>
+        <p class="page-subtitle">Update lead conversion status, record internal staff notes, and set follow-up dates.</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="mailto:{{ lead.email }}?subject=Milda%20Data%20Response%20-%20{{ lead.product_or_service|urlencode }}&body=Hi%20{{ lead.name|urlencode }},%0A%0AThank%20you%20for%20reaching%20out%20to%20Milda%20Data." class="btn-cms btn-primary" style="background: #2563eb; color: #ffffff;">✉️ Direct Email Client</a>
+        <a href="{% url 'website_cms:leads_list' %}" class="btn-cms btn-outline">&larr; Back to Leads</a>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+    <div class="cms-form-card">
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; color: var(--cms-primary);">Inquiry Submission Details</h3>
+        <div style="font-size: 0.9rem; line-height: 1.8;">
+            <p><strong>Lead Type:</strong> <span class="badge badge-info">{{ lead.get_lead_type_display }}</span></p>
+            <p><strong>Full Name:</strong> {{ lead.name }}</p>
+            <p><strong>Email Address:</strong> <a href="mailto:{{ lead.email }}?subject=Milda%20Data%20Response" style="color: #38bdf8; font-weight: 700;">✉️ {{ lead.email }}</a></p>
+            <p><strong>Phone / WhatsApp:</strong> {{ lead.phone|default:'Not provided' }}</p>
+            <p><strong>Company / Location:</strong> {{ lead.company|default:'Not provided' }}</p>
+            <p><strong>Interested Product / Service:</strong> {{ lead.product_or_service|default:'General Inquiry' }}</p>
+            <p><strong>Preferred Date / Time:</strong> {{ lead.preferred_date_time|default:'ASAP' }}</p>
+            <p><strong>Source Page:</strong> {{ lead.source_page }}</p>
+            <p><strong>Submitted Date:</strong> {{ lead.created_at|date:"F d, Y H:i:s IST" }}</p>
+            
+            <div style="margin-top: 1rem; padding: 0.85rem; background: #0f172a; border-radius: 6px; border: 1px solid var(--cms-border);">
+                <strong>Submitted Message:</strong>
+                <p style="margin-top: 0.4rem; color: #cbd5e1; white-space: pre-line;">{{ lead.message|default:'No text message provided.' }}</p>
+            </div>
+            
+            <div style="margin-top: 1rem;">
+                <a href="mailto:{{ lead.email }}?subject=Milda%20Data%20Inquiry%20Response&body=Hi%20{{ lead.name|urlencode }},%0A%0A" class="btn-cms btn-primary" style="width: 100%; justify-content: center; background: #2563eb; color: #ffffff;">✉️ Open Direct Email Client</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="cms-form-card">
+        <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; margin-bottom: 1rem; color: #34d399;">Internal CRM Workflow Update</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Lead Status</label>
+                {{ form.status }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Assigned Staff Member</label>
+                {{ form.assigned_staff }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Next Follow-Up Date</label>
+                {{ form.follow_up_date }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Internal Sales Notes</label>
+                {{ form.internal_notes }}
+            </div>
+
+            <button type="submit" class="btn-cms btn-primary" style="margin-top: 1rem;">Update Lead Status &amp; Notes</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

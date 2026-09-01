@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} — Order &amp; Checkout — Milda Data{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container product-detail">
+        <a href="{% url 'products:catalog' %}" style="color: var(--color-muted); text-decoration: none; font-size: 0.9rem;">&larr; Back to catalog</a>
+
+        <div style="display: flex; gap: 0.6rem; align-items: center; margin-top: 1rem; flex-wrap: wrap;">
+            <span class="badge {% if product.category == 'ai_agent' %}badge-agent{% else %}badge-saas{% endif %}">
+                {{ product.get_category_display }}
+            </span>
+            <span style="background: #e0e7ff; color: #3730a3; padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.78rem; font-weight: 700; font-family: monospace;">
+                Region: {{ active_region }} ({{ currency_code }})
+            </span>
+        </div>
+
+        <h1 style="margin: 0.75rem 0 0; color: var(--color-primary);">{{ product.name }}</h1>
+        <div class="price-large" style="color: #2563eb; font-weight: 800; font-size: 2.2rem; margin: 0.5rem 0;">{{ display_price }}</div>
+
+        <div style="margin: 1.5rem 0;">
+            <h2 style="font-size: 1.25rem; color: var(--color-primary);">Description</h2>
+            <p>{{ product.description|linebreaks }}</p>
+        </div>
+
+        {% if product.get_features_list %}
+        <div style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.25rem; color: var(--color-primary);">Features</h2>
+            <ul class="features-list">
+                {% for feature in product.get_features_list %}
+                <li>{{ feature }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <div class="checkout-box" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.06);">
+            <h2 style="font-size: 1.25rem; margin: 0 0 1.25rem; color: var(--color-primary);">Invoice &amp; Checkout Summary</h2>
+            
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.2rem; margin-bottom: 1.5rem; font-family: monospace; font-size: 0.92rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; color: #475569;">
+                    <span>Billing Cycle:</span>
+                    <strong style="text-transform: capitalize; color: #0f172a;">{{ billing_cycle }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; color: #475569;">
+                    <span>Base Subtotal:</span>
+                    <strong style="color: #0f172a;">{{ currency_symbol }}{{ subtotal|floatformat:2 }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.6rem; color: #475569;">
+                    <span>Tax ({{ tax_label }}):</span>
+                    <strong style="color: #0f172a;">{{ currency_symbol }}{{ tax_amount|floatformat:2 }}</strong>
+                </div>
+                <hr style="border: 0; border-top: 1px dashed #cbd5e1; margin: 0.8rem 0;">
+                <div style="display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; color: #1e293b;">
+                    <span>Total Amount Due:</span>
+                    <span style="color: #2563eb;">{{ currency_symbol }}{{ total_amount|floatformat:2 }}</span>
+                </div>
+            </div>
+
+            {% if user.is_authenticated %}
+                {% if razorpay_order %}
+                <p style="color: var(--color-muted); margin-bottom: 1rem;">Order #{{ order.pk }} generated for <strong>{{ customer_email }}</strong>.</p>
+                <button id="rzp-button" class="btn btn-primary btn-block" style="padding: 1rem; font-size: 1.05rem;">Pay {{ currency_symbol }}{{ total_amount|floatformat:2 }} {{ currency_code }}</button>
+                {% else %}
+                <p style="color: var(--color-muted); margin-bottom: 1rem;">Logged in as <strong>{{ user.email }}</strong></p>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="billing_cycle" value="{{ billing_cycle }}">
+                    <button type="submit" class="btn btn-primary btn-block" style="padding: 1rem; font-size: 1.05rem;">Proceed to Checkout ({{ currency_symbol }}{{ total_amount|floatformat:2 }} {{ currency_code }})</button>
+                </form>
+                {% endif %}
+            {% else %}
+            <p style="color: var(--color-muted); margin-bottom: 1.25rem;">
+                Please log in or sign up to complete your purchase.
+            </p>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                <a href="{% url 'accounts:signup' %}?next={{ request.path }}" class="btn btn-primary" style="flex: 1; min-width: 140px;">Sign Up</a>
+                <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-secondary" style="flex: 1; min-width: 140px;">Log In</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+{% if razorpay_order %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+(function () {
+    var options = {
+        key: "{{ razorpay_key_id }}",
+        amount: "{{ razorpay_order.amount }}",
+        currency: "{{ razorpay_order.currency }}",
+        name: "Milda Data",
+        description: "{{ product.name|escapejs }}",
+        order_id: "{{ razorpay_order.id }}",
+        prefill: {
+            email: "{{ customer_email|escapejs }}"
+        },
+        theme: { color: "#2563eb" },
+        handler: function (response) {
+            var form = document.createElement("form");
+            form.method = "POST";
+            form.action = "{% url 'products:payment_verify' %}";
+
+            var csrf = document.createElement("input");
+            csrf.type = "hidden";
+            csrf.name = "csrfmiddlewaretoken";
+            csrf.value = "{{ csrf_token }}";
+            form.appendChild(csrf);
+
+            var fields = {
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature
+            };
+            for (var key in fields) {
+                var input = document.createElement("input");
+                input.type = "hidden";
+                input.name = key;
+                input.value = fields[key];
+                form.appendChild(input);
+            }
+            document.body.appendChild(form);
+            form.submit();
+        }
+    };
+    var rzp = new Razorpay(options);
+    document.getElementById("rzp-button").onclick = function (e) {
+        e.preventDefault();
+        rzp.open();
+    };
+})();
+</script>
+{% endif %}
+{% endblock %}

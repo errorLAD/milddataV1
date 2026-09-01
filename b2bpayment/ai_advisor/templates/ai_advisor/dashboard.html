@@ -1,0 +1,343 @@
+{% extends "base.html" %}
+{% load localization_tags %}
+
+{% block title %}AI Collections Assistant | NextSlot{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-md-3 py-2.5">
+
+    <!-- Page Header Row -->
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-2 mb-3">
+        <div>
+            <div class="kp-eyebrow mb-1">
+                <i class="bi bi-robot"></i> AR Recovery Intelligence
+            </div>
+            <h1 class="kp-page-title mb-0">AI Collections Assistant</h1>
+            <p class="kp-page-sub mb-0">Intelligent recovery recommendations, overdue account prioritization, promise-to-pay tracking, and WhatsApp reminder drafting.</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <form method="get" class="d-inline">
+                <select name="period" class="form-select form-select-sm fs-8 border-secondary-subtle" onchange="this.form.submit()" style="padding: 0.32rem 1.8rem 0.32rem 0.65rem;">
+                    <option value="7_days" {% if period == '7_days' %}selected{% endif %}>Last 7 Days</option>
+                    <option value="30_days" {% if period == '30_days' %}selected{% endif %}>Last 30 Days</option>
+                    <option value="90_days" {% if period == '90_days' %}selected{% endif %}>Last 90 Days</option>
+                    <option value="this_month" {% if period == 'this_month' %}selected{% endif %}>This Month</option>
+                    <option value="previous_month" {% if period == 'previous_month' %}selected{% endif %}>Previous Month</option>
+                    <option value="this_year" {% if period == 'this_year' %}selected{% endif %}>This Year</option>
+                </select>
+            </form>
+
+            <a href="{% url 'settings_app:index' %}" class="btn-kp-secondary">
+                <i class="bi bi-gear-fill"></i> AI Settings
+            </a>
+
+            <form method="post" action="{% url 'ai_advisor:refresh' %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="period" value="{{ period }}">
+                <button type="submit" class="btn-kp-primary">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh Analysis
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 1. Collections Health Banner (Hero Card) -->
+    <div class="kp-card kp-hero-card mb-3">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+            <div class="d-flex align-items-center gap-2">
+                {% if health.status_color == 'danger' %}
+                    <span class="kp-pill urgent"><span class="kp-dot"></span>Health: {{ health.status|default:'Needs Attention' }}</span>
+                {% elif health.status_color == 'success' %}
+                    <span class="kp-pill success"><span class="kp-dot"></span>Health: {{ health.status|default:'Healthy' }}</span>
+                {% else %}
+                    <span class="kp-pill neutral"><span class="kp-dot"></span>Health: {{ health.status|default:'Insufficient Data' }}</span>
+                {% endif %}
+                <span class="text-muted fs-8">Period: {{ insights.period_start }} to {{ insights.period_end }}</span>
+            </div>
+            <span class="fs-8 text-secondary"><i class="bi bi-shield-check text-success me-1"></i> Computed from Database ORM</span>
+        </div>
+        <p class="mb-0 fs-7 text-primary fw-medium" style="line-height: 1.5;">{{ health.summary }}</p>
+    </div>
+
+    <!-- 2. Ask AI Collections Assistant Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title"><i class="bi bi-chat-left-text-fill text-primary me-1"></i> Ask AI Collections Assistant</h2>
+                <p class="kp-panel-desc">Ask any question about overdue accounts, customer risk, expected collections, or payment drafting.</p>
+            </div>
+        </div>
+        <div class="p-3">
+            <form method="post" action="{% url 'ai_advisor:ask' %}" class="mb-3">
+                {% csrf_token %}
+                <input type="hidden" name="period" value="{{ period }}">
+                <div class="d-flex gap-2">
+                    <input type="text" name="question" id="askInput" class="form-control fs-8 border-secondary-subtle" placeholder="e.g. Who should I contact today? or Which customers are most overdue?" required>
+                    <button type="submit" class="btn-kp-primary text-nowrap">
+                        <i class="bi bi-search"></i> Ask Assistant
+                    </button>
+                </div>
+            </form>
+
+            <div class="d-flex flex-wrap gap-1.5">
+                <button type="button" class="btn-kp-secondary py-1 px-2 fs-9" onclick="setQuestion('Who should I contact today?')">🎯 "Who should I contact today?"</button>
+                <button type="button" class="btn-kp-secondary py-1 px-2 fs-9" onclick="setQuestion('Which customers are most overdue?')">🚨 "Which customers are most overdue?"</button>
+                <button type="button" class="btn-kp-secondary py-1 px-2 fs-9" onclick="setQuestion('How much can I potentially collect this week?')">💰 "How much can I potentially collect this week?"</button>
+                <button type="button" class="btn-kp-secondary py-1 px-2 fs-9" onclick="setQuestion('Which customers have missed payment promises?')">⚠️ "Which customers missed promises?"</button>
+                <button type="button" class="btn-kp-secondary py-1 px-2 fs-9" onclick="setQuestion('Who has the highest outstanding balance?')">📊 "Highest outstanding balances"</button>
+                <button type="button" class="btn-kp-secondary py-1 px-2 fs-9" onclick="setQuestion('Draft a payment reminder message')">✍️ "Draft a payment reminder"</button>
+            </div>
+
+            {% if qa_result %}
+            <div class="mt-3 p-3 bg-light rounded-3 border fs-8">
+                <div class="fw-bold text-primary mb-1">Q: "{{ qa_result.question }}"</div>
+                <div class="text-dark" style="white-space: pre-line; line-height: 1.5;">{{ qa_result.answer }}</div>
+                {% if qa_result.link_url %}
+                <a href="{{ qa_result.link_url }}" class="btn-kp-secondary mt-2 py-0.5 px-2">{{ qa_result.link_text }} <i class="bi bi-arrow-right"></i></a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 3. Top 5 Priority Actions Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title"><i class="bi bi-check2-square text-success me-1"></i> What Should I Do Today? (Top 5 Priority Actions)</h2>
+                <p class="kp-panel-desc">Real-time prioritized recovery actions calculated by AI risk scoring.</p>
+            </div>
+            <span class="kp-pill success"><span class="kp-dot"></span>AI Recommended</span>
+        </div>
+        <div class="p-3">
+            <div class="row g-3">
+                {% for act in todays_actions %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="kp-card h-100 d-flex flex-column justify-content-between p-3">
+                        <div>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="kp-metric-label">Action #{{ forloop.counter }}</span>
+                                <i class="bi {{ act.icon }} text-primary fs-6"></i>
+                            </div>
+                            <h3 class="kp-panel-title mb-1" style="font-size: 0.78rem;">{{ act.title }}</h3>
+                            <p class="kp-panel-desc mb-3" style="font-size: 0.68rem; line-height: 1.4;">{{ act.detail }}</p>
+                        </div>
+                        <a href="{{ act.link_url }}" class="btn-kp-primary justify-content-center w-100 py-1">
+                            {{ act.action_text }} <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center py-4 text-muted fs-8">
+                    <i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>
+                    No critical priority actions required today. Business collection operations are stable.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Who Should I Contact Today Table Panel -->
+    <div class="kp-panel mb-3">
+        <div class="kp-panel-header">
+            <div>
+                <h2 class="kp-panel-title"><i class="bi bi-telephone-outbound-fill text-danger me-1"></i> Priority Contact Queue</h2>
+                <p class="kp-panel-desc">Overdue customer accounts ranked by recovery urgency.</p>
+            </div>
+            <a href="{% url 'customers:list' %}" class="btn-kp-secondary">
+                <span>View All Customers</span>
+            </a>
+        </div>
+        <div class="table-responsive">
+            <table class="kp-table">
+                <thead>
+                    <tr>
+                        <th class="ps-3" style="width: 50px;">Rank</th>
+                        <th style="min-width: 160px;">Customer Name</th>
+                        <th style="min-width: 120px;" class="text-end">Outstanding</th>
+                        <th style="min-width: 110px;">Days Overdue</th>
+                        <th style="min-width: 200px;">Recommended Action</th>
+                        <th class="text-end pe-3" style="min-width: 170px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in priority_contacts %}
+                    <tr>
+                        <td class="ps-3 fw-bold text-muted">{{ forloop.counter }}</td>
+                        <td>
+                            <div class="fw-bold text-dark">{{ item.customer_name }}</div>
+                            <div class="text-muted fs-9" style="font-size: 0.68rem;">
+                                <i class="bi bi-telephone text-primary me-0.5"></i>{{ item.customer_phone }}
+                            </div>
+                        </td>
+                        <td class="text-end fw-bold text-danger">
+                            {{ item|money_record:item.outstanding }}
+                        </td>
+                        <td>
+                            <span class="kp-pill urgent"><span class="kp-dot"></span>{{ item.days_overdue }} days</span>
+                        </td>
+                        <td class="fs-8 text-secondary">{{ item.recommended_action }}</td>
+                        <td class="text-end pe-3">
+                            <div class="d-flex align-items-center justify-content-end gap-1">
+                                <a href="{% url 'customers:detail' item.customer_id %}" class="btn-kp-secondary py-0.5 px-2">
+                                    View Customer
+                                </a>
+                                <a href="{% url 'whatsapp:inbox' %}?customer_id={{ item.customer_id }}" class="btn-kp-whatsapp py-0.5 px-2">
+                                    <i class="bi bi-whatsapp"></i> Remind
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted fs-8">
+                            <i class="bi bi-check-circle text-success fs-4 d-block mb-1"></i>
+                            No overdue accounts requiring urgent follow-up today.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 5. Udhaar Recovery & Inventory Intelligence Grid -->
+    <div class="row g-3 mb-3">
+        <!-- Udhaar Recovery Panel -->
+        <div class="col-12">
+            <div class="kp-panel mb-0">
+                <div class="kp-panel-header">
+                    <div>
+                        <h2 class="kp-panel-title"><i class="bi bi-journal-bookmark-fill text-warning me-1"></i> Udhaar Recovery Diagnostics</h2>
+                        <p class="kp-panel-desc">Root-cause anomaly detection for outstanding receivables.</p>
+                    </div>
+                    <a href="{% url 'ai_advisor:problems' %}" class="btn-kp-secondary">
+                        <span>Full Anomaly Report</span>
+                    </a>
+                </div>
+                <div class="p-3">
+                    <!-- Mini KPI Row -->
+                    <div class="kp-metric-grid mb-3">
+                        <div class="kp-card">
+                            <span class="kp-metric-label">Total Outstanding</span>
+                            <div class="kp-metric-number">{{ udhaar.total_outstanding|default:0|money:business_currency_symbol }}</div>
+                        </div>
+                        <div class="kp-card">
+                            <span class="kp-metric-label text-danger">Total Overdue</span>
+                            <div class="kp-metric-number text-danger">{{ udhaar.total_overdue|default:0|money:business_currency_symbol }}</div>
+                        </div>
+                        <div class="kp-card">
+                            <span class="kp-metric-label text-info">Due Today</span>
+                            <div class="kp-metric-number text-info">{{ udhaar.due_today_cnt|default:0 }} <small class="fs-8 text-muted font-monospace">({{ udhaar.due_today_amt|default:0|money:business_currency_symbol }})</small></div>
+                        </div>
+                        <div class="kp-card">
+                            <span class="kp-metric-label text-warning">Broken Promises</span>
+                            <div class="kp-metric-number text-warning">{{ udhaar.broken_promises_cnt|default:0 }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Anomaly Cards -->
+                    <div class="row g-3">
+                        {% for prob in udhaar.problems %}
+                        <div class="col-12 col-md-6">
+                            <div class="kp-card border-start border-3 border-{% if prob.priority == 'High' %}danger{% else %}warning{% endif %}">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h3 class="kp-panel-title">{{ prob.title }}</h3>
+                                    {% if prob.priority == 'High' %}
+                                        <span class="kp-pill urgent"><span class="kp-dot"></span>High Priority</span>
+                                    {% else %}
+                                        <span class="kp-pill high"><span class="kp-dot"></span>Warning</span>
+                                    {% endif %}
+                                </div>
+                                <div class="fs-8 mb-1"><strong>Problem:</strong> {{ prob.problem }}</div>
+                                <div class="fs-8 text-secondary mb-1"><strong>Evidence:</strong> {{ prob.evidence }}</div>
+                                <div class="fs-8 text-secondary mb-2"><strong>Reason:</strong> {{ prob.reason }}</div>
+                                <div class="p-2 bg-light rounded-2 fs-8 border"><strong>Recommended Action:</strong> {{ prob.action }}</div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12 text-center py-3 text-muted fs-8">
+                            No major udhaar recovery anomalies detected.
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Intelligence Columns -->
+        <div class="col-12 col-lg-4">
+            <div class="kp-panel h-100 mb-0">
+                <div class="kp-panel-header">
+                    <h2 class="kp-panel-title"><i class="bi bi-graph-up-arrow text-success me-1"></i> Fast-Moving Products</h2>
+                </div>
+                <div class="p-3">
+                    {% for f in fast_moving %}
+                    <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+                        <div>
+                            <div class="fw-bold text-dark fs-8">{{ f.product_name }}</div>
+                            <div class="text-muted fs-9">Revenue: {{ f.revenue|money:business_currency_symbol }}</div>
+                        </div>
+                        <span class="kp-pill success"><span class="kp-dot"></span>{{ f.units_sold }} sold</span>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-3 text-muted fs-8">No sales recorded in period.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="kp-panel h-100 mb-0">
+                <div class="kp-panel-header">
+                    <h2 class="kp-panel-title"><i class="bi bi-cart-plus-fill text-primary me-1"></i> Restock Recommendations</h2>
+                </div>
+                <div class="p-3">
+                    {% for r in restock %}
+                    <div class="py-2 border-bottom">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="fw-bold text-dark fs-8">{{ r.product_name }}</span>
+                            <span class="kp-pill urgent"><span class="kp-dot"></span>Stock: {{ r.current_stock }}</span>
+                        </div>
+                        <div class="text-muted fs-9">{{ r.recommendation }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-3 text-muted fs-8">All products have sufficient stock.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-4">
+            <div class="kp-panel h-100 mb-0">
+                <div class="kp-panel-header">
+                    <h2 class="kp-panel-title"><i class="bi bi-hourglass-bottom text-warning me-1"></i> Slow-Moving Inventory</h2>
+                </div>
+                <div class="p-3">
+                    {% for s in slow_moving %}
+                    <div class="py-2 border-bottom">
+                        <div class="d-flex align-items-center justify-content-between mb-1">
+                            <span class="fw-bold text-dark fs-8">{{ s.product_name }}</span>
+                            <span class="kp-pill high"><span class="kp-dot"></span>{{ s.stock }} in stock</span>
+                        </div>
+                        <div class="text-muted fs-9">Only {{ s.sold_in_period }} sold. {{ s.recommendation }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-3 text-muted fs-8">No slow-moving inventory flags.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setQuestion(q) {
+    document.getElementById('askInput').value = q;
+}
+</script>
+{% endblock %}

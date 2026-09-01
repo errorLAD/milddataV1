@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Suppliers — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Suppliers</h1>
+    <p class="page-subtitle">Manage international vendors, payment terms, and payables.</p>
+  </div>
+  <div class="page-actions">
+    <button onclick="document.getElementById('new-supplier-modal').style.display='flex'" class="btn btn-primary">+ Add Supplier</button>
+    <a href="{% url 'import_csv' %}?entity_type=suppliers" class="btn btn-secondary">Import CSV</a>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Company Name</th>
+          <th>Contact Person</th>
+          <th>Email / Phone</th>
+          <th>Country</th>
+          <th>Payment Terms</th>
+          <th>Total Purchases</th>
+          <th>Payables</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in suppliers %}
+        <tr>
+          <td style="font-weight: 650;">
+            <a href="{% url 'supplier_detail' s.id %}" style="color: var(--brand); text-decoration: none;">{{ s.company_name }}</a>
+          </td>
+          <td>{{ s.contact_person|default:'—' }}</td>
+          <td>
+            <div>{{ s.email }}</div>
+            <div style="font-size: 0.62rem; color: var(--text-tertiary);">{{ s.phone }}</div>
+          </td>
+          <td>{{ s.country }}</td>
+          <td><span class="badge badge-neutral">{{ s.payment_terms }}</span></td>
+          <td class="money">{{ s.total_purchases|money:org }}</td>
+          <td class="money" style="font-weight: 700; color: var(--danger);">{{ s.outstanding_payables|money:org }}</td>
+          <td style="text-align: right;">
+            <a href="{% url 'supplier_detail' s.id %}" class="btn btn-secondary btn-sm">View</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 2rem;">No suppliers added yet.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: New Supplier -->
+<div id="new-supplier-modal" class="modal-backdrop" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="panel-title">Add New Supplier</span>
+      <button onclick="document.getElementById('new-supplier-modal').style.display='none'" class="btn-icon">×</button>
+    </div>
+    <form method="post" action="{% url 'supplier_create' %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Company Name *</label>
+          <input type="text" name="company_name" class="form-control" placeholder="e.g. Apex Components Ltd." required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Contact Person</label>
+            <input type="text" name="contact_person" class="form-control" placeholder="Primary contact">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-control">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="text" name="phone" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Country</label>
+            <input type="text" name="country" class="form-control" value="United States">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Payment Terms</label>
+            <select name="payment_terms" class="form-select">
+              <option value="Net 30">Net 30</option>
+              <option value="Net 15">Net 15</option>
+              <option value="Net 60">Net 60</option>
+              <option value="Due on Receipt">Due on Receipt</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tax ID Number</label>
+            <input type="text" name="tax_id" class="form-control">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <textarea name="address" class="form-control" rows="2"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="document.getElementById('new-supplier-modal').style.display='none'" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">Create Supplier</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

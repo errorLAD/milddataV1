@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Activity Trail & Audit Log{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h1 class="page-title mb-0">System Activity Trail</h1>
+    <p class="page-subtitle mb-0">Enterprise audit trail tracking logins, vehicle creations, trip starts, and document updates</p>
+  </div>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Audit Ledger</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Timestamp</th>
+          <th>User</th>
+          <th>Action Executed</th>
+          <th>Target Object</th>
+          <th>IP Address</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td class="num text-muted" style="font-size: 0.65rem;">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+          <td class="fw-bold text-dark">{{ log.user.get_full_name|default:log.user.username }}</td>
+          <td class="fw-semibold text-primary">{{ log.action }}</td>
+          <td>{{ log.object_repr|default:"--" }}</td>
+          <td class="num text-muted">{{ log.ip_address|default:"127.0.0.1" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="text-center py-3 text-muted">No audit logs recorded.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

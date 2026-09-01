@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}AI Fleet Assistant{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h1 class="page-title mb-0">AI Fleet Copilot Assistant</h1>
+    <p class="page-subtitle mb-0">Query fleet telemetry, expenses, maintenance, and driver history in natural language</p>
+  </div>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-lg-10 col-xl-9">
+    <div class="kp-panel mb-0" style="height: 640px; display: flex; flex-direction: column;">
+      
+      <!-- Card Header -->
+      <div class="kp-panel-header">
+        <div class="d-flex align-items-center gap-2">
+          <div class="btn-kp-primary p-2 radius-sm" style="width: 32px; height: 32px; border-radius: 8px;">
+            <i class="fa-solid fa-robot text-white"></i>
+          </div>
+          <div>
+            <h3 class="kp-panel-title">Fleet Telemetry AI Copilot</h3>
+            <span class="text-secondary" style="font-size: 0.72rem;">Powered by real-time organization database telemetry</span>
+          </div>
+        </div>
+
+        <span class="status-pill brand">
+          <span class="status-dot"></span> Telemetry Connected
+        </span>
+      </div>
+
+      <!-- Quick Prompt Suggestions Chips -->
+      <div class="px-3 py-2 border-bottom bg-light d-flex align-items-center gap-2 overflow-x-auto" style="font-size: 0.75rem;">
+        <span class="text-muted fw-semibold me-1">Try asking:</span>
+        <button class="btn btn-sm btn-outline-secondary py-1 px-2 text-dark chip-btn" onclick="askPrompt(this.innerText)">Which vehicle costs me the most?</button>
+        <button class="btn btn-sm btn-outline-secondary py-1 px-2 text-dark chip-btn" onclick="askPrompt(this.innerText)">Which vehicles need maintenance this month?</button>
+        <button class="btn btn-sm btn-outline-secondary py-1 px-2 text-dark chip-btn" onclick="askPrompt(this.innerText)">Which documents expire next month?</button>
+        <button class="btn btn-sm btn-outline-secondary py-1 px-2 text-dark chip-btn" onclick="askPrompt(this.innerText)">Show vehicles with high idle time.</button>
+      </div>
+
+      <!-- Chat History Stream -->
+      <div id="ai-chat-stream" class="kp-panel-body flex-grow-1 overflow-y-auto" style="background: #FAFBFD;">
+        
+        <!-- Welcome Message -->
+        <div class="d-flex align-items-start gap-3 mb-4">
+          <div class="btn-kp-primary p-2 radius-sm" style="width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;">
+            <i class="fa-solid fa-robot text-white"></i>
+          </div>
+          <div class="p-3 bg-white border radius-md shadow-xs" style="max-width: 80%; font-size: 0.85rem; border-radius: 12px;">
+            <p class="mb-2 fw-semibold text-dark">Hello! I am your AI Fleet Copilot Assistant.</p>
+            <p class="mb-0 text-secondary" style="font-size: 0.8rem;">I have real-time access to your fleet's telemetry, vehicle health scores, active trips, fuel logs, maintenance schedules, and expense reports. How can I help you optimize operations today?</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Input Bar -->
+      <div class="p-3 bg-white border-top">
+        <form id="ai-form" class="d-flex gap-2">
+          {% csrf_token %}
+          <input type="text" id="ai-input" class="form-control form-control-kp py-2" placeholder="Ask AI a question about your fleet..." required style="font-size: 0.85rem;">
+          <button type="submit" class="btn-kp btn-kp-primary px-4">
+            <i class="fa-solid fa-paper-plane me-1"></i> Send Query
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function askPrompt(txt) {
+    document.getElementById('ai-input').value = txt;
+    document.getElementById('ai-form').dispatchEvent(new Event('submit'));
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const form = document.getElementById('ai-form');
+    const input = document.getElementById('ai-input');
+    const stream = document.getElementById('ai-chat-stream');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const q = input.value.trim();
+      if (!q) return;
+
+      // Append user prompt
+      stream.innerHTML += `
+        <div class="d-flex align-items-start justify-content-end gap-2 mb-4">
+          <div class="p-3 bg-primary text-white radius-md shadow-xs" style="max-width: 80%; font-size: 0.85rem; border-radius: 12px;">
+            ${q}
+          </div>
+        </div>
+      `;
+      input.value = '';
+      stream.scrollTop = stream.scrollHeight;
+
+      // Send AJAX to API
+      fetch('{% url "api_ai_query" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ query: q })
+      })
+      .then(res => res.json())
+      .then(data => {
+        stream.innerHTML += `
+          <div class="d-flex align-items-start gap-3 mb-4">
+            <div class="btn-kp-primary p-2 radius-sm" style="width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;">
+              <i class="fa-solid fa-robot text-white"></i>
+            </div>
+            <div class="p-3 bg-white border radius-md shadow-xs" style="max-width: 80%; font-size: 0.85rem; border-radius: 12px;">
+              ${data.response}
+            </div>
+          </div>
+        `;
+        stream.scrollTop = stream.scrollHeight;
+      })
+      .catch(err => {
+        stream.innerHTML += `
+          <div class="p-2 text-danger" style="font-size: 0.78rem;">Error connecting to AI service.</div>
+        `;
+      });
+    });
+  });
+</script>
+{% endblock %}

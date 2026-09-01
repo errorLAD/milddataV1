@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Vehicles & Heavy Equipment{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-2">
+  <div>
+    <h1 class="page-title mb-0">Vehicles & Heavy Equipment Fleet</h1>
+    <p class="page-subtitle mb-0">Trucks, Vans, Cars, JCBs, Excavators, Tractors, Loaders, and Generators</p>
+  </div>
+  <div class="d-flex align-items-center gap-2">
+    <button class="btn-kp btn-kp-primary" data-bs-toggle="modal" data-bs-target="#newVehicleModal">
+      <i class="fa-solid fa-plus"></i> Add Vehicle / Machine
+    </button>
+  </div>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Asset Fleet Catalog</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Vehicle ID</th>
+          <th>Reg / Serial Number</th>
+          <th>Type</th>
+          <th>Brand & Model</th>
+          <th>Odometer / Hours</th>
+          <th>Current Driver</th>
+          <th>Status</th>
+          <th>Health Score</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in vehicles %}
+        <tr>
+          <td class="fw-bold">
+            <a href="{% url 'vehicle_detail' v.id %}" class="text-decoration-none text-primary">
+              {{ v.vehicle_code }}
+            </a>
+          </td>
+          <td class="num">{{ v.registration_number }}</td>
+          <td>
+            <span class="badge bg-light text-dark border">
+              {% if 'JCB' in v.vehicle_type or 'EXCAVATOR' in v.vehicle_type %}
+              <i class="fa-solid fa-tractor text-warning me-1"></i>
+              {% elif 'TRUCK' in v.vehicle_type %}
+              <i class="fa-solid fa-truck text-primary me-1"></i>
+              {% else %}
+              <i class="fa-solid fa-car text-secondary me-1"></i>
+              {% endif %}
+              {{ v.get_vehicle_type_display }}
+            </span>
+          </td>
+          <td>{{ v.brand }} {{ v.model }} ({{ v.year }})</td>
+          <td class="num">
+            {% if 'JCB' in v.vehicle_type or 'EXCAVATOR' in v.vehicle_type or 'GENERATOR' in v.vehicle_type %}
+            {{ v.engine_hours|floatformat:0 }} hrs
+            {% else %}
+            {{ v.mileage_km|floatformat:0 }} km
+            {% endif %}
+          </td>
+          <td>{{ v.current_driver.get_full_name|default:"Unassigned" }}</td>
+          <td>
+            {% if v.status == 'MOVING' %}
+            <span class="status-pill success"><span class="status-dot"></span> Moving</span>
+            {% elif v.status == 'IDLE' %}
+            <span class="status-pill warning"><span class="status-dot"></span> Idle</span>
+            {% elif v.status == 'MAINTENANCE' %}
+            <span class="status-pill danger"><span class="status-dot"></span> Maintenance</span>
+            {% else %}
+            <span class="status-pill info"><span class="status-dot"></span> {{ v.get_status_display }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="fw-bold {% if v.health_score_breakdown.score >= 80 %}text-success{% elif v.health_score_breakdown.score >= 60 %}text-warning{% else %}text-danger{% endif %}">
+              {{ v.health_score_breakdown.score }}/100
+            </span>
+          </td>
+          <td class="text-end">
+            <a href="{% url 'vehicle_detail' v.id %}" class="btn-kp btn-kp-secondary p-1" title="View Full Profile">
+              <i class="fa-solid fa-folder-open"></i>
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center py-3 text-muted">No vehicles found.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: New Vehicle -->
+<div class="modal fade" id="newVehicleModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content kp-modal">
+      <div class="modal-header kp-modal-header">
+        <h5 class="modal-title" style="font-size: 0.95rem; font-weight: 650;">Add Vehicle / Machine</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'vehicles_list' %}">
+        {% csrf_token %}
+        <div class="modal-body p-3">
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label text-secondary" style="font-size: 0.72rem;">VEHICLE CODE / ID</label>
+              <input type="text" name="vehicle_code" class="form-control form-control-kp" placeholder="e.g. TR-103 or JCB-05" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label text-secondary" style="font-size: 0.72rem;">REGISTRATION NUMBER</label>
+              <input type="text" name="registration_number" class="form-control form-control-kp" placeholder="DL-01-AB-9999" required>
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label text-secondary" style="font-size: 0.72rem;">VEHICLE / MACHINE TYPE</label>
+            <select name="vehicle_type" class="form-select form-select-kp">
+              {% for code, label in type_choices %}
+              <option value="{{ code }}">{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label text-secondary" style="font-size: 0.72rem;">BRAND</label>
+              <input type="text" name="brand" class="form-control form-control-kp" placeholder="Volvo / JCB / CAT">
+            </div>
+            <div class="col-6">
+              <label class="form-label text-secondary" style="font-size: 0.72rem;">MODEL</label>
+              <input type="text" name="model" class="form-control form-control-kp" placeholder="FH16 / 3DX">
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label text-secondary" style="font-size: 0.72rem;">ASSIGN DRIVER</label>
+            <select name="driver_id" class="form-select form-select-kp">
+              <option value="">Unassigned</option>
+              {% for d in drivers %}
+              <option value="{{ d.id }}">{{ d.get_full_name|default:d.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer kp-modal-footer">
+          <button type="button" class="btn-kp btn-kp-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-kp btn-kp-primary">Save Vehicle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

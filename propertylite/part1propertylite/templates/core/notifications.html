@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Notification Center</h1>
+    <p class="kp-page-subtitle">In-app alerts for rent due dates, payment receipts, lease updates, and maintenance tickets.</p>
+  </div>
+  {% if unread_notifications_count > 0 %}
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="kp-btn kp-btn-secondary">
+      <i class="bi bi-check2-all text-primary me-1"></i> Mark All as Read
+    </button>
+  </form>
+  {% endif %}
+</div>
+
+<div class="kp-panel mb-3">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">All Notifications</h3>
+  </div>
+  <div class="p-3">
+    {% for n in notifications %}
+    <div class="d-flex justify-content-between align-items-center p-3 mb-2 rounded border {% if not n.is_read %}bg-light border-primary{% else %}bg-white{% endif %}">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="kp-status-badge kp-status-brand">{{ n.get_notification_type_display }}</span>
+          <span class="fw-bold text-dark fs-7">{{ n.title }}</span>
+          {% if not n.is_read %}<span class="badge bg-danger rounded-circle p-1"></span>{% endif %}
+        </div>
+        <p class="text-secondary fs-7 mb-0">{{ n.message }}</p>
+      </div>
+      <div class="text-end text-muted fs-8">
+        {{ n.created_at|date:"M d, H:i" }}
+      </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-4 text-muted fs-7">No notifications found.</div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

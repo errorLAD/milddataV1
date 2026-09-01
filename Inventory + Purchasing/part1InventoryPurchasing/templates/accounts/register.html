@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Organization — StockFlow</title>
+  <link rel="stylesheet" href="{% static 'css/stockflow.css' %}">
+</head>
+<body style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: var(--bg); padding: 2rem 0;">
+  <div style="width: 100%; max-width: 440px;">
+    <div style="text-align: center; margin-bottom: 1.2rem;">
+      <div class="brand-icon" style="width: 42px; height: 42px; font-size: 1.3rem; margin: 0 auto 0.6rem auto;">S</div>
+      <h2 style="font-size: 1.2rem; font-weight: 700;">StockFlow</h2>
+      <p style="font-size: 0.72rem; color: var(--text-secondary);">International B2B SaaS for SMBs Worldwide</p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Set Up Your Organization</span>
+      </div>
+      <div class="panel-body">
+        {% if messages %}
+          {% for message in messages %}
+            <div style="font-size: 0.68rem; color: var(--danger); margin-bottom: 0.8rem;">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <form method="post" action="{% url 'register' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label class="form-label">Company / Organization Name *</label>
+            <input type="text" name="company_name" class="form-control" placeholder="e.g. Apex Global Logistics" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Country *</label>
+              <select name="country" class="form-select">
+                <option value="United States">United States (USD)</option>
+                <option value="United Kingdom">United Kingdom (GBP)</option>
+                <option value="Germany">Germany (EUR)</option>
+                <option value="Canada">Canada (CAD)</option>
+                <option value="Australia">Australia (AUD)</option>
+                <option value="Singapore">Singapore (SGD)</option>
+                <option value="United Arab Emirates">UAE (AED)</option>
+                <option value="Switzerland">Switzerland (CHF)</option>
+                <option value="Japan">Japan (JPY)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Currency Symbol</label>
+              <input type="text" name="currency_symbol" class="form-control" value="$">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Admin Username *</label>
+            <input type="text" name="username" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Password *</label>
+            <input type="password" name="password1" class="form-control" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirm Password *</label>
+            <input type="password" name="password2" class="form-control" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Create Organization</button>
+        </form>
+      </div>
+    </div>
+
+    <div style="text-align: center; font-size: 0.68rem; color: var(--text-tertiary);">
+      Already registered? <a href="{% url 'login' %}" style="color: var(--brand); text-decoration: none; font-weight: 600;">Sign In</a>
+    </div>
+  </div>
+</body>
+</html>

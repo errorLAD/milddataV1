@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Spare Parts & Inventory — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Spare Parts & Inventory Management</h1>
+    <p class="kp-page-subtitle">Track equipment spare parts, machine-linked stock IN/OUT transactions, and low-stock threshold alerts.</p>
+  </div>
+  <div style="display: flex; gap: 0.5rem;">
+    <button class="kp-btn kp-btn-secondary" data-modal-target="modal-stock-trans">
+      <i class="fa-solid fa-arrows-up-down"></i> Record Stock IN/OUT
+    </button>
+    <button class="kp-btn kp-btn-primary" data-modal-target="modal-add-part">
+      <i class="fa-solid fa-plus"></i> Add Spare Part
+    </button>
+  </div>
+</div>
+
+<!-- Low Stock Warning Alerts -->
+{% if low_stock_count > 0 %}
+  <div style="margin-bottom: 0.875rem;">
+    <div class="kp-badge kp-badge-warning" style="padding: 0.4rem 0.75rem; width: 100%; border-radius: var(--radius-sm); font-size: 0.72rem;">
+      <span class="kp-dot"></span> ⚠️ LOW STOCK ALERT: {{ low_stock_count }} spare part item(s) are below minimum threshold quantity!
+    </div>
+  </div>
+{% endif %}
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <div class="kp-panel-title">Inventory Catalog ({{ parts.count }} Parts)</div>
+  </div>
+  
+  <div class="kp-table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Part Name</th>
+          <th>SKU</th>
+          <th>Category</th>
+          <th>Stock Quantity</th>
+          <th>Min Threshold</th>
+          <th>Unit Cost</th>
+          <th>Supplier</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in parts %}
+          <tr>
+            <td style="font-weight: 650; color: var(--brand);">{{ p.name }}</td>
+            <td class="num-tabular" style="font-weight: 600;">{{ p.sku }}</td>
+            <td><span class="kp-badge kp-badge-brand">{{ p.category }}</span></td>
+            <td class="num-tabular" style="font-weight: 800; font-size: 0.8rem;">{{ p.stock_quantity }} Units</td>
+            <td class="num-tabular">{{ p.min_stock_threshold }} Units</td>
+            <td class="num-tabular">{{ currency_symbol }}{{ p.unit_cost|floatformat:2|intcomma }}</td>
+            <td>{{ p.supplier_name|default:"General Supplier" }}</td>
+            <td>
+              {% if p.is_low_stock %}
+                <span class="kp-badge kp-badge-danger"><span class="kp-dot"></span> Low Stock</span>
+              {% else %}
+                <span class="kp-badge kp-badge-success"><span class="kp-dot"></span> In Stock</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" style="text-align: center; color: var(--text-tertiary); padding: 1.5rem;">No spare parts in inventory.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Add Spare Part -->
+<div class="kp-modal-backdrop" id="modal-add-part">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Add New Spare Part</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'add_spare_part' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Spare Part Name</label>
+          <input type="text" name="name" class="kp-input" placeholder="e.g. Hydraulic Seal Kit JCB 3DX" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">SKU / Part Number</label>
+            <input type="text" name="sku" class="kp-input" placeholder="e.g. PRT-JCB-9021" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Category</label>
+            <input type="text" name="category" class="kp-input" placeholder="e.g. Hydraulic Systems" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Initial Stock Quantity</label>
+            <input type="number" name="stock_quantity" class="kp-input" value="10" required>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Min Threshold (Low Alert)</label>
+            <input type="number" name="min_stock_threshold" class="kp-input" value="3" required>
+          </div>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Unit Cost ({{ currency_symbol }})</label>
+          <input type="number" step="50" name="unit_cost" class="kp-input" value="2500" required>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Add Spare Part</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Stock Transaction -->
+<div class="kp-modal-backdrop" id="modal-stock-trans">
+  <div class="kp-modal">
+    <div class="kp-modal-header">
+      <span style="font-weight: 650; font-size: 0.82rem;">Record Stock IN / OUT</span>
+      <button class="kp-icon-btn" data-modal-close><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form action="{% url 'stock_transaction' %}" method="POST">
+      {% csrf_token %}
+      <div style="padding: 1.1rem;">
+        <div class="kp-form-group">
+          <label class="kp-label">Select Spare Part</label>
+          <select name="spare_part" class="kp-select" required>
+            {% for p in parts %}
+              <option value="{{ p.pk }}">{{ p.name }} (Available: {{ p.stock_quantity }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div class="kp-form-group">
+            <label class="kp-label">Transaction Type</label>
+            <select name="transaction_type" class="kp-select">
+              <option value="stock_out">Stock OUT (Usage / Issue)</option>
+              <option value="stock_in">Stock IN (Purchase / Restock)</option>
+            </select>
+          </div>
+          <div class="kp-form-group">
+            <label class="kp-label">Quantity</label>
+            <input type="number" name="quantity" class="kp-input" value="1" min="1" required>
+          </div>
+        </div>
+        <div class="kp-form-group">
+          <label class="kp-label">Link Machine (Optional)</label>
+          <select name="machine" class="kp-select">
+            <option value="">General Inventory</option>
+            {% for m in machines %}
+              <option value="{{ m.pk }}">{{ m.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="kp-modal-footer">
+        <button type="button" class="kp-btn kp-btn-secondary" data-modal-close>Cancel</button>
+        <button type="submit" class="kp-btn kp-btn-primary">Record Transaction</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Services CMS — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Company Services Directory</h1>
+        <p class="page-subtitle">Manage company services, descriptions, features, and technology offerings.</p>
+    </div>
+    <a href="{% url 'website_cms:service_create' %}" class="btn-cms btn-primary">+ Add New Service</a>
+</div>
+
+<div class="cms-table-card">
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Service Name</th>
+                    <th>Icon</th>
+                    <th>Status</th>
+                    <th>Sort Order</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for service in services %}
+                <tr>
+                    <td>
+                        <strong>{{ service.name }}</strong>
+                        <div style="font-size: 0.76rem; color: var(--cms-muted);">/services/{{ service.slug }}/</div>
+                    </td>
+                    <td><span style="font-size: 1.2rem;">{{ service.icon }}</span></td>
+                    <td><span class="badge {% if service.status == 'active' %}badge-success{% else %}badge-warning{% endif %}">{{ service.get_status_display }}</span></td>
+                    <td>{{ service.sort_order }}</td>
+                    <td>
+                        <a href="{% url 'website_cms:service_edit' service.pk %}" class="btn-cms btn-outline btn-sm">Edit</a>
+                        <a href="{% url 'website_cms:service_detail' service.slug %}" target="_blank" class="btn-cms btn-outline btn-sm">View Live</a>
+                        <a href="{% url 'website_cms:service_delete' service.pk %}" class="btn-cms btn-danger btn-sm" onclick="return confirm('Delete this service?');">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">No services configured yet. <a href="{% url 'website_cms:service_create' %}">Add first service</a>.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

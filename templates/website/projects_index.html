@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Portfolio Case Studies — Milda Data{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 0 3rem; background: #0f172a; color: #ffffff;">
+    <div class="container" style="text-align: center; max-width: 800px;">
+        <span style="display: inline-block; background: rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px 12px; border-radius: 9999px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; margin-bottom: 1rem;">Case Studies &amp; Success Stories</span>
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; margin-bottom: 1rem;">Featured Projects &amp; Portfolio</h1>
+        <p style="font-size: 1.15rem; color: #94a3b8; line-height: 1.6;">Explore how Milda Data builds high-performance SaaS platforms, machinery fleet tools, and regional AI data pipelines for enterprise clients.</p>
+    </div>
+</section>
+
+<section style="padding: 4rem 0; background: #f8fafc;">
+    <div class="container">
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
+            {% for project in projects %}
+            <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                <div style="padding: 1.75rem;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: #2563eb; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.5rem;">{{ project.category }}</div>
+                    <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.3rem; font-weight: 700; color: #0f172a; margin-bottom: 0.75rem;">{{ project.title }}</h3>
+                    <p style="color: #475569; font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.25rem;">{{ project.short_description }}</p>
+                    
+                    {% if project.get_technologies_list %}
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                        {% for t in project.get_technologies_list|slice:":4" %}
+                        <span style="background: #f1f5f9; color: #475569; font-size: 0.75rem; font-weight: 600; padding: 2px 8px; border-radius: 4px;">{{ t }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div style="padding: 1.25rem 1.75rem; background: #fafafa; border-top: 1px solid #f1f5f9;">
+                    <a href="{% url 'website_cms:project_detail' project.slug %}" class="btn btn-primary" style="width: 100%; justify-content: center; font-size: 0.88rem;">Read Case Study &rarr;</a>
+                </div>
+            </div>
+            {% empty %}
+            <p style="grid-column: 1 / -1; text-align: center; color: #64748b;">Portfolio items being updated by administrator.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Driver Management{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-2">
+  <div>
+    <h1 class="page-title mb-0">Driver & Operator Management</h1>
+    <p class="page-subtitle mb-0">Manage driver profiles, driving scores, license expiries, and assigned vehicles</p>
+  </div>
+  <button class="btn-kp btn-kp-primary" data-bs-toggle="modal" data-bs-target="#newDriverModal">
+    <i class="fa-solid fa-plus"></i> Add New Driver
+  </button>
+</div>
+
+<div class="kp-panel">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Registered Fleet Drivers</h3>
+  </div>
+  <div class="table-responsive">
+    <table class="kp-table">
+      <thead>
+        <tr>
+          <th>Driver Name</th>
+          <th>Employee ID</th>
+          <th>Phone Number</th>
+          <th>License Number</th>
+          <th>License Expiry</th>
+          <th>Driving Score</th>
+          <th>Assigned Vehicle</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in drivers %}
+        <tr>
+          <td class="fw-bold text-primary">{{ d.get_full_name|default:d.username }}</td>
+          <td class="num">{{ d.employee_id|default:"EMP-102" }}</td>
+          <td class="num">{{ d.phone|default:"+1 555-0192" }}</td>
+          <td class="num">{{ d.license_number|default:"DL-994821" }}</td>
+          <td class="num">{{ d.license_expiry|default:"2027-12-31" }}</td>
+          <td>
+            <span class="fw-bold {% if d.driving_score >= 85 %}text-success{% elif d.driving_score >= 70 %}text-warning{% else %}text-danger{% endif %}">
+              {{ d.driving_score }}/100
+            </span>
+          </td>
+          <td>
+            {% if d.assigned_vehicles.exists %}
+            <span class="badge bg-light text-dark border">{{ d.assigned_vehicles.first.vehicle_code }}</span>
+            {% else %}
+            <span class="text-muted">Unassigned</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if d.is_driver_available %}
+            <span class="status-pill success"><span class="status-dot"></span> Available</span>
+            {% else %}
+            <span class="status-pill warning"><span class="status-dot"></span> On Trip</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center py-3 text-muted">No drivers registered.</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: New Driver -->
+<div class="modal fade" id="newDriverModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content kp-modal">
+      <div class="modal-header kp-modal-header">
+        <h5 class="modal-title" style="font-size: 0.95rem; font-weight: 650;">Add Fleet Driver / Operator</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'drivers_list' %}">
+        {% csrf_token %}
+        <div class="modal-body p-3">
+          <div class="mb-2">
+            <label class="form-label text-secondary" style="font-size: 0.72rem;">LOGIN USERNAME</label>
+            <input type="text" name="username" class="form-control form-control-kp" placeholder="e.g. driver3" required>
+          </div>
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label text-secondary" style="font-size: 0.72rem;">FIRST NAME</label>
+              <input type="text" name="first_name" class="form-control form-control-kp" placeholder="Rahul">
+            </div>
+            <div class="col-6">
+              <label class="form-label text-secondary" style="font-size: 0.72rem;">LAST NAME</label>
+              <input type="text" name="last_name" class="form-control form-control-kp" placeholder="Sharma">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label text-secondary" style="font-size: 0.72rem;">PHONE NUMBER</label>
+            <input type="text" name="phone" class="form-control form-control-kp" placeholder="+91 98765 00000">
+          </div>
+          <div class="mb-2">
+            <label class="form-label text-secondary" style="font-size: 0.72rem;">LICENSE NUMBER</label>
+            <input type="text" name="license_number" class="form-control form-control-kp" placeholder="DL-2024-998811">
+          </div>
+        </div>
+        <div class="modal-footer kp-modal-footer">
+          <button type="button" class="btn-kp btn-kp-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn-kp btn-kp-primary">Save Driver</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

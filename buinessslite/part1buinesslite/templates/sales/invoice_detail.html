@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Invoice {{ inv.invoice_number }} - MildData BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <h1 class="page-title">{{ inv.invoice_number }}</h1>
+            {% if inv.status == 'PAID' %}
+            <span class="badge-pill badge-success"><span class="badge-dot"></span> Paid</span>
+            {% elif inv.status == 'PARTIAL' %}
+            <span class="badge-pill badge-warning"><span class="badge-dot"></span> Partial</span>
+            {% elif inv.status == 'OVERDUE' %}
+            <span class="badge-pill badge-danger"><span class="badge-dot"></span> Overdue</span>
+            {% else %}
+            <span class="badge-pill badge-info"><span class="badge-dot"></span> Unpaid</span>
+            {% endif %}
+        </div>
+        <div class="page-subtitle">Issued to <strong>{{ inv.customer.company_name }}</strong> on {{ inv.date }} • Due on {{ inv.due_date }}</div>
+    </div>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        {% if inv.status != 'PAID' %}
+        <a href="{% url 'record_payment' inv.id %}" class="btn-saas btn-primary">💳 Record Payment</a>
+        {% endif %}
+        <a href="{% url 'invoice_pdf' inv.id %}" class="btn-saas btn-secondary" target="_blank">📄 View PDF / Print</a>
+        <a href="https://api.whatsapp.com/send?text=Hello%20{{ inv.customer.company_name }},%20your%20invoice%20{{ inv.invoice_number }}%20for%20{{ currency_symbol }}{{ inv.total_amount }}%20from%20{{ organization.name }}%20is%20ready.%20Remaining%20due:%20{{ currency_symbol }}{{ inv.remaining_amount }}.%20Thank%20you!" target="_blank" class="btn-saas btn-whatsapp">💬 Share via WhatsApp</a>
+    </div>
+</div>
+
+<!-- Main Invoice Card -->
+<div class="card-panel" style="max-width: 900px; margin: 0 auto 1.5rem auto;">
+    <div class="panel-header" style="padding: 1.25rem 1.5rem;">
+        <div>
+            <div style="font-size: 1.25rem; font-weight: 700; color: var(--brand);">{{ organization.name }}</div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 2px;">{{ organization.country }} • Tax System: {{ organization.tax_name }} ({{ organization.tax_rate }}%)</div>
+        </div>
+        <div style="text-align: right;">
+            <div style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">INVOICE</div>
+            <div style="font-size: 0.75rem; font-weight: 650; color: var(--brand); margin-top: 2px;">#{{ inv.invoice_number }}</div>
+        </div>
+    </div>
+
+    <div class="panel-body" style="padding: 1.5rem;">
+        <!-- Billing Grid -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+            <div>
+                <div style="font-size: 0.58rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary); letter-spacing: 0.05em; margin-bottom: 0.3rem;">Billed To</div>
+                <div style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">{{ inv.customer.company_name }}</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">Attn: {{ inv.customer.contact_person|default:"Accounts Payable" }}</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary);">Email: {{ inv.customer.email|default:"-" }}</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary);">Phone: {{ inv.customer.phone|default:"-" }}</div>
+                {% if inv.customer.address %}<div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 2px;">{{ inv.customer.address }}</div>{% endif %}
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 0.58rem; font-weight: 700; text-transform: uppercase; color: var(--text-tertiary); letter-spacing: 0.05em; margin-bottom: 0.3rem;">Invoice Details</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary);">Invoice Date: <strong style="color: var(--text-primary);">{{ inv.date }}</strong></div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 3px;">Due Date: <strong style="color: var(--text-primary);">{{ inv.due_date }}</strong></div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 3px;">Payment Terms: <strong style="color: var(--text-primary);">{{ inv.customer.payment_terms|default:"Net 30" }}</strong></div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 3px;">Currency: <strong style="color: var(--brand);">{{ currency_code }} ({{ currency_symbol }})</strong></div>
+            </div>
+        </div>
+
+        <!-- Line Items Table -->
+        <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Line Items</div>
+        <div class="table-responsive" style="margin-bottom: 1.5rem;">
+            <table class="saas-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Item Description</th>
+                        <th style="text-align: center;">Qty</th>
+                        <th style="text-align: right;">Unit Price</th>
+                        <th style="text-align: right;">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td style="color: var(--text-tertiary); font-size: 0.65rem;">{{ forloop.counter }}</td>
+                        <td style="font-weight: 650; color: var(--text-primary);">{{ item.description }}</td>
+                        <td class="num" style="text-align: center;">{{ item.quantity }}</td>
+                        <td class="num" style="text-align: right;">{{ currency_symbol }}{{ item.unit_price|floatformat:2 }}</td>
+                        <td class="num" style="text-align: right; font-weight: 700; color: var(--text-primary);">{{ currency_symbol }}{{ item.line_total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals & Balances Box -->
+        <div style="display: flex; justify-content: flex-end;">
+            <div style="width: 100%; max-width: 340px; background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 0.4rem;">
+                    <span>Subtotal:</span>
+                    <span class="num">{{ currency_symbol }}{{ inv.total_amount|floatformat:2 }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--success); margin-bottom: 0.4rem;">
+                    <span>Total Payments Received:</span>
+                    <span class="num">- {{ currency_symbol }}{{ inv.paid_amount|floatformat:2 }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.95rem; font-weight: 700; color: var(--brand); border-top: 2px solid var(--border); padding-top: 0.5rem; margin-top: 0.4rem;">
+                    <span>Balance Due:</span>
+                    <span class="num">{{ currency_symbol }}{{ inv.remaining_amount|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment History Panel -->
+<div class="card-panel" style="max-width: 900px; margin: 0 auto;">
+    <div class="panel-header">
+        <div class="panel-title">💳 Payment Receipts & Transaction Audit</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Payment #</th>
+                    <th>Date</th>
+                    <th>Method</th>
+                    <th>Reference / UTR</th>
+                    <th>Amount Paid</th>
+                    <th>Official Receipt</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                <tr>
+                    <td style="font-weight: 650; color: var(--text-primary);">{{ p.payment_number }}</td>
+                    <td>{{ p.date }}</td>
+                    <td><span class="badge-pill badge-success">🌐 {{ p.payment_method }}</span></td>
+                    <td>{{ p.reference|default:"-" }}</td>
+                    <td class="num" style="font-weight: 700; color: var(--success);">{{ currency_symbol }}{{ p.amount|floatformat:2 }}</td>
+                    <td><a href="{% url 'payment_receipt' p.id %}" target="_blank" class="btn-saas btn-secondary" style="font-size: 0.62rem; padding: 0.15rem 0.45rem; min-height: 24px;">Receipt 🧾</a></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-tertiary);">No payments recorded for this invoice yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}WhatsApp Recovery Inbox | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3 gap-2">
+    <div>
+        <h4 class="fw-bold text-dark mb-0"><i class="bi bi-whatsapp me-2 text-success"></i> WhatsApp Recovery Inbox</h4>
+        <small class="text-muted">Live customer messages, voice note transcriptions, AI reply parsing, and broadcast campaigns.</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'whatsapp:campaign_list' %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-megaphone me-1"></i> Broadcast Campaigns
+        </a>
+        <a href="{% url 'whatsapp:sandbox' %}" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-play-circle me-1"></i> Test Webhook Sandbox
+        </a>
+    </div>
+</div>
+
+<div class="chat-container">
+    <!-- Left Sidebar: Conversation Threads -->
+    <div class="chat-threads">
+        <div class="p-3 border-bottom bg-light">
+            <input type="text" class="form-control form-control-sm" placeholder="Search conversations..." id="searchChat">
+        </div>
+        <div class="list-group list-group-flush overflow-y-auto flex-grow-1">
+            {% for conv in conversations %}
+            <a href="?customer_id={{ conv.customer.pk }}" class="list-group-item list-group-item-action py-3 px-3 border-bottom {% if active_conv and active_conv.pk == conv.pk %}active bg-primary-subtle text-primary border-primary-subtle{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold text-dark fs-7 d-flex align-items-center gap-1.5">
+                        {{ conv.customer.name }}
+                        {% if conv.is_human_takeover %}
+                        <span class="badge bg-warning text-dark fs-8" title="Human Takeover Active"><i class="bi bi-person-fill"></i></span>
+                        {% endif %}
+                    </span>
+                    <small class="text-muted fs-8">{{ conv.last_message_at|timesince }} ago</small>
+                </div>
+                <div class="text-muted fs-8 text-truncate">
+                    {% with last_msg=conv.messages.last %}
+                        {% if last_msg %}
+                            {% if last_msg.is_voice_note %}🎤 Voice note: {{ last_msg.transcript|default:last_msg.message_text }}{% else %}{% if last_msg.sender == 'customer' %}Customer:{% else %}You:{% endif %} {{ last_msg.message_text }}{% endif %}
+                        {% else %}
+                            No messages yet
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </a>
+            {% empty %}
+            <div class="text-center py-5 text-muted fs-7">No active conversations yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Right Main: Active Chat Window -->
+    <div class="chat-main">
+        {% if active_conv %}
+        <!-- Chat Header -->
+        <div class="bg-white p-3 border-bottom d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-success text-white fw-bold rounded-circle d-flex align-items-center justify-content-center fs-5" style="width:42px; height:42px;">
+                    {{ active_conv.customer.name|slice:":1"|upper }}
+                </div>
+                <div>
+                    <h6 class="fw-bold text-dark mb-0">{{ active_conv.customer.name }}</h6>
+                    <small class="text-muted fs-7"><i class="bi bi-telephone text-success"></i> {{ active_conv.customer.phone }}</small>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2">
+                {% if active_udhaar %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-7 px-3 py-1.5 fw-bold">
+                    Udhaar: {{ active_udhaar.remaining_amount|inr }}
+                </span>
+                {% endif %}
+
+                <!-- Send Payment Link Form -->
+                <form action="{% url 'whatsapp:send_link' active_conv.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-success" title="Send UPI / Payment Link">
+                        <i class="bi bi-qr-code"></i> Send Link
+                    </button>
+                </form>
+
+                <!-- Toggle Human Takeover Form -->
+                <form action="{% url 'whatsapp:toggle_takeover' active_conv.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm {% if active_conv.is_human_takeover %}btn-warning text-dark{% else %}btn-outline-secondary{% endif %}" title="Toggle AI Automation Pause">
+                        <i class="bi bi-person-fill"></i> {% if active_conv.is_human_takeover %}Manual Mode{% else %}AI Mode{% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Chat History Messages Scroll -->
+        <div class="chat-history" id="chatHistory">
+            {% for m in active_messages %}
+            <div class="chat-bubble {{ m.sender }}">
+                {% if m.is_voice_note %}
+                <div class="badge bg-dark text-white mb-1 fs-8"><i class="bi bi-mic-fill me-1"></i> Voice Note (transcribed)</div>
+                {% if m.audio_file %}
+                <div class="mb-1"><audio controls src="{{ m.audio_file.url }}" style="max-width: 220px; height: 32px;"></audio></div>
+                {% endif %}
+                <div>{{ m.transcript|default:m.message_text|linebreaksbr }}</div>
+                {% else %}
+                <div>{{ m.message_text|linebreaksbr }}</div>
+                {% endif %}
+                <div class="chat-time">{{ m.timestamp|date:"h:i A" }}</div>
+            </div>
+            {% empty %}
+            <div class="text-center py-5 text-muted fs-7">No messages in this chat thread yet. Send a reminder to start.</div>
+            {% endfor %}
+        </div>
+
+        <!-- Message Input Footer -->
+        <div class="bg-white p-3 border-top">
+            <form action="{% url 'whatsapp:send' active_conv.pk %}" method="post" class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="text" name="message_text" class="form-control" placeholder="Type WhatsApp message in Hindi/Hinglish/English..." required id="messageInput" autocomplete="off">
+                <button type="submit" class="btn btn-success px-4 d-flex align-items-center gap-1 fw-bold">
+                    <i class="bi bi-send-fill"></i> Send
+                </button>
+            </form>
+        </div>
+        {% else %}
+        <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
+            <i class="bi bi-whatsapp display-3 text-success mb-3"></i>
+            <h5>Select a customer conversation to start messaging</h5>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const chatHistory = document.getElementById("chatHistory");
+    if (chatHistory) {
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    {% if active_conv %}
+    setInterval(function() {
+        fetch(window.location.href, {
+            headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages && chatHistory) {
+                const currentCount = chatHistory.querySelectorAll('.chat-bubble').length;
+                if (data.messages.length > currentCount) {
+                    window.location.reload();
+                }
+            }
+        });
+    }, 4000);
+    {% endif %}
+});
+</script>
+{% endblock %}

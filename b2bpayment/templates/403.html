@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}403 Forbidden | NextSlot Security{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center min-vh-75 py-5 text-center">
+    <div class="col-12 col-md-6">
+        <div class="kp-card p-5">
+            <div class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 rounded-pill mb-3">
+                <i class="bi bi-shield-lock-fill me-1"></i> Access Denied (403)
+            </div>
+            <h2 class="fw-bold text-dark mb-2">Restricted Access</h2>
+            <p class="text-secondary fs-7 mb-4">You do not have permission to view or modify this resource. If you are in Guest Mode, please upgrade to a full account.</p>
+            <div class="d-flex justify-content-center gap-2">
+                <a href="{% url 'dashboard:index' %}" class="btn-kp-secondary">
+                    <i class="bi bi-house-fill me-1"></i> Back to Dashboard
+                </a>
+                {% if request.is_guest %}
+                <a href="{% url 'accounts:upgrade_guest' %}" class="btn-kp-primary">
+                    <i class="bi bi-rocket-takeoff-fill me-1"></i> Upgrade Account
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

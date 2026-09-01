@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Document - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Upload Business Document</h1>
+        <div class="page-subtitle">Store business or employee contract</div>
+    </div>
+</div>
+
+<div class="card-panel" style="max-width: 500px;">
+    <div class="panel-header">
+        <div class="panel-title">Document Information</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Document Title</label>
+                <input type="text" name="title" class="form-input" placeholder="e.g. Commercial Lease Agreement 2026" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select">
+                        {% for val, label in categories %}
+                        <option value="{{ val }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Expiry Date</label>
+                    <input type="date" name="expiry_date" class="form-input">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Related Record / Notes</label>
+                <input type="text" name="related_record" class="form-input" placeholder="e.g. Supplier: ABC Supplies">
+            </div>
+
+            <button type="submit" class="btn-saas btn-primary">Upload Document</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

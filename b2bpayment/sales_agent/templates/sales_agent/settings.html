@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}AI Sales Agent Settings | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-gear-fill text-primary me-2"></i> AI Sales Agent Settings</h3>
+        <p class="text-muted mb-0 fs-7">Configure AI automation behavior, order drafting policies, greeting tone, and anti-spam controls.</p>
+    </div>
+    <a href="{% url 'sales_agent:dashboard' %}" class="btn btn-light border btn-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="card card-custom p-4">
+            <form method="post" action="{% url 'sales_agent:settings' %}">
+                {% csrf_token %}
+
+                <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-toggle-on text-success me-1"></i> Automation Toggles</h6>
+
+                <div class="form-check form-switch mb-4 fs-6">
+                    {{ form.is_enabled }}
+                    <label class="form-check-label fw-bold text-dark ms-2" for="{{ form.is_enabled.id_for_label }}">
+                        Enable AI Sales Agent
+                    </label>
+                    <small class="d-block text-muted fs-8 mt-1">When enabled, incoming sales & product inquiries on WhatsApp will be answered automatically using real database product records.</small>
+                </div>
+
+                <div class="form-check form-switch mb-4 fs-6">
+                    {{ form.auto_draft_orders }}
+                    <label class="form-check-label fw-bold text-dark ms-2" for="{{ form.auto_draft_orders.id_for_label }}">
+                        Auto-Draft Orders for Owner Approval
+                    </label>
+                    <small class="d-block text-muted fs-8 mt-1">When enabled, buying intents generate a Draft Order with status "Pending Owner Confirmation". If disabled, AI only answers product questions and does not create draft orders.</small>
+                </div>
+
+                <h6 class="fw-bold text-dark border-bottom pb-2 mb-3 mt-4"><i class="bi bi-chat-square-quote text-primary me-1"></i> Greeting & Anti-Spam</h6>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-dark fs-7">AI Greeting / Tone Message</label>
+                    {{ form.greeting_message }}
+                    <small class="text-muted fs-8">Default greeting used by the AI when initiating or opening a sales conversation thread.</small>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold text-dark fs-7">Anti-Spam Re-Blast Safety Window (Hours)</label>
+                    {{ form.anti_spam_window_hours }}
+                    <small class="text-muted fs-8">Prevents sending another WhatsApp sales blast for the same product to the same customer within this window (default: 24 hours).</small>
+                </div>
+
+                <div class="pt-3 border-top d-flex justify-content-end gap-2">
+                    <a href="{% url 'sales_agent:dashboard' %}" class="btn btn-light border px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary-custom px-4 fw-bold shadow-sm">
+                        <i class="bi bi-check-circle-fill me-1"></i> Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

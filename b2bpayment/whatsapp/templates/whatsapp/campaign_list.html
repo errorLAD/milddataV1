@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}WhatsApp Broadcast Campaigns | KarobarPlus{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 gap-3">
+    <div>
+        <h3 class="fw-bold text-dark mb-1"><i class="bi bi-megaphone me-2 text-primary"></i> Broadcast Campaigns</h3>
+        <p class="text-muted mb-0 fs-7">Send promotional offers, new arrival announcements, and festival greetings to customer segments.</p>
+    </div>
+    <a href="{% url 'whatsapp:campaign_create' %}" class="btn btn-primary-custom d-flex align-items-center gap-2">
+        <i class="bi bi-plus-circle-fill"></i> Create New Campaign
+    </a>
+</div>
+
+<!-- Campaigns Table -->
+<div class="card card-custom">
+    <div class="table-responsive">
+        <table class="table table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>Campaign Title</th>
+                    <th>Target Audience</th>
+                    <th>Sent Count</th>
+                    <th>Created Date</th>
+                    <th>Message Text Preview</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in campaigns %}
+                <tr>
+                    <td class="fw-bold text-dark">{{ c.title }}</td>
+                    <td>
+                        {% if c.target_type == 'all' %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">All Marketing Opted-in</span>
+                        {% elif c.target_type == 'tag' %}
+                        <span class="badge text-white" style="background-color: {{ c.target_tag.color }};">Tag: {{ c.target_tag.name }}</span>
+                        {% else %}
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Manual Pick</span>
+                        {% endif %}
+                    </td>
+                    <td class="fw-bold text-primary">{{ c.sent_count }} customers</td>
+                    <td class="text-muted fs-7">{{ c.created_at|date:"d M Y, h:i A" }}</td>
+                    <td class="text-secondary fs-7 text-truncate" style="max-width: 280px;">{{ c.message_text }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5">
+                        <i class="bi bi-megaphone text-muted display-6 d-block mb-3"></i>
+                        <p class="text-muted fs-6 mb-2">No promotional broadcast campaigns sent yet.</p>
+                        <a href="{% url 'whatsapp:campaign_create' %}" class="btn btn-sm btn-primary">Launch First Campaign</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

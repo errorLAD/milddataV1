@@ -1,0 +1,49 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}FAQs CMS — Milda Data Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Global FAQs System</h1>
+        <p class="page-subtitle">Manage frequently asked questions across Homepage, Products, Services, Contact, and Global sections.</p>
+    </div>
+    <a href="{% url 'website_cms:faq_create' %}" class="btn-cms btn-primary">+ Add New FAQ</a>
+</div>
+
+<div class="cms-table-card">
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Question</th>
+                    <th>Category</th>
+                    <th>Placement Target</th>
+                    <th>Sort Order</th>
+                    <th>Active</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for faq in faqs %}
+                <tr>
+                    <td>
+                        <strong>{{ faq.question }}</strong>
+                        <div style="font-size: 0.76rem; color: var(--cms-muted);">{{ faq.answer|truncatewords:12 }}</div>
+                    </td>
+                    <td><span class="badge badge-info">{{ faq.category }}</span></td>
+                    <td><span class="badge badge-warning">{{ faq.get_placement_display }}</span></td>
+                    <td>{{ faq.sort_order }}</td>
+                    <td><span class="badge {% if faq.is_active %}badge-success{% else %}badge-danger{% endif %}">{% if faq.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+                    <td>
+                        <a href="{% url 'website_cms:faq_edit' faq.pk %}" class="btn-cms btn-outline btn-sm">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6">No FAQs configured yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

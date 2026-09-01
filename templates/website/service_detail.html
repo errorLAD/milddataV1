@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}{{ service.seo_title|default:service.name }} — Milda Data{% endblock %}
+
+{% block content %}
+<section style="padding: 4rem 0 3rem; background: #0f172a; color: #ffffff;">
+    <div class="container" style="max-width: 900px;">
+        <a href="{% url 'website_cms:services_index' %}" style="color: #60a5fa; font-weight: 600; text-decoration: none; font-size: 0.9rem;">&larr; Back to All Services</a>
+        <div style="font-size: 3rem; margin: 1.5rem 0 0.5rem;">{{ service.icon }}</div>
+        <h1 style="font-family: 'Outfit', sans-serif; font-size: 2.8rem; font-weight: 800; margin-bottom: 1rem;">{{ service.name }}</h1>
+        <p style="font-size: 1.2rem; color: #cbd5e1; line-height: 1.6;">{{ service.short_description }}</p>
+    </div>
+</section>
+
+<section style="padding: 4rem 0; background: #ffffff;">
+    <div class="container" style="max-width: 900px;">
+        <div style="font-size: 1.05rem; line-height: 1.8; color: #334155;" class="cms-rendered-content">
+            {{ service.full_description|safe }}
+        </div>
+
+        {% if service.get_features_list %}
+        <div style="margin-top: 3rem; background: #f8fafc; padding: 2rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; color: #0f172a;">Key Capabilities &amp; Features</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                {% for f in service.get_features_list %}
+                <div style="display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.95rem; color: #1e293b;">
+                    <span style="color: #2563eb; font-size: 1.1rem; font-weight: 800;">✓</span>
+                    <span>{{ f }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if service.get_technologies_list %}
+        <div style="margin-top: 2rem;">
+            <h4 style="font-size: 1.1rem; font-weight: 700; color: #0f172a; margin-bottom: 0.75rem;">Technologies &amp; Frameworks</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                {% for tech in service.get_technologies_list %}
+                <span style="background: #eff6ff; color: #1d4ed8; padding: 0.35rem 0.85rem; border-radius: 9999px; font-weight: 600; font-size: 0.85rem;">{{ tech }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- CTA Box -->
+        <div style="margin-top: 3.5rem; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #ffffff; padding: 2.5rem; border-radius: 16px; text-align: center;">
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 700; margin-bottom: 0.75rem;">Interested in {{ service.name }}?</h3>
+            <p style="color: #94a3b8; font-size: 1.05rem; margin-bottom: 1.5rem;">Speak with our enterprise solution architects to discuss your technical requirements.</p>
+            <a href="{% url 'website_cms:contact' %}?service={{ service.slug }}" class="btn btn-accent" style="padding: 0.9rem 2rem;">Schedule Consultation &rarr;</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

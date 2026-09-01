@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}System Admin Portal — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <h1 class="kp-page-title">System Administrator Portal</h1>
+      <span class="kp-badge kp-badge-danger"><i class="fa-solid fa-shield-halved"></i> Superuser Access Only</span>
+    </div>
+    <p class="kp-page-subtitle">Cross-tenant platform statistics, global security audit trail, and subscription oversight.</p>
+  </div>
+</div>
+
+<!-- Admin Metrics Bar -->
+<div class="kp-metrics-grid">
+  <div class="kp-metric-card kp-metric-card-hero">
+    <div>
+      <div class="kp-metric-label">Total Registered Tenants</div>
+      <div class="kp-metric-val num-tabular">{{ organizations.count }} Organizations</div>
+    </div>
+    <div class="kp-metric-sub">Multi-tenant SaaS instances</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Global Fleet Count</div>
+      <div class="kp-metric-val num-tabular">{{ total_machines }} Machines</div>
+    </div>
+    <div class="kp-metric-sub">Total machinery registered on platform</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">Active Subscriptions</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--success);">{{ total_subscriptions }} Active Tiers</div>
+    </div>
+    <div class="kp-metric-sub">Billing subscriptions active</div>
+  </div>
+
+  <div class="kp-metric-card">
+    <div>
+      <div class="kp-metric-label">System Security Status</div>
+      <div class="kp-metric-val num-tabular" style="color: var(--success);">100% Healthy</div>
+    </div>
+    <div class="kp-metric-sub">Zero security breaches flagged</div>
+  </div>
+</div>
+
+<!-- Tenant Directory & Security Logs -->
+<div class="kp-row-split">
+  
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Cross-Tenant Organization Directory</div>
+    </div>
+    <div class="kp-table-responsive">
+      <table class="kp-table">
+        <thead>
+          <tr>
+            <th>Organization Name</th>
+            <th>Code</th>
+            <th>Currency</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for org in organizations %}
+            <tr>
+              <td style="font-weight: 650; color: var(--brand);">{{ org.name }}</td>
+              <td class="num-tabular" style="font-weight: 600;">{{ org.code }}</td>
+              <td class="num-tabular">{{ org.currency_symbol }} ({{ org.currency_code }})</td>
+              <td class="num-tabular" style="font-size: 0.68rem;">{{ org.created_at }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title">Global Security Audit Trail</div>
+    </div>
+    <div class="kp-table-responsive">
+      <table class="kp-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Organization</th>
+            <th>Action Performed</th>
+            <th>User</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in audit_logs %}
+            <tr>
+              <td class="num-tabular" style="font-size: 0.65rem;">{{ log.created_at }}</td>
+              <td>{{ log.organization.name }}</td>
+              <td style="font-size: 0.68rem; font-weight: 600;">{{ log.action }}</td>
+              <td>{{ log.user.username|default:"System / Guest" }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" style="text-align: center; color: var(--text-tertiary); padding: 1rem;">No global audit events.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

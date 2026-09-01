@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Trip {{ trip.trip_id }}{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <div>
+    <h1 class="page-title mb-0">Trip {{ trip.trip_id }}</h1>
+    <p class="page-subtitle mb-0">Vehicle: {{ trip.vehicle.vehicle_code }} | Driver: {{ trip.driver.get_full_name }}</p>
+  </div>
+  <a href="{% url 'trips_list' %}" class="btn-kp btn-kp-secondary">Back to Trips</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-8">
+    <div class="kp-panel mb-0" style="height: 450px;">
+      <div id="trip-map" style="width: 100%; height: 100%;"></div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="kp-panel h-100">
+      <div class="kp-panel-header">
+        <h3 class="kp-panel-title">Trip Summary Telemetry</h3>
+      </div>
+      <div class="kp-panel-body">
+        <ul class="list-unstyled mb-0" style="font-size: 0.72rem;">
+          <li class="py-2 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Status:</span>
+            <span class="fw-bold text-dark">{{ trip.get_status_display }}</span>
+          </li>
+          <li class="py-2 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Origin:</span>
+            <span class="fw-semibold text-dark">{{ trip.start_location }}</span>
+          </li>
+          <li class="py-2 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Destination:</span>
+            <span class="fw-semibold text-dark">{{ trip.destination }}</span>
+          </li>
+          <li class="py-2 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Distance:</span>
+            <span class="fw-bold num text-primary">{{ trip.distance_km|floatformat:1 }} km</span>
+          </li>
+          <li class="py-2 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Duration:</span>
+            <span class="fw-bold num text-dark">{{ trip.duration_minutes }} mins</span>
+          </li>
+          <li class="py-2 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Idle Time:</span>
+            <span class="fw-bold num text-warning">{{ trip.idle_minutes }} mins</span>
+          </li>
+          <li class="py-2 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Average Speed:</span>
+            <span class="fw-bold num text-dark">{{ trip.avg_speed_kmh|floatformat:0 }} km/h</span>
+          </li>
+          <li class="py-2 border-bottom d-flex justify-content-between">
+            <span class="text-muted">Max Recorded Speed:</span>
+            <span class="fw-bold num text-danger">{{ trip.max_speed_kmh|floatformat:0 }} km/h</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    let coords = {{ route_json|safe }};
+    let map = L.map('trip-map').setView([28.6139, 77.2090], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19
+    }).addTo(map);
+
+    if (coords.length > 0) {
+      let polyline = L.polyline(coords, { color: '#2451FF', weight: 4 }).addTo(map);
+      map.fitBounds(polyline.getBounds(), { padding: [30, 30] });
+
+      L.marker(coords[0]).addTo(map).bindPopup("Start Point");
+      L.marker(coords[coords.length - 1]).addTo(map).bindPopup("Current / End Location");
+    }
+  });
+</script>
+{% endblock %}

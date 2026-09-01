@@ -1,0 +1,39 @@
+{% load static humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Machine OS — Enterprise Equipment Management{% endblock %}</title>
+  <link rel="manifest" href="{% static 'manifest.json' %}">
+  <meta name="theme-color" content="#2451FF">
+  <link rel="stylesheet" href="{% static 'css/karobarplus.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  {% include 'components/navbar.html' %}
+
+  <!-- Page Content Container -->
+  <main class="kp-page-wrapper">
+    {% if messages %}
+      <div style="margin-bottom: 0.875rem;">
+        {% for message in messages %}
+          <div class="kp-badge {% if message.tags == 'success' %}kp-badge-success{% elif message.tags == 'warning' %}kp-badge-warning{% else %}kp-badge-info{% endif %}" style="padding: 0.4rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.72rem; display: flex; align-items: center; width: 100%;">
+            <span class="kp-dot"></span>
+            <span>{{ message }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{% static 'js/dashboard.js' %}"></script>
+  <script src="{% static 'js/ai_assistant.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

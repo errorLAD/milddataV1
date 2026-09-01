@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static humanize %}
+
+{% block title %}Import & Export Center — Machine OS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Bulk Data Import & Export Engine</h1>
+    <p class="kp-page-subtitle">Batch import machinery records via CSV/Excel, validate formats, detect duplicate records, and export reports.</p>
+  </div>
+</div>
+
+<div class="kp-row-split">
+  
+  <!-- CSV Import Panel -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title"><i class="fa-solid fa-file-import"></i> Bulk Import Heavy Machinery (CSV)</div>
+    </div>
+    <div class="kp-panel-body">
+      <form action="{% url 'import_csv_machines' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="kp-form-group">
+          <label class="kp-label">Select CSV File</label>
+          <input type="file" name="csv_file" accept=".csv" class="kp-input" required>
+          <div style="font-size: 0.65rem; color: var(--text-tertiary); margin-top: 0.3rem;">
+            CSV headers should include: <code>name</code>, <code>reg_number</code>, <code>category</code>, <code>current_meter</code>.
+          </div>
+        </div>
+
+        <div style="background: var(--surface-alt); border: 1px dashed var(--border-strong); padding: 0.75rem; border-radius: var(--radius-sm); margin-bottom: 1rem;">
+          <div style="font-weight: 650; font-size: 0.7rem; margin-bottom: 0.25rem;">Automated Pre-Import Checks:</div>
+          <div style="font-size: 0.66rem; color: var(--text-secondary);">
+            • Checks for duplicate registration numbers.<br>
+            • Validates numerical meter inputs.<br>
+            • Maps equipment categories automatically.
+          </div>
+        </div>
+
+        <button type="submit" class="kp-btn kp-btn-primary" style="width: 100%; justify-content: center;">
+          Upload & Execute Import
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Export Panel -->
+  <div class="kp-panel">
+    <div class="kp-panel-header">
+      <div class="kp-panel-title"><i class="fa-solid fa-file-export"></i> Export Fleet Data</div>
+    </div>
+    <div class="kp-panel-body" style="display: flex; flex-direction: column; gap: 0.75rem;">
+      <div style="font-size: 0.72rem; color: var(--text-secondary);">
+        Export complete equipment directory, fuel consumption logs, service schedules, and machine-level profit/loss records into clean CSV/Excel spreadsheets.
+      </div>
+
+      <a href="{% url 'export_fleet_csv' %}" class="kp-btn kp-btn-secondary" style="justify-content: space-between; padding: 0.6rem 0.85rem;">
+        <span><i class="fa-solid fa-truck-monster"></i> Export Fleet Equipment Catalog</span>
+        <span>.CSV</span>
+      </a>
+      
+      <button class="kp-btn kp-btn-secondary" onclick="alert('Exporting Fuel Logs to CSV...')" style="justify-content: space-between; padding: 0.6rem 0.85rem;">
+        <span><i class="fa-solid fa-gas-pump"></i> Export Refuel Logs</span>
+        <span>.CSV</span>
+      </button>
+
+      <button class="kp-btn kp-btn-secondary" onclick="alert('Exporting Service Records to CSV...')" style="justify-content: space-between; padding: 0.6rem 0.85rem;">
+        <span><i class="fa-solid fa-wrench"></i> Export Maintenance & Repair Logs</span>
+        <span>.CSV</span>
+      </button>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

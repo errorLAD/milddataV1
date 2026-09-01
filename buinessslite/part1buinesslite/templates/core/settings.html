@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Company & International Settings</h1>
+        <div class="page-subtitle">Configure country, currency symbol, tax rules, and document numbering</div>
+    </div>
+</div>
+
+<!-- Quick Preset Chips -->
+<div class="card-panel" style="max-width: 650px; margin-bottom: 1rem;">
+    <div class="panel-header">
+        <div class="panel-title">⚡ Quick Country & Currency Switcher</div>
+    </div>
+    <div class="panel-body">
+        <div style="font-size: 0.68rem; color: var(--text-secondary); margin-bottom: 0.6rem;">Select a country to instantly apply currency symbol (e.g. ₹ for India), code, and tax settings:</div>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+            <button type="button" onclick="applyPreset('India')" class="btn-saas {% if org.country == 'India' %}btn-primary{% else %}btn-secondary{% endif %}">🇮🇳 India (₹ INR • GST 18%)</button>
+            <button type="button" onclick="applyPreset('United States')" class="btn-saas {% if org.country == 'United States' %}btn-primary{% else %}btn-secondary{% endif %}">🇺🇸 United States ($ USD)</button>
+            <button type="button" onclick="applyPreset('United Kingdom')" class="btn-saas {% if org.country == 'United Kingdom' %}btn-primary{% else %}btn-secondary{% endif %}">🇬🇧 United Kingdom (£ GBP)</button>
+            <button type="button" onclick="applyPreset('Germany')" class="btn-saas {% if org.country == 'Germany' %}btn-primary{% else %}btn-secondary{% endif %}">🇩🇪 Germany (€ EUR)</button>
+            <button type="button" onclick="applyPreset('Canada')" class="btn-saas {% if org.country == 'Canada' %}btn-primary{% else %}btn-secondary{% endif %}">🇨🇦 Canada (C$ CAD)</button>
+            <button type="button" onclick="applyPreset('Australia')" class="btn-saas {% if org.country == 'Australia' %}btn-primary{% else %}btn-secondary{% endif %}">🇦🇺 Australia (A$ AUD)</button>
+            <button type="button" onclick="applyPreset('Japan')" class="btn-saas {% if org.country == 'Japan' %}btn-primary{% else %}btn-secondary{% endif %}">🇯🇵 Japan (¥ JPY)</button>
+            <button type="button" onclick="applyPreset('United Arab Emirates')" class="btn-saas {% if org.country == 'United Arab Emirates' %}btn-primary{% else %}btn-secondary{% endif %}">🇦🇪 UAE (AED)</button>
+            <button type="button" onclick="applyPreset('Singapore')" class="btn-saas {% if org.country == 'Singapore' %}btn-primary{% else %}btn-secondary{% endif %}">🇸🇬 Singapore (S$ SGD)</button>
+        </div>
+    </div>
+</div>
+
+<div class="card-panel" style="max-width: 650px;">
+    <div class="panel-header">
+        <div class="panel-title">Organization Settings Form</div>
+    </div>
+    <div class="panel-body">
+        <form method="POST" id="settingsForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Company Name</label>
+                <input type="text" name="name" class="form-input" value="{{ org.name }}" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Country</label>
+                    <select name="country" id="countrySelect" class="form-select" onchange="onCountryChange(this.value)" required>
+                        <option value="India" {% if org.country == 'India' %}selected{% endif %}>India</option>
+                        <option value="United States" {% if org.country == 'United States' %}selected{% endif %}>United States</option>
+                        <option value="United Kingdom" {% if org.country == 'United Kingdom' %}selected{% endif %}>United Kingdom</option>
+                        <option value="Germany" {% if org.country == 'Germany' %}selected{% endif %}>Germany</option>
+                        <option value="France" {% if org.country == 'France' %}selected{% endif %}>France</option>
+                        <option value="Canada" {% if org.country == 'Canada' %}selected{% endif %}>Canada</option>
+                        <option value="Australia" {% if org.country == 'Australia' %}selected{% endif %}>Australia</option>
+                        <option value="Japan" {% if org.country == 'Japan' %}selected{% endif %}>Japan</option>
+                        <option value="United Arab Emirates" {% if org.country == 'United Arab Emirates' %}selected{% endif %}>United Arab Emirates</option>
+                        <option value="Singapore" {% if org.country == 'Singapore' %}selected{% endif %}>Singapore</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Currency Code</label>
+                    <input type="text" name="currency_code" id="currencyCodeInput" class="form-input" value="{{ org.currency_code }}" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Currency Symbol (e.g. ₹, $, £, €)</label>
+                    <input type="text" name="currency_symbol" id="currencySymbolInput" class="form-input" value="{{ org.currency_symbol }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Timezone</label>
+                    <input type="text" name="timezone" class="form-input" value="{{ org.timezone }}" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                <div class="form-group">
+                    <label class="form-label">Tax System Name (e.g. GST, Sales Tax, VAT)</label>
+                    <input type="text" name="tax_name" id="taxNameInput" class="form-input" value="{{ org.tax_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Default Tax Rate (%)</label>
+                    <input type="number" step="0.01" name="tax_rate" id="taxRateInput" class="form-input" value="{{ org.tax_rate }}" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Invoice Number Prefix</label>
+                <input type="text" name="invoice_prefix" class="form-input" value="{{ org.invoice_prefix }}" required>
+            </div>
+
+            <button type="submit" class="btn-saas btn-primary">Save Settings</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    const presets = {
+        "India": { code: "INR", symbol: "₹", taxName: "GST", taxRate: "18.00" },
+        "United States": { code: "USD", symbol: "$", taxName: "Sales Tax", taxRate: "10.00" },
+        "United Kingdom": { code: "GBP", symbol: "£", taxName: "VAT", taxRate: "20.00" },
+        "Germany": { code: "EUR", symbol: "€", taxName: "VAT", taxRate: "19.00" },
+        "France": { code: "EUR", symbol: "€", taxName: "TVA", taxRate: "20.00" },
+        "Canada": { code: "CAD", symbol: "C$", taxName: "GST/HST", taxRate: "13.00" },
+        "Australia": { code: "AUD", symbol: "A$", taxName: "GST", taxRate: "10.00" },
+        "Japan": { code: "JPY", symbol: "¥", taxName: "Consumption Tax", taxRate: "10.00" },
+        "United Arab Emirates": { code: "AED", symbol: "AED", taxName: "VAT", taxRate: "5.00" },
+        "Singapore": { code: "SGD", symbol: "S$", taxName: "GST", taxRate: "9.00" }
+    };
+
+    function onCountryChange(countryName) {
+        if (presets[countryName]) {
+            const p = presets[countryName];
+            document.getElementById('currencyCodeInput').value = p.code;
+            document.getElementById('currencySymbolInput').value = p.symbol;
+            document.getElementById('taxNameInput').value = p.taxName;
+            document.getElementById('taxRateInput').value = p.taxRate;
+        }
+    }
+
+    async function applyPreset(countryName) {
+        document.getElementById('countrySelect').value = countryName;
+        onCountryChange(countryName);
+
+        // Submit form
+        document.getElementById('settingsForm').submit();
+    }
+</script>
+{% endblock %}

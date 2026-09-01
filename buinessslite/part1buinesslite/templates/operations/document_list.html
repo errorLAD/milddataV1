@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Business Documents - BusinessLite{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Business Documents</h1>
+        <div class="page-subtitle">Central repository for contracts, licenses, insurance, and company files</div>
+    </div>
+    <div>
+        <a href="{% url 'document_upload' %}" class="btn-saas btn-primary">+ Upload Document</a>
+    </div>
+</div>
+
+<div class="card-panel">
+    <div class="panel-header">
+        <div class="panel-title">Documents Vault</div>
+    </div>
+    <div class="table-responsive">
+        <table class="saas-table">
+            <thead>
+                <tr>
+                    <th>Document Title</th>
+                    <th>Category</th>
+                    <th>Related Record</th>
+                    <th>Expiry Date</th>
+                    <th>Uploaded Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in docs %}
+                <tr>
+                    <td style="font-weight: 650;">📁 {{ d.title }}</td>
+                    <td><span class="badge-pill badge-info">{{ d.category }}</span></td>
+                    <td>{{ d.related_record|default:"-" }}</td>
+                    <td>
+                        {% if d.expiry_date %}
+                        <span style="font-weight: 600; color: var(--warning);">{{ d.expiry_date }}</span>
+                        {% else %}
+                        <span style="color: var(--text-tertiary);">No Expiry</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ d.created_at|date:"Y-m-d" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-tertiary);">No business documents stored.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

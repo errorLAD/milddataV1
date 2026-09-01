@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load locale_tags %}
+
+{% block title %}Warehouses — StockFlow{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Multi-Warehouse & Locations</h1>
+    <p class="page-subtitle">Manage multiple fulfillment centers, retail stores, and stock distribution.</p>
+  </div>
+  <div class="page-actions">
+    <button onclick="document.getElementById('new-wh-modal').style.display='flex'" class="btn btn-primary">+ Add Warehouse</button>
+  </div>
+</div>
+
+<div class="metrics-grid">
+  {% for w in warehouses %}
+  <div class="metric-card {% if w.wh.is_primary %}hero-card{% endif %}">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+      <div class="metric-label">{{ w.wh.code }}</div>
+      {% if w.wh.is_primary %}<span class="badge badge-success">Primary</span>{% endif %}
+    </div>
+    <div style="font-size: 0.95rem; font-weight: 700; margin: 0.2rem 0; color: var(--text-primary);">{{ w.wh.name }}</div>
+    <div class="metric-sub">{{ w.wh.address|default:'No address listed' }}</div>
+    <div style="margin-top: 0.6rem; pt-2; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 0.68rem;">
+      <span>Units: <strong class="tabular-nums">{{ w.stock_units }}</strong></span>
+      <span>Val: <strong class="money">{{ w.val|money:org }}</strong></span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal: New Warehouse -->
+<div id="new-wh-modal" class="modal-backdrop" style="display: none;">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span class="panel-title">Create Warehouse Location</span>
+      <button onclick="document.getElementById('new-wh-modal').style.display='none'" class="btn-icon">×</button>
+    </div>
+    <form method="post" action="{% url 'warehouse_list' %}">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Warehouse Name *</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. London Logistics Hub" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location Code *</label>
+          <input type="text" name="code" class="form-control" placeholder="e.g. WH-LON" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Physical Address</label>
+          <textarea name="address" class="form-control" rows="2" placeholder="Full address"></textarea>
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" name="is_primary" id="is_primary">
+          <label for="is_primary" class="form-label" style="margin-bottom: 0;">Set as Primary Organization Warehouse</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="document.getElementById('new-wh-modal').style.display='none'" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Location</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

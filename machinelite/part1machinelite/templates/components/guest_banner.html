@@ -1,0 +1,10 @@
+{% if is_guest %}
+<div style="background: var(--warning-soft); border-bottom: 1px solid var(--warning-border); padding: 0.45rem 1rem; text-align: center; color: var(--warning); font-size: 0.7rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+  <span>
+    <i class="fa-solid fa-eye"></i> <strong>GUEST DEMO MODE</strong>: You are currently browsing sample fleet data in read-only mode.
+  </span>
+  <a href="{% url 'upgrade_account' %}" class="kp-btn kp-btn-primary" style="padding: 0.15rem 0.5rem; font-size: 0.64rem;">
+    <i class="fa-solid fa-user-plus"></i> Register / Upgrade Account
+  </a>
+</div>
+{% endif %}

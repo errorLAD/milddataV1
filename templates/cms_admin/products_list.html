@@ -1,0 +1,51 @@
+{% extends "cms_admin/base_admin.html" %}
+
+{% block title %}Products &amp; SaaS Marketplace Admin — Milda Data CMS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Products &amp; SaaS Catalog Admin</h1>
+        <p class="page-subtitle">Manage regional pricing, features, statuses, launch endpoints, and SaaS registry items.</p>
+    </div>
+</div>
+
+<div class="cms-table-card">
+    <div class="table-responsive">
+        <table class="cms-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th>Price (INR Monthly / Yearly)</th>
+                    <th>Price (USD Monthly / Yearly)</th>
+                    <th>Tax Rates</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>
+                        <strong>{{ product.name }}</strong>
+                        <div style="font-size: 0.76rem; color: var(--cms-muted); margin-top: 2px;">{{ product.description|truncatewords:10 }}</div>
+                    </td>
+                    <td><span class="badge badge-info">{{ product.get_category_display }}</span></td>
+                    <td>₹{{ product.price_inr_monthly|floatformat:0 }} /mo<br><small style="color: var(--cms-muted);">₹{{ product.price_inr_yearly|floatformat:0 }} /yr</small></td>
+                    <td>${{ product.price_usd_monthly|floatformat:0 }} /mo<br><small style="color: var(--cms-muted);">${{ product.price_usd_yearly|floatformat:2 }} /yr</small></td>
+                    <td>GST {{ product.gst_tax_rate }}%<br><small style="color: var(--cms-muted);">VAT {{ product.vat_tax_rate }}%</small></td>
+                    <td><span class="badge {% if product.is_active %}badge-success{% else %}badge-danger{% endif %}">{% if product.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+                    <td>
+                        <a href="{% url 'website_cms:product_edit' product.pk %}" class="btn-cms btn-outline btn-sm">Edit CMS</a>
+                        <a href="/products/detail/{{ product.pk }}/" target="_blank" class="btn-cms btn-outline btn-sm">Preview</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7">No products registered in database yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

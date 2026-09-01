@@ -1,0 +1,45 @@
+{% extends 'pwa/base_pwa.html' %}
+
+{% block title %}Driver Profile{% endblock %}
+
+{% block content %}
+<div class="card kp-panel mb-3">
+  <div class="card-header kp-panel-header">
+    <span class="fw-bold text-dark" style="font-size: 0.85rem;">DRIVER PROFILE & CREDENTIALS</span>
+  </div>
+  <div class="card-body p-3 text-center">
+    <div class="btn-kp-primary d-inline-flex align-items-center justify-content-center p-3 mb-2" style="width: 56px; height: 56px; border-radius: 50%;">
+      <i class="fa-solid fa-user text-white fa-2x"></i>
+    </div>
+    <h3 class="fw-bold text-dark mb-0" style="font-size: 1rem;">{{ driver.get_full_name|default:driver.username }}</h3>
+    <span class="status-pill brand mt-1 mb-3"><span class="status-dot"></span> {{ driver.get_role_display }}</span>
+
+    <ul class="list-group list-group-flush text-start mb-3" style="font-size: 0.75rem;">
+      <li class="list-group-item d-flex justify-content-between py-2">
+        <span class="text-muted">Employee ID:</span>
+        <strong class="text-dark num">{{ driver.employee_id|default:"EMP-102" }}</strong>
+      </li>
+      <li class="list-group-item d-flex justify-content-between py-2">
+        <span class="text-muted">Phone Number:</span>
+        <strong class="text-dark num">{{ driver.phone|default:"+1 555-0192" }}</strong>
+      </li>
+      <li class="list-group-item d-flex justify-content-between py-2">
+        <span class="text-muted">License Number:</span>
+        <strong class="text-dark num">{{ driver.license_number|default:"DL-994821" }}</strong>
+      </li>
+      <li class="list-group-item d-flex justify-content-between py-2">
+        <span class="text-muted">License Expiry:</span>
+        <strong class="text-dark num">{{ driver.license_expiry|default:"2027-12-31" }}</strong>
+      </li>
+      <li class="list-group-item d-flex justify-content-between py-2">
+        <span class="text-muted">Driving Score:</span>
+        <strong class="text-success num fw-bold">{{ driver.driving_score }}/100</strong>
+      </li>
+    </ul>
+
+    <a href="{% url 'logout' %}" class="btn btn-outline-danger w-100 py-2 fw-bold" style="font-size: 0.8rem;">
+      <i class="fa-solid fa-arrow-right-from-bracket me-1"></i> LOG OUT
+    </a>
+  </div>
+</div>
+{% endblock %}

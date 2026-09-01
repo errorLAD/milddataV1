@@ -1,0 +1,580 @@
+{% extends "base.html" %}
+{% load indian_formatting %}
+
+{% block title %}Customers | KarobarPlus{% endblock %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+<style>
+    /*
+      Design system — reused from the Business Overview dashboard for
+      brand consistency (navy ledger + amber/rose accents, Sora/Inter/
+      JetBrains Mono type trio, faint ruled-page texture as the
+      recurring "khata" motif).
+    */
+    :root {
+        --canvas: #f6f7fb;
+        --surface: #ffffff;
+        --ink: #12172b;
+        --ink-soft: #3d4459;
+        --ink-muted: #767e95;
+        --line: #e7e9f2;
+        --line-soft: #f0f1f7;
+
+        --navy-900: #0b1330;
+        --navy-800: #141c3d;
+        --navy-700: #202a52;
+
+        --ar-ink: #92400e;
+        --ar-accent: #c2740c;
+        --ar-tint: #fdf6ea;
+        --ar-tint-line: #f3e3c3;
+        --ar-chip: #fbead0;
+
+        --ap-ink: #9f1d1d;
+        --ap-accent: #c2410c;
+        --ap-red: #c62828;
+        --ap-tint: #fdf1ef;
+        --ap-tint-line: #f4d9d4;
+        --ap-chip: #fadfd9;
+
+        --good: #157a4a;
+        --good-tint: #eaf7f0;
+        --good-line: #cfead9;
+
+        --radius-lg: 18px;
+        --radius-md: 13px;
+        --radius-sm: 9px;
+        --shadow-sm: 0 1px 2px rgba(18, 23, 43, 0.04), 0 1px 3px rgba(18, 23, 43, 0.05);
+        --shadow-md: 0 8px 20px rgba(18, 23, 43, 0.07), 0 2px 6px rgba(18, 23, 43, 0.05);
+    }
+
+    .page-shell {
+        background: var(--canvas);
+        margin: -1.5rem;
+        padding: 1.75rem 2rem 3rem;
+        min-height: 100%;
+        font-family: 'Inter', -apple-system, sans-serif;
+        color: var(--ink);
+    }
+    .page-shell h1, .page-shell h2, .page-shell h3, .page-shell h4 {
+        font-family: 'Sora', 'Inter', sans-serif;
+        letter-spacing: -0.015em;
+    }
+    .mono-face { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
+
+    /* ---------- Header ---------- */
+    .crm-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+    }
+    .crm-header .eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.68rem;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        color: var(--ink-muted);
+        text-transform: uppercase;
+        display: block;
+        margin-bottom: 0.35rem;
+    }
+    .crm-header h3 {
+        font-size: 1.7rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 0.2rem;
+    }
+    .crm-header p {
+        color: var(--ink-muted);
+        font-size: 0.9rem;
+        margin: 0;
+    }
+    .btn-saas {
+        border-radius: 10px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        font-size: 0.86rem;
+        padding: 0.65rem 1.15rem;
+        border: 1px solid transparent;
+        transition: all .15s ease;
+        white-space: nowrap;
+    }
+    .btn-saas-primary {
+        background: var(--navy-900);
+        color: #fff;
+        box-shadow: var(--shadow-sm);
+    }
+    .btn-saas-primary:hover { background: var(--navy-800); color: #fff; transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+    /* ---------- Filter toolbar ---------- */
+    .filter-toolbar {
+        background: var(--surface);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        padding: 1.1rem 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+    .filter-toolbar .form-label-sr {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--ink-muted);
+        margin-bottom: 0.35rem;
+        display: block;
+    }
+    .search-field {
+        position: relative;
+    }
+    .search-field i {
+        position: absolute;
+        left: 0.85rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--ink-muted);
+        font-size: 0.9rem;
+        pointer-events: none;
+    }
+    .search-field input {
+        padding-left: 2.35rem !important;
+    }
+    .filter-toolbar .form-control,
+    .filter-toolbar .form-select {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        padding: 0.6rem 0.85rem;
+        color: var(--ink);
+        background-color: var(--canvas);
+    }
+    .filter-toolbar .form-control:focus,
+    .filter-toolbar .form-select:focus {
+        border-color: var(--navy-700);
+        box-shadow: 0 0 0 3px rgba(32, 42, 82, 0.1);
+        background-color: #fff;
+    }
+    .btn-filter-apply {
+        background: var(--navy-900);
+        color: #fff;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 0.6rem 1.1rem;
+    }
+    .btn-filter-apply:hover { background: var(--navy-800); color: #fff; }
+    .btn-filter-clear {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        background: #fff;
+        color: var(--ink-muted);
+        padding: 0.6rem 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-filter-clear:hover { color: var(--ap-red); border-color: var(--ap-tint-line); background: var(--ap-tint); }
+
+    /* ---------- Register card (table) ---------- */
+    .register-card {
+        background: var(--surface);
+        border: 1px solid var(--line-soft);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+    .register-head {
+        position: relative;
+        overflow: hidden;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(155deg, var(--navy-800) 0%, var(--navy-900) 65%);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .register-head::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: repeating-linear-gradient(
+            to bottom, transparent 0, transparent 25px, rgba(255,255,255,0.04) 26px
+        );
+        pointer-events: none;
+    }
+    .register-head .r-title {
+        position: relative; z-index: 1;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #c7cce2;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .register-head .r-count {
+        position: relative; z-index: 1;
+        font-family: 'Sora', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: #fff;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.14);
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+    }
+
+    .table-saas {
+        margin-bottom: 0;
+        width: 100%;
+    }
+    .table-saas thead th {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--ink-muted);
+        font-weight: 700;
+        border-bottom: 1px solid var(--line-soft);
+        background: var(--canvas);
+        padding: 0.75rem 1rem;
+        white-space: nowrap;
+    }
+    .table-saas tbody td {
+        font-size: 0.87rem;
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid var(--line-soft);
+        color: var(--ink-soft);
+        vertical-align: middle;
+    }
+    .table-saas tbody tr:last-child td { border-bottom: none; }
+    .table-saas tbody tr:hover td { background: var(--line-soft); }
+
+    .row-index {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        color: var(--ink-muted);
+        font-weight: 600;
+    }
+
+    .cust-link { text-decoration: none; }
+    .cust-avatar {
+        width: 38px; height: 38px;
+        border-radius: 11px;
+        background: linear-gradient(155deg, #4338ca 0%, #312a9e 100%);
+        color: #fff;
+        font-weight: 700;
+        font-family: 'Sora', sans-serif;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .cust-name {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        color: var(--ink);
+        font-size: 0.9rem;
+    }
+    .cust-phone {
+        color: var(--ink-muted);
+        font-size: 0.76rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        padding: 0.28rem 0.65rem;
+        border: 1px solid transparent;
+        letter-spacing: 0.01em;
+    }
+    .tag-chip {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 6px;
+        font-size: 0.68rem;
+        font-weight: 600;
+        padding: 0.22rem 0.5rem;
+        color: #fff;
+        margin: 0 0.25rem 0.25rem 0;
+    }
+
+    .sales-figure {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        color: var(--ink);
+        font-size: 0.86rem;
+    }
+
+    .outstanding-clear {
+        color: var(--good);
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+    .outstanding-amt {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        color: var(--ap-red);
+        font-size: 0.88rem;
+    }
+    .outstanding-limit {
+        color: var(--ink-muted);
+        font-size: 0.72rem;
+        margin-top: 0.1rem;
+    }
+
+    .promise-count {
+        width: 28px; height: 28px;
+        border-radius: 9px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.78rem;
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .promise-count.has-broken {
+        background: var(--ap-chip);
+        color: var(--ap-red);
+        border: 1px solid var(--ap-tint-line);
+    }
+    .promise-count.clean {
+        color: var(--ink-muted);
+    }
+
+    .btn-view {
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--ink);
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.45rem 0.85rem;
+        white-space: nowrap;
+    }
+    .btn-view:hover { background: var(--navy-900); color: #fff; border-color: var(--navy-900); }
+
+    /* ---------- Empty state ---------- */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 1.5rem;
+    }
+    .empty-state .icon-wrap {
+        width: 64px; height: 64px;
+        border-radius: 16px;
+        background: var(--canvas);
+        color: var(--ink-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.6rem;
+        margin: 0 auto 1rem;
+    }
+    .empty-state p { color: var(--ink-muted); font-size: 0.92rem; margin-bottom: 0; }
+
+    /* ---------- Mobile: stack rows into cards ---------- */
+    @media (max-width: 860px) {
+        .page-shell { margin: -1rem; padding: 1.1rem; }
+        .table-saas thead { display: none; }
+        .table-saas, .table-saas tbody, .table-saas tr, .table-saas td { display: block; width: 100%; }
+        .table-saas tbody tr {
+            border-bottom: 8px solid var(--canvas);
+            padding: 1rem 1.1rem;
+        }
+        .table-saas tbody td {
+            border: none;
+            padding: 0.4rem 0;
+        }
+        .table-saas tbody td::before {
+            content: attr(data-label);
+            display: block;
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            margin-bottom: 0.25rem;
+        }
+        .table-saas tbody td[data-label="Customer Name"]::before { display: none; }
+        .table-saas tbody td.text-end { text-align: left !important; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+
+    <!-- Header -->
+    <div class="crm-header">
+        <div>
+            <span class="eyebrow">Customers</span>
+            <h3>Customer CRM</h3>
+            <p>Manage customers, risk scores, credit limits, and segmentation tags.</p>
+        </div>
+        <a href="{% url 'customers:create' %}" class="btn btn-saas btn-saas-primary d-flex align-items-center gap-2">
+            <i class="bi bi-person-plus-fill"></i> Add New Customer
+        </a>
+    </div>
+
+    <!-- Search & Filters -->
+    <div class="filter-toolbar">
+        <form method="get" action="{% url 'customers:list' %}" class="row g-3 align-items-end">
+            <div class="col-12 col-md-3">
+                <span class="form-label-sr">Search</span>
+                <div class="search-field">
+                    <i class="bi bi-search"></i>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search name, phone...">
+                </div>
+            </div>
+            <div class="col-6 col-md-2">
+                <span class="form-label-sr">Tag / Segment</span>
+                <select name="tag" class="form-select">
+                    <option value="">All Tags / Segments</option>
+                    {% for t in all_tags %}
+                    <option value="{{ t.id }}" {% if tag_filter == t.id|stringformat:"i" %}selected{% endif %}>{{ t.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-6 col-md-2">
+                <span class="form-label-sr">Risk Level</span>
+                <select name="risk" class="form-select">
+                    <option value="">All Risk Levels</option>
+                    <option value="low" {% if risk_filter == 'low' %}selected{% endif %}>Low Risk</option>
+                    <option value="medium" {% if risk_filter == 'medium' %}selected{% endif %}>Medium Risk</option>
+                    <option value="high" {% if risk_filter == 'high' %}selected{% endif %}>High Risk</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <span class="form-label-sr">Udhaar Balance</span>
+                <select name="has_udhaar" class="form-select">
+                    <option value="">Udhaar Balance Filter</option>
+                    <option value="yes" {% if has_udhaar == 'yes' %}selected{% endif %}>Has Outstanding Udhaar</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-filter-apply flex-grow-1">Filter</button>
+                {% if search_query or status_filter or has_udhaar or tag_filter or risk_filter %}
+                <a href="{% url 'customers:list' %}" class="btn-filter-clear" title="Clear Filters"><i class="bi bi-x-circle"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Customer Register -->
+    <div class="register-card">
+        <div class="register-head">
+            <span class="r-title"><i class="bi bi-journal-bookmark"></i> Customer Register</span>
+            <span class="r-count">{{ customers|length }} customer{{ customers|length|pluralize }}</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-saas align-middle">
+                <thead>
+                    <tr>
+                        <th style="width:36px;">#</th>
+                        <th>Customer Name</th>
+                        <th>Risk Score</th>
+                        <th>Tags / Segment</th>
+                        <th>Total Sales</th>
+                        <th>Outstanding / Credit Limit</th>
+                        <th>Broken Promises</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                    <tr>
+                        <td data-label="#"><span class="row-index">{{ forloop.counter|stringformat:"03d" }}</span></td>
+                        <td data-label="Customer Name">
+                            <a href="{% url 'customers:detail' customer.pk %}" class="cust-link d-flex align-items-center gap-2">
+                                <div class="cust-avatar">{{ customer.name|slice:":1"|upper }}</div>
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <span class="cust-name">{{ customer.name }}</span>
+                                        <span class="badge {{ customer.trust_score.badge_class }} rounded-pill px-2 py-1 fs-8" title="Customer Trust Score">
+                                            Trust: {{ customer.trust_score.label }}
+                                        </span>
+                                    </div>
+                                    <div class="cust-phone"><i class="bi bi-telephone"></i> {{ customer.phone }}</div>
+                                </div>
+                            </a>
+                        </td>
+                        <td data-label="Risk Score">
+                            <span class="badge {{ customer.risk_score.badge_class }} pill">
+                                {{ customer.risk_score.level }}
+                            </span>
+                        </td>
+                        <td data-label="Tags / Segment">
+                            {% for tag in customer.tags.all %}
+                            <span class="tag-chip" style="background-color: {{ tag.color }};">{{ tag.name }}</span>
+                            {% empty %}
+                            <span class="text-muted fs-8">—</span>
+                            {% endfor %}
+                        </td>
+                        <td data-label="Total Sales"><span class="sales-figure tnum">{{ customer.get_total_sales_amount|inr }}</span></td>
+                        <td data-label="Outstanding / Credit Limit">
+                            {% if customer.get_outstanding_udhaar > 0 %}
+                                <div class="outstanding-amt tnum">{{ customer.get_outstanding_udhaar|inr }}</div>
+                                {% if customer.credit_limit > 0 %}
+                                <div class="outstanding-limit tnum">Limit: {{ customer.credit_limit|inr }}</div>
+                                {% endif %}
+                            {% else %}
+                                <span class="outstanding-clear"><i class="bi bi-check-circle-fill"></i> Clear</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Broken Promises">
+                            {% if customer.promises_broken_count > 0 %}
+                            <span class="promise-count has-broken" title="Broken Payment Promises">{{ customer.promises_broken_count }}</span>
+                            {% else %}
+                            <span class="promise-count clean">0</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Status">
+                            <span class="badge bg-{% if customer.status == 'Active' %}success{% else %}secondary{% endif %}-subtle text-{% if customer.status == 'Active' %}success{% else %}secondary{% endif %} rounded-pill px-2.5 py-1 fs-8">
+                                {{ customer.status }}
+                            </span>
+                        </td>
+                        <td data-label="Actions" class="text-end">
+                            <a href="{% url 'customers:detail' customer.pk %}" class="btn-view">View Profile</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <div class="icon-wrap"><i class="bi bi-people"></i></div>
+                                <p>No customers found matching filters.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

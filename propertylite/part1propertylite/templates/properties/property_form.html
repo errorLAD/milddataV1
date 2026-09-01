@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Property | PropFlow SaaS{% endblock %}
+
+{% block content %}
+<div class="kp-header-row">
+  <div>
+    <h1 class="kp-page-title">Add New Property</h1>
+    <p class="kp-page-subtitle">Enter real estate asset details to add it to your organization's portfolio.</p>
+  </div>
+</div>
+
+<div class="kp-panel max-w-3xl" style="max-width: 800px;">
+  <div class="kp-panel-header">
+    <h3 class="kp-panel-title">Property Details</h3>
+  </div>
+  <div class="p-3">
+    <form method="post">
+      {% csrf_token %}
+      <div class="row g-3 mb-3">
+        <div class="col-md-8">
+          <label class="form-label fw-semibold fs-7">Property Name *</label>
+          <input type="text" name="name" class="form-control form-control-sm" required placeholder="e.g. Grand Horizon Towers">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold fs-7">Property Type *</label>
+          <select name="property_type" class="form-select form-select-sm" required>
+            {% for code, label in property_types %}
+            <option value="{{ code }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold fs-7">Street Address *</label>
+        <input type="text" name="address" class="form-control form-control-sm" required placeholder="100 Bay Street, Suite 400">
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold fs-7">City *</label>
+          <input type="text" name="city" class="form-control form-control-sm" required placeholder="Austin">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold fs-7">State / Province *</label>
+          <input type="text" name="state" class="form-control form-control-sm" required placeholder="TX">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold fs-7">Zip / Postal Code *</label>
+          <input type="text" name="zip_code" class="form-control form-control-sm" required placeholder="78701">
+        </div>
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold fs-7">Purchase Price ($)</label>
+          <input type="number" step="0.01" name="purchase_value" class="form-control form-control-sm" placeholder="2500000">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold fs-7">Current Valuation ($)</label>
+          <input type="number" step="0.01" name="current_value" class="form-control form-control-sm" placeholder="3100000">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold fs-7">Assigned Owner</label>
+          <select name="owner" class="form-select form-select-sm">
+            <option value="">Select Property Owner...</option>
+            {% for o in owners %}
+            <option value="{{ o.id }}">{{ o.get_full_name }} ({{ o.email }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold fs-7">Internal Notes</label>
+        <textarea name="notes" class="form-control form-control-sm" rows="3" placeholder="Key codes, manager contacts, insurance policy numbers..."></textarea>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2">
+        <a href="{% url 'property_list' %}" class="kp-btn kp-btn-secondary">Cancel</a>
+        <button type="submit" class="kp-btn kp-btn-primary">Save & Add Property</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
