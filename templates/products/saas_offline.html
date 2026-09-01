@@ -482,6 +482,229 @@ function closePfModal() {
 }
 </script>
 </div>
+{% elif product.slug == 'machine-os' %}
+<!-- Dedicated MachineOS Heavy Machinery Application Showcase -->
+<div class="mo-app-wrapper">
+<style>
+    .mo-app-wrapper {
+        background: #f8fafc;
+        color: #0f172a;
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        min-height: 90vh;
+        padding-bottom: 3rem;
+    }
+
+    .mo-top-bar {
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.2rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .mo-top-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+    }
+    .mo-live-badge {
+        background: #eff6ff;
+        color: #2563eb;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 0.4rem 1.1rem;
+        border-radius: 9999px;
+        border: 1px solid #bfdbfe;
+    }
+
+    .mo-app-frame {
+        max-width: 1380px;
+        margin: 1.5rem auto 0;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+
+    /* Sub Navigation Tabs */
+    .mo-tabs-bar {
+        background: #0f172a;
+        padding: 0.75rem 1.2rem;
+        display: flex;
+        gap: 0.6rem;
+        overflow-x: auto;
+    }
+    .mo-tab-btn {
+        background: rgba(255, 255, 255, 0.08);
+        color: #cbd5e1;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        font-family: inherit;
+        font-size: 0.88rem;
+        font-weight: 600;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+    .mo-tab-btn:hover {
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+    }
+    .mo-tab-btn.active {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #3b82f6;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Image Display Area */
+    .mo-preview-container {
+        padding: 1.5rem;
+        background: #f1f5f9;
+        text-align: center;
+    }
+    .mo-preview-card {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        position: relative;
+    }
+    .mo-preview-img {
+        width: 100%;
+        height: auto;
+        display: block;
+        cursor: zoom-in;
+        transition: transform 0.2s ease;
+        image-rendering: -webkit-optimize-contrast;
+    }
+    .mo-preview-img:hover {
+        opacity: 0.98;
+    }
+
+    .mo-zoom-overlay {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(15, 23, 42, 0.8);
+        color: #ffffff;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        backdrop-filter: blur(4px);
+        pointer-events: none;
+    }
+
+    /* Lightbox Modal */
+    .mo-modal {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(2, 6, 23, 0.92);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        padding: 1.5rem;
+    }
+    .mo-modal-img {
+        max-width: 95vw;
+        max-height: 90vh;
+        border-radius: 8px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        object-fit: contain;
+    }
+    .mo-modal-close {
+        position: absolute;
+        top: 1.5rem;
+        right: 2rem;
+        background: #ef4444;
+        color: #ffffff;
+        border: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        font-size: 1.4rem;
+        font-weight: 800;
+        cursor: pointer;
+    }
+</style>
+
+<div class="mo-top-bar">
+    <div>
+        <h1 class="mo-top-title">MachineOS Heavy Machinery — Workspace Showcase</h1>
+        <p style="margin: 0.2rem 0 0; color: #64748b; font-size: 0.9rem;">Real-time heavy equipment utilization, engine hour tracking, fuel telemetry, and operator rosters.</p>
+    </div>
+    <div style="display: flex; gap: 0.8rem; align-items: center;">
+        <span class="mo-live-badge">🖼️ Live Screenshot Showcase</span>
+        <a href="{% url 'products:saas_directory' %}" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #334155; font-size: 0.85rem; font-weight: 600; padding: 0.45rem 0.9rem; text-decoration: none; border-radius: 6px;">← Back to Store</a>
+    </div>
+</div>
+
+<div class="mo-app-frame">
+    <!-- Tabs for Switching Screenshots -->
+    <div class="mo-tabs-bar">
+        <button class="mo-tab-btn active" onclick="switchMoTab('dashboard', '{% static "images/machineos/dashboard.png" %}', 'Executive Operations & Telemetry Dashboard')">
+            📊 Telemetry Dashboard
+        </button>
+        <button class="mo-tab-btn" onclick="switchMoTab('equipment', '{% static "images/machineos/equipment.png" %}', 'Heavy Machinery & Fleet Directory')">
+            🚜 Heavy Machinery Directory
+        </button>
+        <button class="mo-tab-btn" onclick="switchMoTab('operators', '{% static "images/machineos/operators.png" %}', 'Drivers & Certified Operators Roster')">
+            👥 Drivers &amp; Operators Roster
+        </button>
+        <button class="mo-tab-btn" onclick="switchMoTab('fuel', '{% static "images/machineos/fuel.png" %}', 'Fuel Operations, Refueling Logs & Consumption Analytics')">
+            ⛽ Fuel Operations &amp; Logs
+        </button>
+    </div>
+
+    <!-- Active View Image Display -->
+    <div class="mo-preview-container">
+        <div style="margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="moViewTitle" style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">📊 Executive Operations &amp; Telemetry Dashboard</h3>
+            <button onclick="openMoModal()" class="btn" style="background: #2563eb; color: #fff; border: none; font-size: 0.82rem; font-weight: 700; padding: 0.45rem 1rem; border-radius: 6px; cursor: pointer;">
+                🔍 View Fullscreen High-Res
+            </button>
+        </div>
+
+        <div class="mo-preview-card" onclick="openMoModal()">
+            <div class="mo-zoom-overlay">🔍 Click Image to Zoom Fullscreen</div>
+            <img id="moActiveImg" src="{% static 'images/machineos/dashboard.png' %}" alt="MachineOS High Quality Preview" class="mo-preview-img">
+        </div>
+    </div>
+</div>
+
+<!-- Fullscreen Image Lightbox Modal -->
+<div class="mo-modal" id="moModal">
+    <button onclick="closeMoModal()" class="mo-modal-close">✕</button>
+    <img id="moModalImg" src="{% static 'images/machineos/dashboard.png' %}" class="mo-modal-img" alt="Fullscreen View">
+</div>
+
+<script>
+function switchMoTab(tabKey, imgSrc, titleText) {
+    document.querySelectorAll('.mo-tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    document.getElementById('moActiveImg').src = imgSrc;
+    document.getElementById('moModalImg').src = imgSrc;
+    document.getElementById('moViewTitle').innerText = titleText;
+}
+
+function openMoModal() {
+    document.getElementById('moModal').style.display = 'flex';
+}
+function closeMoModal() {
+    document.getElementById('moModal').style.display = 'none';
+}
+</script>
+</div>
 {% else %}
 <div class="propflow-app-wrapper">
 <style>
