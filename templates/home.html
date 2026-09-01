@@ -501,7 +501,11 @@
                         <div style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem;">{{ product.display_price }}</div>
                         <div class="actions">
                             <a href="{% url 'products:saas_detail' product.slug %}" class="btn btn-secondary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Details</a>
+                            {% if product.slug == 'business-saas' %}
+                            <a href="{% url 'products:saas_launch' product.slug %}" class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem; background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);">🖼️ View App Preview</a>
+                            {% else %}
                             <a href="{% url 'products:saas_launch' product.slug %}" class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Launch App →</a>
+                            {% endif %}
                         </div>
                     </div>
                 </article>

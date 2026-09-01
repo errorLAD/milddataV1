@@ -284,7 +284,9 @@
             <div class="saas-price-tag">{{ product.display_price }}</div>
             <div class="saas-card-actions">
                 <a href="{% url 'products:saas_detail' product.slug %}" class="saas-btn saas-btn-secondary">Overview</a>
-                {% if product.status == 'active' %}
+                {% if product.slug == 'business-saas' %}
+                    <a href="{% url 'products:saas_launch' product.slug %}" class="saas-btn saas-btn-primary" style="background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);">🖼️ View App Preview</a>
+                {% elif product.status == 'active' %}
                     <a href="{% url 'products:saas_launch' product.slug %}" class="saas-btn saas-btn-primary">Launch App →</a>
                 {% else %}
                     <span class="saas-btn saas-btn-disabled">Coming Soon</span>
