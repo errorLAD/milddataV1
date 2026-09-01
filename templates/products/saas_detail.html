@@ -1000,15 +1000,9 @@
                     </div>
 
                     <div class="hero-cta-buttons">
-                        {% if product.slug == 'business-saas' %}
                         <a href="{% url 'products:saas_launch' product.slug %}" class="btn-primary-pill" style="background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%); color: #ffffff; text-decoration: none;">
                             🖼️ View Live Application Showcase
                         </a>
-                        {% else %}
-                        <a href="{% url 'products:saas_launch' product.slug %}" class="btn-primary-pill" style="background: #2563eb; color: #ffffff; text-decoration: none;" target="_blank">
-                            🚀 Launch Live App (Guest Mode)
-                        </a>
-                        {% endif %}
                         {% if db_product %}
                         <a href="{% url 'products:detail' db_product.pk %}?billing={{ billing_cycle }}" class="btn-secondary-pill" style="text-decoration: none;">
                             Checkout / Purchase →

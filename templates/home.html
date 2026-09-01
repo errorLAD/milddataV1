@@ -450,28 +450,28 @@
                             <h4>Supplier Onboarding OS</h4>
                             <span>Vendor compliance, documents &amp; approvals</span>
                         </div>
-                        <a href="{% url 'products:saas_launch' 'supplier-onboarding' %}" class="hss-launch-btn">Launch →</a>
+                        <a href="{% url 'products:saas_launch' 'supplier-onboarding' %}" class="hss-launch-btn">View Preview →</a>
                     </div>
                     <div class="hss-item">
                         <div class="hss-item-info">
                             <h4>Fleet Management OS</h4>
                             <span>GPS tracking, geofences &amp; driver PWA</span>
                         </div>
-                        <a href="{% url 'products:saas_launch' 'fleet-management' %}" class="hss-launch-btn">Launch →</a>
+                        <a href="{% url 'products:saas_launch' 'fleet-management' %}" class="hss-launch-btn">View Preview →</a>
                     </div>
                     <div class="hss-item">
                         <div class="hss-item-info">
                             <h4>Payment Reminder / B2B Payment</h4>
                             <span>Payment collections &amp; invoice tracking</span>
                         </div>
-                        <a href="{% url 'products:saas_launch' 'b2b-payment' %}" class="hss-launch-btn">Launch →</a>
+                        <a href="{% url 'products:saas_launch' 'b2b-payment' %}" class="hss-launch-btn">View Preview →</a>
                     </div>
                     <div class="hss-item">
                         <div class="hss-item-info">
                             <h4>StockFlow — Inventory</h4>
                             <span>Purchasing, stock &amp; warehouse control</span>
                         </div>
-                        <a href="{% url 'products:saas_launch' 'stockflow' %}" class="hss-launch-btn">Launch →</a>
+                        <a href="{% url 'products:saas_launch' 'stockflow' %}" class="hss-launch-btn">View Preview →</a>
                     </div>
                 </div>
             </div>
@@ -485,7 +485,7 @@
         <div class="section-header">
             <span class="eyebrow">Enterprise SaaS Products</span>
             <h2>Production-ready SaaS tools for business operations.</h2>
-            <p>Browse our complete catalog of specialized SaaS applications. Open any product to start managing your operations immediately.</p>
+            <p>Browse our complete catalog of specialized SaaS applications. Open any product to explore its live workspace showcase.</p>
         </div>
 
         <div class="home-saas-grid">
@@ -501,11 +501,7 @@
                         <div style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem;">{{ product.display_price }}</div>
                         <div class="actions">
                             <a href="{% url 'products:saas_detail' product.slug %}" class="btn btn-secondary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Details</a>
-                            {% if product.slug == 'business-saas' %}
                             <a href="{% url 'products:saas_launch' product.slug %}" class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem; background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);">🖼️ View App Preview</a>
-                            {% else %}
-                            <a href="{% url 'products:saas_launch' product.slug %}" class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Launch App →</a>
-                            {% endif %}
                         </div>
                     </div>
                 </article>
@@ -521,7 +517,7 @@
                         <div style="font-family: monospace; font-size: 1.1rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem;">{{ starting_price_display }}</div>
                         <div class="actions">
                             <a href="{% url 'products:saas_detail' 'supplier-onboarding' %}" class="btn btn-secondary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Details</a>
-                            <a href="{% url 'products:saas_launch' 'supplier-onboarding' %}" class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem;">Launch App →</a>
+                            <a href="{% url 'products:saas_launch' 'supplier-onboarding' %}" class="btn btn-primary" style="padding: 0.6rem 1rem; font-size: 0.85rem; background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%);">🖼️ View App Preview</a>
                         </div>
                     </div>
                 </article>
