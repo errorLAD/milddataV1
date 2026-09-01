@@ -172,7 +172,7 @@
 <div class="bl-app-frame">
     <!-- Tabs for Switching Screenshots -->
     <div class="bl-tabs-bar">
-        <button class="bl-tab-btn active" onclick="switchBlTab('dashboard', '{% static "images/businesslite/dashboard.png" %}', 'Dashboard Overview')">
+        <button class="bl-tab-btn active" onclick="switchBlTab('dashboard', '{% static "images/businesslite/dashboard.png" %}', 'Executive Dashboard Overview')">
             📊 Executive Dashboard
         </button>
         <button class="bl-tab-btn" onclick="switchBlTab('employees', '{% static "images/businesslite/employees.png" %}', 'Employees & Staff Directory')">
@@ -187,20 +187,29 @@
         <button class="bl-tab-btn" onclick="switchBlTab('suppliers', '{% static "images/businesslite/suppliers.png" %}', 'Supplier Directory & POs')">
             📋 Supplier Directory
         </button>
+        <button class="bl-tab-btn" onclick="switchBlTab('expenses', '{% static "images/businesslite/expenses.png" %}', 'Expenses & Cost Tracking')">
+            💵 Expenses &amp; Costs
+        </button>
+        <button class="bl-tab-btn" onclick="switchBlTab('tasks', '{% static "images/businesslite/tasks.png" %}', 'Task Management & Operations')">
+            ✅ Tasks &amp; Ops
+        </button>
+        <button class="bl-tab-btn" onclick="switchBlTab('reports', '{% static "images/businesslite/reports.png" %}', 'Reports & CSV Exports')">
+            📈 Reports &amp; Exports
+        </button>
     </div>
 
     <!-- Active View Image Display -->
     <div class="bl-preview-container">
         <div style="margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="blViewTitle" style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">📊 Executive Dashboard</h3>
-            <button onclick="openBlModal()" class="btn" style="background: #0284c7; color: #fff; border: none; font-size: 0.82rem; font-weight: 700; padding: 0.4rem 0.9rem; border-radius: 6px; cursor: pointer;">
+            <h3 id="blViewTitle" style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">📊 Executive Dashboard Overview</h3>
+            <button onclick="openBlModal()" class="btn" style="background: #0284c7; color: #fff; border: none; font-size: 0.82rem; font-weight: 700; padding: 0.45rem 1rem; border-radius: 6px; cursor: pointer;">
                 🔍 View Fullscreen High-Res
             </button>
         </div>
 
         <div class="bl-preview-card" onclick="openBlModal()">
             <div class="bl-zoom-overlay">🔍 Click Image to Zoom Fullscreen</div>
-            <img id="blActiveImg" src="{% static 'images/businesslite/dashboard.png' %}" alt="BusinessLite Preview" class="bl-preview-img">
+            <img id="blActiveImg" src="{% static 'images/businesslite/dashboard.png' %}" alt="BusinessLite High Quality Preview" class="bl-preview-img" style="image-rendering: -webkit-optimize-contrast;">
         </div>
     </div>
 </div>
