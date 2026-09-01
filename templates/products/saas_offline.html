@@ -705,6 +705,232 @@ function closeMoModal() {
 }
 </script>
 </div>
+{% elif product.slug == 'stockflow' %}
+<!-- Dedicated StockFlow Inventory & Purchasing Application Showcase -->
+<div class="sf-app-wrapper">
+<style>
+    .sf-app-wrapper {
+        background: #f8fafc;
+        color: #0f172a;
+        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+        min-height: 90vh;
+        padding-bottom: 3rem;
+    }
+
+    .sf-top-bar {
+        background: #ffffff;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.2rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    .sf-top-title {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #0f172a;
+        margin: 0;
+    }
+    .sf-live-badge {
+        background: #eff6ff;
+        color: #2563eb;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: 0.4rem 1.1rem;
+        border-radius: 9999px;
+        border: 1px solid #bfdbfe;
+    }
+
+    .sf-app-frame {
+        max-width: 1380px;
+        margin: 1.5rem auto 0;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 14px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+        overflow: hidden;
+    }
+
+    /* Sub Navigation Tabs */
+    .sf-tabs-bar {
+        background: #0f172a;
+        padding: 0.75rem 1.2rem;
+        display: flex;
+        gap: 0.6rem;
+        overflow-x: auto;
+    }
+    .sf-tab-btn {
+        background: rgba(255, 255, 255, 0.08);
+        color: #cbd5e1;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        font-family: inherit;
+        font-size: 0.88rem;
+        font-weight: 600;
+        padding: 0.6rem 1.2rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+    }
+    .sf-tab-btn:hover {
+        background: rgba(255, 255, 255, 0.18);
+        color: #ffffff;
+    }
+    .sf-tab-btn.active {
+        background: #2563eb;
+        color: #ffffff;
+        border-color: #3b82f6;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+
+    /* Image Display Area */
+    .sf-preview-container {
+        padding: 1.5rem;
+        background: #f1f5f9;
+        text-align: center;
+    }
+    .sf-preview-card {
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        position: relative;
+    }
+    .sf-preview-img {
+        width: 100%;
+        height: auto;
+        display: block;
+        cursor: zoom-in;
+        transition: transform 0.2s ease;
+        image-rendering: -webkit-optimize-contrast;
+    }
+    .sf-preview-img:hover {
+        opacity: 0.98;
+    }
+
+    .sf-zoom-overlay {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(15, 23, 42, 0.8);
+        color: #ffffff;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        backdrop-filter: blur(4px);
+        pointer-events: none;
+    }
+
+    /* Lightbox Modal */
+    .sf-modal {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(2, 6, 23, 0.92);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        padding: 1.5rem;
+    }
+    .sf-modal-img {
+        max-width: 95vw;
+        max-height: 90vh;
+        border-radius: 8px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        object-fit: contain;
+    }
+    .sf-modal-close {
+        position: absolute;
+        top: 1.5rem;
+        right: 2rem;
+        background: #ef4444;
+        color: #ffffff;
+        border: none;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        font-size: 1.4rem;
+        font-weight: 800;
+        cursor: pointer;
+    }
+</style>
+
+<div class="sf-top-bar">
+    <div>
+        <h1 class="sf-top-title">StockFlow — Inventory &amp; Purchasing Workspace</h1>
+        <p style="margin: 0.2rem 0 0; color: #64748b; font-size: 0.9rem;">Multi-warehouse stock control, automated purchase orders, supplier terms, and operational margin tracking.</p>
+    </div>
+    <div style="display: flex; gap: 0.8rem; align-items: center;">
+        <span class="sf-live-badge">🖼️ Live Screenshot Showcase</span>
+        <a href="{% url 'products:saas_directory' %}" class="btn" style="background: #ffffff; border: 1px solid #cbd5e1; color: #334155; font-size: 0.85rem; font-weight: 600; padding: 0.45rem 0.9rem; text-decoration: none; border-radius: 6px;">← Back to Store</a>
+    </div>
+</div>
+
+<div class="sf-app-frame">
+    <!-- Tabs for Switching Screenshots -->
+    <div class="sf-tabs-bar">
+        <button class="sf-tab-btn active" onclick="switchSfTab('overview', '{% static "images/stockflow/overview.png" %}', 'Overview Dashboard & Cash Flow Monitoring')">
+            📊 Overview Dashboard
+        </button>
+        <button class="sf-tab-btn" onclick="switchSfTab('products', '{% static "images/stockflow/products.png" %}', 'Products & Stock Inventory Catalog')">
+            📦 Products &amp; Stock
+        </button>
+        <button class="sf-tab-btn" onclick="switchSfTab('suppliers', '{% static "images/stockflow/suppliers.png" %}', 'Suppliers & Purchase Bills Directory')">
+            📋 Suppliers Directory
+        </button>
+        <button class="sf-tab-btn" onclick="switchSfTab('customers', '{% static "images/stockflow/customers.png" %}', 'Customers & Accounts Receivable Directory')">
+            👥 Customers Directory
+        </button>
+        <button class="sf-tab-btn" onclick="switchSfTab('profitability', '{% static "images/stockflow/profitability.png" %}', 'Operational Profitability & Gross Margin Analytics')">
+            📈 Profitability Analytics
+        </button>
+    </div>
+
+    <!-- Active View Image Display -->
+    <div class="sf-preview-container">
+        <div style="margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="sfViewTitle" style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #0f172a;">📊 Overview Dashboard &amp; Cash Flow Monitoring</h3>
+            <button onclick="openSfModal()" class="btn" style="background: #2563eb; color: #fff; border: none; font-size: 0.82rem; font-weight: 700; padding: 0.45rem 1rem; border-radius: 6px; cursor: pointer;">
+                🔍 View Fullscreen High-Res
+            </button>
+        </div>
+
+        <div class="sf-preview-card" onclick="openSfModal()">
+            <div class="sf-zoom-overlay">🔍 Click Image to Zoom Fullscreen</div>
+            <img id="sfActiveImg" src="{% static 'images/stockflow/overview.png' %}" alt="StockFlow High Quality Preview" class="sf-preview-img">
+        </div>
+    </div>
+</div>
+
+<!-- Fullscreen Image Lightbox Modal -->
+<div class="sf-modal" id="sfModal">
+    <button onclick="closeSfModal()" class="sf-modal-close">✕</button>
+    <img id="sfModalImg" src="{% static 'images/stockflow/overview.png' %}" class="sf-modal-img" alt="Fullscreen View">
+</div>
+
+<script>
+function switchSfTab(tabKey, imgSrc, titleText) {
+    document.querySelectorAll('.sf-tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    document.getElementById('sfActiveImg').src = imgSrc;
+    document.getElementById('sfModalImg').src = imgSrc;
+    document.getElementById('sfViewTitle').innerText = titleText;
+}
+
+function openSfModal() {
+    document.getElementById('sfModal').style.display = 'flex';
+}
+function closeSfModal() {
+    document.getElementById('sfModal').style.display = 'none';
+}
+</script>
+</div>
 {% else %}
 <div class="propflow-app-wrapper">
 <style>
