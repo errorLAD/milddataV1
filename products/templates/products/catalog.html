@@ -281,6 +281,8 @@
                         <a href="{% url 'products:saas_detail' 'machine-os' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% elif "PropFlow" in product.name %}
                         <a href="{% url 'products:saas_detail' 'property-management' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
+                    {% elif "FieldSaaS" in product.name %}
+                        <a href="{% url 'products:saas_detail' 'fieldsaas' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% else %}
                         <a href="{% url 'products:saas_directory' %}" class="mp-btn" style="background: #2563eb; color: #ffffff;">Book Demo 📅</a>
                     {% endif %}
