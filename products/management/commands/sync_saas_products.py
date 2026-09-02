@@ -14,11 +14,13 @@ class Command(BaseCommand):
                 defaults={
                     "description": item["description"],
                     "category": item["category_code"],
-                    "price": item["price"],
-                    "billing_type": item["billing_type"],
-                    "features": f"Category: {item['category']}\nProject: {item['project_name']}\nStatus: {item['status']}",
+                    "price_inr_monthly": item["price_inr_monthly"],
+                    "price_inr_yearly": item["price_inr_yearly"],
+                    "price_usd_monthly": item["price_usd_monthly"],
+                    "price_usd_yearly": item["price_usd_yearly"],
+                    "features": "\n".join([f"{f['title']}: {f['desc']}" for f in item.get("features", [])]),
                     "access_info": f"Launch URL: /products/saas/{item['slug']}/launch/",
-                    "is_active": (item["status"] == "active"),
+                    "is_active": (item.get("status", "active") == "active"),
                 },
             )
             action = "Created" if created else "Updated"

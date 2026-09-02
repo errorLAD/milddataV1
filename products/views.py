@@ -44,40 +44,41 @@ def catalog(request):
     currency = getattr(request, "currency", request.session.get("currency", "INR"))
     billing_cycle = request.session.get("billing_cycle", "monthly")
     
-    if Product.objects.count() == 0:
-        for slug, item in SAAS_PRODUCTS.items():
-            Product.objects.get_or_create(
-                name=item["name"],
-                defaults={
-                    "description": item["description"],
-                    "category": item["category_code"],
-                    "price_inr_monthly": item["price_inr_monthly"],
-                    "price_inr_yearly": item["price_inr_yearly"],
-                    "price_usd_monthly": item["price_usd_monthly"],
-                    "price_usd_yearly": item["price_usd_yearly"],
-                    "features": "\n".join([f"{f['title']}: {f['desc']}" for f in item.get("features", [])]),
-                    "is_active": True,
-                },
-            )
+    # Auto-synchronize registered SaaS products into database
+    for slug, item in SAAS_PRODUCTS.items():
+        Product.objects.update_or_create(
+            name=item["name"],
+            defaults={
+                "description": item["description"],
+                "category": item["category_code"],
+                "price_inr_monthly": item["price_inr_monthly"],
+                "price_inr_yearly": item["price_inr_yearly"],
+                "price_usd_monthly": item["price_usd_monthly"],
+                "price_usd_yearly": item["price_usd_yearly"],
+                "features": "\n".join([f"{f['title']}: {f['desc']}" for f in item.get("features", [])]),
+                "is_active": True,
+            },
+        )
 
-    products = Product.objects.filter(is_active=True)
+    all_active_products = Product.objects.filter(is_active=True)
+    filtered_products = all_active_products
     if category in ("ai_agent", "saas_tool"):
-        products = products.filter(category=category)
+        filtered = all_active_products.filter(category=category)
+        if filtered.exists():
+            filtered_products = filtered
 
     # Attach computed regional prices to product objects
-    for p in products:
+    for p in filtered_products:
         p.active_display_price = p.get_display_price(currency=currency, billing_cycle=billing_cycle)
         p.active_price_amount = p.get_price_amount(currency=currency, billing_cycle=billing_cycle)
 
-    saas_products = get_all_saas_products(category=category, currency=currency, billing_cycle=billing_cycle)
-    if not saas_products:
-        saas_products = get_all_saas_products(currency=currency, billing_cycle=billing_cycle)
+    saas_products = get_all_saas_products(currency=currency, billing_cycle=billing_cycle)
 
     return render(
         request,
         "products/catalog.html",
         {
-            "products": products,
+            "products": filtered_products,
             "saas_products": saas_products,
             "active_category": category,
         },
