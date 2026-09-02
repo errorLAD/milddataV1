@@ -67,10 +67,27 @@ def catalog(request):
         if filtered.exists():
             filtered_products = filtered
 
-    # Attach computed regional prices to product objects
+    # Attach computed regional prices and saas_slug to product objects
     for p in filtered_products:
         p.active_display_price = p.get_display_price(currency=currency, billing_cycle=billing_cycle)
         p.active_price_amount = p.get_price_amount(currency=currency, billing_cycle=billing_cycle)
+        p.saas_slug = "b2b-payment"
+        for slug, item in SAAS_PRODUCTS.items():
+            if item["name"] == p.name:
+                p.saas_slug = slug
+                break
+        if p.saas_slug == "b2b-payment":
+            if "FieldSaaS" in p.name: p.saas_slug = "fieldsaas"
+            elif "PropFlow" in p.name: p.saas_slug = "property-management"
+            elif "MachineOS" in p.name: p.saas_slug = "machine-os"
+            elif "StockFlow" in p.name: p.saas_slug = "stockflow"
+            elif "Fleet" in p.name: p.saas_slug = "fleet-management"
+            elif "Business SaaS" in p.name: p.saas_slug = "business-saas"
+            elif "Supplier" in p.name: p.saas_slug = "supplier-onboarding"
+            elif "Payment" in p.name or "B2B" in p.name: p.saas_slug = "b2b-payment"
+            elif "Voice" in p.name or "Maithili" in p.name: p.saas_slug = "maithili-voice-ai"
+            elif "OCR" in p.name or "Document" in p.name: p.saas_slug = "indic-ocr-agent"
+            elif "Collections" in p.name or "Smart" in p.name: p.saas_slug = "collections-ai-agent"
 
     saas_products = get_all_saas_products(currency=currency, billing_cycle=billing_cycle)
 
