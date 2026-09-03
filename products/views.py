@@ -103,6 +103,10 @@ def catalog(request):
 
 
 def saas_directory(request):
+    """
+    Dedicated SaaS Applications & AI Agents Directory View (/products/saas/).
+    Renders all 11 active SaaS products and AI agents with search and category filtering.
+    """
     category = request.GET.get("category", "")
     query = request.GET.get("q", "").strip().lower()
     currency = getattr(request, "currency", request.session.get("currency", "INR"))
