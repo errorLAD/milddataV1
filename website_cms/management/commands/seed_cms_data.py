@@ -24,6 +24,24 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Seeding Milda Data CMS default records...")
 
+        # 0. Ensure Admin Superuser
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        admin_user, created = User.objects.get_or_create(
+            username="admin",
+            defaults={
+                "email": "ab.mishra@yahoo.com",
+                "is_staff": True,
+                "is_superuser": True,
+            },
+        )
+        admin_user.email = "ab.mishra@yahoo.com"
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.set_password("Admin@1234")
+        admin_user.save()
+        self.stdout.write(self.style.SUCCESS("Admin Superuser configured: admin / ab.mishra@yahoo.com"))
+
         # 1. Site Settings
         settings_obj = SiteSettings.get_settings()
         settings_obj.company_name = "Milda Data"
