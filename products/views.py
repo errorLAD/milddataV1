@@ -44,6 +44,9 @@ def catalog(request):
     currency = getattr(request, "currency", request.session.get("currency", "INR"))
     billing_cycle = request.session.get("billing_cycle", "monthly")
     
+    # Clean up any removed AI Agent products from database
+    Product.objects.filter(category="ai_agent").delete()
+
     # Auto-synchronize registered SaaS products into database
     for slug, item in SAAS_PRODUCTS.items():
         Product.objects.update_or_create(
