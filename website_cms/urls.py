@@ -13,6 +13,7 @@ urlpatterns = [
     path("admin/cms/homepage/", views_admin.homepage_admin_view, name="homepage_admin"),
     path("admin/cms/products/", views_admin.products_admin_list, name="products_list"),
     path("admin/cms/products/<int:pk>/edit/", views_admin.product_admin_edit, name="product_edit"),
+    path("admin/cms/products/<int:pk>/delete/", views_admin.product_admin_delete, name="product_delete"),
     path("admin/cms/services/", views_admin.services_admin_list, name="services_list"),
     path("admin/cms/services/create/", views_admin.service_admin_create_edit, name="service_create"),
     path("admin/cms/services/<int:pk>/edit/", views_admin.service_admin_create_edit, name="service_edit"),

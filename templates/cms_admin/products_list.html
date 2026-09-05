@@ -37,8 +37,14 @@
                     <td>GST {{ product.gst_tax_rate }}%<br><small style="color: var(--cms-muted);">VAT {{ product.vat_tax_rate }}%</small></td>
                     <td><span class="badge {% if product.is_active %}badge-success{% else %}badge-danger{% endif %}">{% if product.is_active %}Active{% else %}Inactive{% endif %}</span></td>
                     <td>
-                        <a href="{% url 'website_cms:product_edit' product.pk %}" class="btn-cms btn-outline btn-sm">Edit CMS</a>
-                        <a href="/products/detail/{{ product.pk }}/" target="_blank" class="btn-cms btn-outline btn-sm">Preview</a>
+                        <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap;">
+                            <a href="{% url 'website_cms:product_edit' product.pk %}" class="btn-cms btn-outline btn-sm">Edit CMS</a>
+                            <a href="/products/detail/{{ product.pk }}/" target="_blank" class="btn-cms btn-outline btn-sm">Preview</a>
+                            <form method="post" action="{% url 'website_cms:product_delete' product.pk %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete product \'{{ product.name|escapejs }}\'?');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-cms btn-outline btn-sm" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);">Delete 🗑️</button>
+                            </form>
+                        </div>
                     </td>
                 </tr>
                 {% empty %}

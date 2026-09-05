@@ -8,7 +8,13 @@
         <h1 class="page-title">Edit Product Details &amp; Regional Pricing</h1>
         <p class="page-subtitle">Configure pricing tiers, features list, tax rates, and post-purchase customer instructions.</p>
     </div>
-    <a href="{% url 'website_cms:products_list' %}" class="btn-cms btn-outline">&larr; Back to Products</a>
+    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+        <form method="post" action="{% url 'website_cms:product_delete' product.pk %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete product \'{{ product.name|escapejs }}\'?');">
+            {% csrf_token %}
+            <button type="submit" class="btn-cms btn-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);">Delete Product 🗑️</button>
+        </form>
+        <a href="{% url 'website_cms:products_list' %}" class="btn-cms btn-outline">&larr; Back to Products</a>
+    </div>
 </div>
 
 <div class="cms-form-card">
@@ -77,7 +83,13 @@
             <label class="form-label" style="margin: 0;">Product is Active and Publicly Visible</label>
         </div>
 
-        <button type="submit" class="btn-cms btn-primary" style="margin-top: 1rem;">Save Product Changes</button>
+        <div style="display: flex; gap: 0.75rem; align-items: center; margin-top: 1.5rem; flex-wrap: wrap;">
+            <button type="submit" class="btn-cms btn-primary">Save Product Changes</button>
+            <button type="button" class="btn-cms btn-outline" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);" onclick="if(confirm('Are you sure you want to delete product \'{{ product.name|escapejs }}\'?')) { document.getElementById('header-delete-form').submit(); }">Delete Product 🗑️</button>
+        </div>
+    </form>
+    <form id="header-delete-form" method="post" action="{% url 'website_cms:product_delete' product.pk %}" style="display: none;">
+        {% csrf_token %}
     </form>
 </div>
 {% endblock %}

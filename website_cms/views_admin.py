@@ -198,6 +198,24 @@ def product_admin_edit(request, pk):
 
 
 @login_required
+@require_cms_admin("publish")
+def product_admin_delete(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    if request.method == "POST":
+        product_name = product.name
+        product.delete()
+        AuditLog.log(request.user, f"Deleted product '{product_name}'", "Product", pk, ip_address=get_client_ip(request))
+        messages.success(request, f"Product '{product_name}' deleted successfully.")
+        return redirect("website_cms:products_list")
+
+    return render(request, "cms_admin/confirm_delete.html", {
+        "object": product,
+        "object_type": "Product",
+        "cancel_url": "website_cms:products_list",
+    })
+
+
+@login_required
 @require_cms_admin("view")
 def services_admin_list(request):
     services = Service.objects.all()
